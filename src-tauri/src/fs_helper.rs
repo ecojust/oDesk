@@ -141,7 +141,6 @@ pub fn read_folder_folders(path: String) -> Result<Vec<String>, String> {
 
 #[tauri::command]
 pub fn create_directory(path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
     let base_dir = get_appdata_dir()?;
 
     let target_path = base_dir.join(path);
