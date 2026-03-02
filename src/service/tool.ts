@@ -20,4 +20,26 @@ export default class Tool {
       throw e;
     }
   }
+
+  static async create_workspace(workspace: string) {
+    try {
+      const result = await invoke("create_workspace", { workspace });
+      console.log(result);
+      return result;
+    } catch (e) {
+      alert("open_executable: " + e);
+      throw e;
+    }
+  }
+
+  static async execute_opencode_serve(workspace: string) {
+    try {
+      const result = await invoke("execute_opencode_serve", { workspace });
+      console.log(result);
+      return result;
+    } catch (e) {
+      alert("open_executable: " + e);
+      throw e;
+    }
+  }
 }

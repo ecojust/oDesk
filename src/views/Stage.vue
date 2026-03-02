@@ -8,6 +8,7 @@
         <el-tab-pane label="网页壁纸" name="html" />
       </el-tabs>
     </div>
+
     <div class="stage-content">
       <keep-alive>
         <component :is="activeComponent" />

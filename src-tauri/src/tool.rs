@@ -99,11 +99,9 @@ pub fn open_executable(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn create_workspace(path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+pub fn create_workspace(workspace: String) -> Result<String, String> {
     let base_dir = get_appdata_dir()?;
-
-    let target_workspace = base_dir.join("workspaces").join(path);
+    let target_workspace = base_dir.join("workspaces").join(workspace);
 
     // 创建目录，如果已存在则不会失败
     fs::create_dir_all(&target_workspace)
@@ -113,4 +111,28 @@ pub fn create_workspace(path: String) -> Result<String, String> {
         "worksapce created successfully: {}",
         target_workspace.display()
     ))
+}
+
+#[tauri::command]
+pub fn execute_opencode_serve(workspace: String) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_workspace = base_dir.join("workspaces").join(workspace);
+
+    // 切换到指定目录并执行 opencode serve
+    let output = Command::new("opencode")
+        .arg("serve")
+        .current_dir(target_workspace)
+        .output()
+        .map_err(|e| format!("Failed to execute opencode serve: {}", e))?;
+
+    if output.status.success() {
+        Ok(format!("opencode serve started successfully"))
+        // Ok(format!(
+        //     "opencode serve started successfully in {}",
+        //     target_workspace.display()
+        // ))
+    } else {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        Err(format!("opencode serve failed with error: {}", stderr))
+    }
 }
