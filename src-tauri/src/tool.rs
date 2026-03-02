@@ -1,7 +1,10 @@
 use serde::{Deserialize, Serialize};
+use std::fs;
 use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
+
+use crate::fs_helper::{create_directory, get_appdata_dir, read_folder_folders};
 
 /// 等待窗口完全关闭的辅助函数
 pub fn wait_for_window_closed(
@@ -93,4 +96,21 @@ pub fn open_executable(path: String) -> Result<String, String> {
     }
 
     Ok(format!("Successfully opened: {}", path))
+}
+
+#[tauri::command]
+pub fn create_workspace(path: String) -> Result<String, String> {
+    // 获取 appdata 目录下的 oPaper 路径
+    let base_dir = get_appdata_dir()?;
+
+    let target_workspace = base_dir.join("workspaces").join(path);
+
+    // 创建目录，如果已存在则不会失败
+    fs::create_dir_all(&target_workspace)
+        .map_err(|e| format!("Failed to create directory: {}", e))?;
+
+    Ok(format!(
+        "worksapce created successfully: {}",
+        target_workspace.display()
+    ))
 }
