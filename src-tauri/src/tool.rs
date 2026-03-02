@@ -4,7 +4,41 @@ use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
 
-use crate::fs_helper::{create_directory, get_appdata_dir, read_folder_folders};
+use crate::fs_helper::get_appdata_dir;
+
+// Helper function to kill existing opencode processes
+fn kill_existing_opencode_processes() -> Result<(), String> {
+    #[cfg(target_os = "windows")]
+    {
+        let output = Command::new("taskkill")
+            .args(["/F", "/IM", "opencode.exe"])
+            .output()
+            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Failed to kill opencode processes: {}", stderr));
+        }
+    }
+
+    #[cfg(not(target_os = "windows"))]
+    {
+        let output = Command::new("pkill")
+            .arg("-f")
+            .arg("opencode")
+            .output()
+            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+
+        if !output.status.success() {
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            return Err(format!("Failed to kill opencode processes: {}", stderr));
+        }
+
+        println!("opencode process closed");
+    }
+
+    Ok(())
+}
 
 /// 等待窗口完全关闭的辅助函数
 pub fn wait_for_window_closed(
@@ -114,25 +148,35 @@ pub fn create_workspace(workspace: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn execute_opencode_serve(workspace: String) -> Result<String, String> {
+pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
+    use tokio::process::Command;
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
 
-    // 切换到指定目录并执行 opencode serve
-    let output = Command::new("opencode")
-        .arg("serve")
-        .current_dir(target_workspace)
-        .output()
-        .map_err(|e| format!("Failed to execute opencode serve: {}", e))?;
-
-    if output.status.success() {
-        Ok(format!("opencode serve started successfully"))
-        // Ok(format!(
-        //     "opencode serve started successfully in {}",
-        //     target_workspace.display()
-        // ))
-    } else {
-        let stderr = String::from_utf8_lossy(&output.stderr);
-        Err(format!("opencode serve failed with error: {}", stderr))
+    // 先杀死已有的 opencode 进程
+    if let Err(e) = kill_existing_opencode_processes() {
+        eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     }
+
+    // 在后台异步执行 opencode serve
+    tokio::spawn(async move {
+        let output = Command::new("opencode")
+            .arg("serve")
+            .current_dir(target_workspace)
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+
+        if let Ok(output) = output {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                eprintln!("opencode serve failed with error: {}", stderr);
+            }
+        } else {
+            eprintln!("opencode serve execution failed");
+        }
+    });
+    println!("opencode serve started successfully");
+
+    Ok(format!("opencode serve started successfully in ",))
 }

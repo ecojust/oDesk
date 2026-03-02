@@ -38,7 +38,8 @@ export default class Tool {
       console.log(result);
       return result;
     } catch (e) {
-      alert("open_executable: " + e);
+      console.log("open_executable error", e);
+
       throw e;
     }
   }

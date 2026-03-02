@@ -7,6 +7,14 @@
         <!-- <el-tab-pane label="三维壁纸" name="3d" /> -->
         <el-tab-pane label="网页壁纸" name="html" />
       </el-tabs>
+      <div class="test-buttons">
+        <el-button type="primary" size="small" @click="testCreateWorkspace"
+          >测试创建工作区</el-button
+        >
+        <el-button type="success" size="small" @click="testExecuteOpenServe"
+          >测试执行服务</el-button
+        >
+      </div>
     </div>
 
     <div class="stage-content">
@@ -41,6 +49,24 @@ onMounted(() => {
   // Tool.get_system_stats();
   // Tool.open_executable("/Applications/Google Chrome.app");
 });
+
+const testCreateWorkspace = async () => {
+  try {
+    await Tool.create_workspace("test-workspace");
+    alert("创建工作区成功");
+  } catch (e) {
+    alert("创建工作区失败: " + e);
+  }
+};
+
+const testExecuteOpenServe = async () => {
+  try {
+    await Tool.execute_opencode_serve("test-workspace");
+    alert("执行服务成功");
+  } catch (e) {
+    alert("执行服务失败: " + e);
+  }
+};
 </script>
 
 <style lang="less" scoped>
@@ -52,6 +78,13 @@ onMounted(() => {
   background: #f5f5f5;
   padding: 20px;
   box-sizing: border-box;
+
+  .test-buttons {
+    display: flex;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid #e4e7ed;
+  }
 
   .stage-header {
     flex-shrink: 0;
