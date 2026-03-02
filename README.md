@@ -1,8 +1,8 @@
-# oPaper
+# oDesk
 
 壁纸工具
 
-![本地图片](./preview/opaper.png)
+![本地图片](./preview/oDesk.png)
 
 #### 主要功能
 

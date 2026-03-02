@@ -21,7 +21,7 @@ pub fn delete_wallpaper_static(path: String) -> Result<(), String> {
 
 #[tauri::command]
 pub fn read_wallpaper_static() -> Result<Vec<String>, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 构建 wallpaper_static 目录路径
@@ -51,7 +51,7 @@ pub fn read_wallpaper_static() -> Result<Vec<String>, String> {
 
 #[tauri::command]
 pub fn copy_wallpaper_to_wallpaper_static(path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 创建 wallpaper_static 目录
@@ -156,7 +156,7 @@ async fn download_image(url: &str) -> Result<Vec<u8>, String> {
 }
 
 fn save_temp_image(data: &[u8], file_name: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 创建 temp 目录

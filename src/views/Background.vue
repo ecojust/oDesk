@@ -14,7 +14,7 @@ import Config from "@/service/config";
 import { initBabylon, Shader } from "@/service/shader";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 
-import { oPaper } from "../utils/oPaper";
+import { oDesk } from "../utils/oDesk";
 
 const parent = ref();
 const msg = ref([]);
@@ -162,7 +162,7 @@ onUnmounted(() => {
 </script>
 
 <style lang="less">
-/* 无需样式，全部由 oPaper 动态生成 */
+/* 无需样式，全部由 oDesk 动态生成 */
 .background {
   width: 100vw;
   height: 100vh;

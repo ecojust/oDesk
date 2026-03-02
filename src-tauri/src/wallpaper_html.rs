@@ -7,10 +7,10 @@ use crate::fs_helper::{get_appdata_dir, read_folder_folders};
 /// 删除 HTML 壁纸文件夹
 #[tauri::command]
 pub fn delete_wallpaper_html(folder: String) -> Result<(), String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = dirs::data_dir()
         .ok_or("Failed to get data directory")?
-        .join("oPaper");
+        .join("oDesk");
 
     // 构建 wallpaper_html 目录路径
     let wallpaper_dir = base_dir.join("wallpaper_html").join(&folder);
@@ -27,10 +27,10 @@ pub fn delete_wallpaper_html(folder: String) -> Result<(), String> {
 /// 读取本地 HTML 壁纸文件夹列表
 #[tauri::command]
 pub fn read_wallpaper_html() -> Result<Vec<String>, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = dirs::data_dir()
         .ok_or("Failed to get data directory")?
-        .join("oPaper");
+        .join("oDesk");
 
     // 构建 wallpaper_html 目录路径
     let wallpaper_dir = base_dir.join("wallpaper_html");
@@ -51,10 +51,10 @@ pub fn read_wallpaper_html() -> Result<Vec<String>, String> {
 /// 读取 HTML 文件内容
 #[tauri::command]
 pub fn read_wallpaper_html_file(folder_path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = dirs::data_dir()
         .ok_or("Failed to get data directory")?
-        .join("oPaper");
+        .join("oDesk");
 
     // 构建完整的文件路径
     let file_path = base_dir.join(&folder_path).join("index.html");
@@ -69,10 +69,10 @@ pub fn read_wallpaper_html_file(folder_path: String) -> Result<String, String> {
 /// 写入 HTML 文件内容
 #[tauri::command]
 pub fn write_wallpaper_html_file(folder_path: String, html: String) -> Result<(), String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = dirs::data_dir()
         .ok_or("Failed to get data directory")?
-        .join("oPaper");
+        .join("oDesk");
 
     // 构建完整的文件路径
     let file_path = base_dir.join(&folder_path).join("index.html");
@@ -86,7 +86,7 @@ pub fn write_wallpaper_html_file(folder_path: String, html: String) -> Result<()
 /// 写入 HTML 文件内容
 #[tauri::command]
 pub fn save_temp_html(content: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 创建 temp 目录
@@ -112,10 +112,10 @@ pub fn save_wallpaper_html(
     html: String,
     thumbnail: Option<String>,
 ) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = dirs::data_dir()
         .ok_or("Failed to get data directory")?
-        .join("oPaper");
+        .join("oDesk");
 
     // 创建 wallpaper_html 目录
     let path = base_dir.join("wallpaper_html").join(&folder_name);

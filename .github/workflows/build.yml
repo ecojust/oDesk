@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  oPaper:
+  oDesk:
     permissions:
       contents: write
       actions: write
@@ -65,7 +65,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: v-__VERSION__
-          releaseName: "oPaper  v__VERSION__"
+          releaseName: "oDesk  v__VERSION__"
           releaseBody: "See the assets to download and install this version."
           releaseDraft: true
           prerelease: false

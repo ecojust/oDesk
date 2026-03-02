@@ -5,7 +5,7 @@ use crate::fs_helper::{get_appdata_dir, read_folder_folders};
 
 #[tauri::command]
 pub fn delete_wallpaper_shader(folder: String) -> Result<(), String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 构建 wallpaper_shader 目录路径
@@ -22,7 +22,7 @@ pub fn delete_wallpaper_shader(folder: String) -> Result<(), String> {
 
 #[tauri::command]
 pub fn read_wallpaper_shader() -> Result<Vec<String>, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 构建 wallpaper_static 目录路径
@@ -40,7 +40,7 @@ pub fn save_wallpaper_shader(
     glsl: String,
     thumbnail: String,
 ) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     // 创建 wallpaper_shader 目录

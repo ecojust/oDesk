@@ -1,12 +1,12 @@
 use std::fs;
 use std::process::Command;
 
-// 获取 appdata 目录下的 oPaper 路径
+// 获取 appdata 目录下的 oDesk 路径
 pub fn get_appdata_dir() -> Result<std::path::PathBuf, String> {
     let app_data =
         dirs::data_dir().ok_or_else(|| "Failed to get app data directory".to_string())?;
 
-    let app_dir = app_data.join("oPaper");
+    let app_dir = app_data.join("oDesk");
 
     // 确保目录存在
     fs::create_dir_all(&app_dir)
@@ -17,7 +17,7 @@ pub fn get_appdata_dir() -> Result<std::path::PathBuf, String> {
 
 #[tauri::command]
 pub fn open_folder(path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     let resource_dir = base_dir.join(path);
@@ -56,7 +56,7 @@ pub fn open_folder(path: String) -> Result<String, String> {
 
 #[tauri::command]
 pub fn write_file(path: String, content: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     let target_path = base_dir.join(path);
@@ -67,7 +67,7 @@ pub fn write_file(path: String, content: String) -> Result<String, String> {
 
 #[tauri::command]
 pub fn read_file(path: String) -> Result<String, String> {
-    // 获取 appdata 目录下的 oPaper 路径
+    // 获取 appdata 目录下的 oDesk 路径
     let base_dir = get_appdata_dir()?;
 
     let target_path = base_dir.join(path);
