@@ -14,6 +14,10 @@
         <el-button type="success" size="small" @click="testExecuteOpenServe"
           >测试执行服务</el-button
         >
+
+        <el-button type="warning" size="small" @click="testKillOpenServe"
+          >测试销毁服务</el-button
+        >
       </div>
     </div>
 
@@ -31,7 +35,7 @@ import StaticWallpaper from "./wallpaperSettings/StaticWallpaper.vue";
 import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
-import Tool from "@/service/tool";
+import Opencode from "@/service/shell/opencode";
 
 const activeTab = ref("static");
 
@@ -44,15 +48,11 @@ const components = {
 
 const activeComponent = computed(() => components[activeTab.value] || null);
 
-onMounted(() => {
-  //
-  // Tool.get_system_stats();
-  // Tool.open_executable("/Applications/Google Chrome.app");
-});
+onMounted(() => {});
 
 const testCreateWorkspace = async () => {
   try {
-    await Tool.create_workspace("test-workspace");
+    await Opencode.create_workspace("test-workspace");
     alert("创建工作区成功");
   } catch (e) {
     alert("创建工作区失败: " + e);
@@ -61,8 +61,17 @@ const testCreateWorkspace = async () => {
 
 const testExecuteOpenServe = async () => {
   try {
-    await Tool.execute_opencode_serve("test-workspace");
+    await Opencode.execute_opencode_serve("test-workspace");
     alert("执行服务成功");
+  } catch (e) {
+    alert("执行服务失败: " + e);
+  }
+};
+
+const testKillOpenServe = async () => {
+  try {
+    await Opencode.kill_existing_opencode_processes();
+    alert("kill服务成功");
   } catch (e) {
     alert("执行服务失败: " + e);
   }

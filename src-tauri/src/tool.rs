@@ -7,7 +7,8 @@ use tauri::Manager;
 use crate::fs_helper::get_appdata_dir;
 
 // Helper function to kill existing opencode processes
-fn kill_existing_opencode_processes() -> Result<(), String> {
+#[tauri::command]
+pub fn kill_existing_opencode_processes() -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
         let output = Command::new("taskkill")
@@ -149,6 +150,8 @@ pub fn create_workspace(workspace: String) -> Result<String, String> {
 
 #[tauri::command]
 pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
+    println!("execute_opencode_serve");
+
     use tokio::process::Command;
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
@@ -176,7 +179,6 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             eprintln!("opencode serve execution failed");
         }
     });
-    println!("opencode serve started successfully");
 
-    Ok(format!("opencode serve started successfully in ",))
+    Ok(format!("opencode serve started successfully in "))
 }

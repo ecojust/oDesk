@@ -13,11 +13,14 @@ import { ref, onMounted, onUnmounted } from "vue";
 import Config from "@/service/config";
 import { initBabylon, Shader } from "@/service/shader";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
+import Opencode from "@/service/shell/opencode";
 
 const parent = ref();
 const msg = ref([]);
 let instance = null;
 let iframe = null;
+
+const config = ref({});
 
 // 向 iframe 发送消息
 const sendToIframe = (data) => {
@@ -47,6 +50,30 @@ const handleInvoke = async (id, method, payload) => {
           data: result,
           msg: "get return from shell",
         });
+        break;
+
+      case "opencode":
+        if (config.value.mode == "html") {
+          const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
+          // const workspace = htmlPath.split('wallpaper_html')[1]
+
+          await Opencode.create_workspace();
+          await Opencode.execute_opencode_serve();
+          sendToIframe({
+            id,
+            code: 200,
+            data: result,
+            msg: "opencode server start successful!",
+          });
+        } else {
+          sendToIframe({
+            id,
+            code: 403,
+            data: null,
+            msg: "current mode don't support opencode server!",
+          });
+        }
+
         break;
 
       default:
@@ -96,17 +123,15 @@ const initBackground = async () => {
   if (!parent.value) {
     return;
   }
-  const config = await Config.readConfig();
-  msg.value.push("readConfig");
 
-  switch (config.mode) {
+  switch (config.value.mode) {
     case "shader":
       msg.value.push("shader");
 
-      msg.value.push(config.shaderPath);
+      msg.value.push(config.value.shaderPath);
 
       // const code = await fetch(config.shaderPath).then((r) => r.text());
-      const code = await Shader.getGlslContent(config.shaderPath);
+      const code = await Shader.getGlslContent(config.value.shaderPath);
 
       msg.value.push("code");
 
@@ -130,7 +155,7 @@ const initBackground = async () => {
       msg.value.push(config.htmlPath);
 
       iframe = document.createElement("iframe");
-      iframe.src = convertFileSrc(config.htmlPath);
+      iframe.src = convertFileSrc(config.value.htmlPath);
       iframe.border = "none";
       iframe.style.cssText =
         "width:100%;height:100%;display:block;border-width:0px;";
@@ -140,13 +165,15 @@ const initBackground = async () => {
 
       break;
     default:
-      console.warn("Unknown background type:", type);
+      console.warn("Unknown background type:", config.value.mode);
   }
 };
 
-onMounted(() => {
+onMounted(async () => {
   msg.value.push("onMounted");
-
+  config.value = await Config.readConfig();
+  console.log("config.value", config.value);
+  msg.value.push("readConfig");
   try {
     initBackground();
   } catch (error) {
