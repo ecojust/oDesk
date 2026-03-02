@@ -14,6 +14,7 @@ import Config from "@/service/config";
 import { initBabylon, Shader } from "@/service/shader";
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import Opencode from "@/service/shell/opencode";
+import { onBeforeUnmount } from "vue";
 
 const parent = ref();
 const msg = ref([]);
@@ -36,7 +37,7 @@ const handleInvoke = async (id, method, payload) => {
   try {
     switch (method) {
       case "get_system_stats":
-      case "open_executable":
+      case "open_executable": {
         // msg.value.push("invoke", payload);
 
         const result = await invoke(method, payload || {});
@@ -51,14 +52,15 @@ const handleInvoke = async (id, method, payload) => {
           msg: "get return from shell",
         });
         break;
+      }
 
-      case "opencode":
+      case "opencode": {
         if (config.value.mode == "html") {
           const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
-          // const workspace = htmlPath.split('wallpaper_html')[1]
+          const workspace = htmlPath.split("wallpaper_html")[1].split("/")[1];
 
-          await Opencode.create_workspace();
-          await Opencode.execute_opencode_serve();
+          await Opencode.create_workspace(workspace);
+          const result = await Opencode.execute_opencode_serve(workspace);
           sendToIframe({
             id,
             code: 200,
@@ -75,6 +77,7 @@ const handleInvoke = async (id, method, payload) => {
         }
 
         break;
+      }
 
       default:
         console.log(`${method}: invalid method request!`);
@@ -87,7 +90,7 @@ const handleInvoke = async (id, method, payload) => {
         break;
     }
   } catch (error) {
-    console.log(`${method}: something error in shell`);
+    console.log(`${method}: something error in shell`, error);
     sendToIframe({
       id,
       code: 500,
@@ -181,9 +184,12 @@ onMounted(async () => {
   }
 });
 
-onUnmounted(() => {
+onBeforeUnmount(() => {
   iframe && window.removeEventListener("message", handleMessage);
+  Opencode.kill_existing_opencode_processes();
 });
+
+onUnmounted(() => {});
 </script>
 
 <style lang="less">
