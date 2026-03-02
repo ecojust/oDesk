@@ -11,7 +11,7 @@ mod wallpaper_static;
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{open_folder, read_file};
-use tool::{get_system_stats, open_executable};
+use tool::{create_workspace, get_system_stats, open_executable};
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
 use wallpaper_html::{
@@ -69,7 +69,8 @@ pub fn run() {
             destroy_animation_wallpaper,
             // tool
             get_system_stats,
-            open_executable
+            open_executable,
+            create_workspace
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

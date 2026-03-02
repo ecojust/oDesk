@@ -138,3 +138,19 @@ pub fn read_folder_folders(path: String) -> Result<Vec<String>, String> {
 
     Ok(folders)
 }
+
+#[tauri::command]
+pub fn create_directory(path: String) -> Result<String, String> {
+    // 获取 appdata 目录下的 oPaper 路径
+    let base_dir = get_appdata_dir()?;
+
+    let target_path = base_dir.join(path);
+
+    // 创建目录，如果已存在则不会失败
+    fs::create_dir_all(&target_path).map_err(|e| format!("Failed to create directory: {}", e))?;
+
+    Ok(format!(
+        "Directory created successfully: {}",
+        target_path.display()
+    ))
+}
