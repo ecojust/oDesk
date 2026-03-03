@@ -77,6 +77,28 @@ const handleInvoke = async (id, method, payload) => {
         break;
       }
 
+      case "open_workspace": {
+        if (config.value.mode == "html") {
+          const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
+          const workspace = htmlPath.split("wallpaper_html")[1].split("/")[1];
+          await Opencode.open_workspace(workspace);
+          sendToIframe({
+            id,
+            code: 200,
+            data: null,
+            msg: "open workspace successful!",
+          });
+        } else {
+          sendToIframe({
+            id,
+            code: 403,
+            data: null,
+            msg: "current mode don't support open workspace!",
+          });
+        }
+        break;
+      }
+
       case "opencode": {
         if (config.value.mode == "html") {
           const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html

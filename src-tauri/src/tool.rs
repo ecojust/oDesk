@@ -4,7 +4,7 @@ use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
 
-use crate::fs_helper::get_appdata_dir;
+use crate::fs_helper::{get_appdata_dir, open_folder};
 
 // Helper function to kill existing opencode processes
 #[tauri::command]
@@ -131,6 +131,12 @@ pub fn open_executable(path: String) -> Result<String, String> {
     }
 
     Ok(format!("Successfully opened: {}", path))
+}
+
+#[tauri::command]
+pub fn open_workspace(workspace: String) -> Result<String, String> {
+    let target_folder = format!("workspaces/{}", workspace);
+    return open_folder(target_folder);
 }
 
 #[tauri::command]

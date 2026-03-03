@@ -13,7 +13,7 @@ use fetch::{fetch_json, fetch_request};
 use fs_helper::{open_folder, read_file};
 use tool::{
     create_workspace, execute_opencode_serve, get_system_stats, kill_existing_opencode_processes,
-    open_executable,
+    open_executable, open_workspace,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -75,6 +75,7 @@ pub fn run() {
             get_system_stats,
             open_executable,
             create_workspace,
+            open_workspace,
             execute_opencode_serve,
             kill_existing_opencode_processes
         ])

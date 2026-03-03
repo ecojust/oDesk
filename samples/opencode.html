@@ -514,7 +514,7 @@
           });
           console.log("createSession", response);
 
-          // return response;
+          return response.data.id;
         } catch (error) {
           console.error("Failed to create session:", error);
           throw error;
