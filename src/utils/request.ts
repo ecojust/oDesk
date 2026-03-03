@@ -2,12 +2,13 @@ import { invoke } from "@tauri-apps/api/core";
 
 export default class RequestService {
   static async postBody(option: { url: string; data: Object }) {
+    console.log("postbody", option.data);
     try {
       const response = await invoke("fetch_json", {
         url: option.url,
         options: {
           method: "POST",
-          data: option.data,
+          body: JSON.stringify(option.data || {}),
         },
       });
       return response;

@@ -294,13 +294,11 @@
         <span class="close-btn" onclick="hidePanels()">&times;</span>
       </div>
       <div class="search-bar">
-        <input
-          type="text"
-          id="search-input"
-          placeholder="搜索记忆..."
-          oninput="renderMemories()"
-        />
+        <input type="text" id="search-input" placeholder="搜索记忆..." />
       </div>
+      <button class="primary-btn" onclick="searchMemory()" style="width: 100%">
+        搜索
+      </button>
       <div id="memory-list">
         <!-- 记忆条目动态渲染 -->
       </div>
@@ -384,6 +382,76 @@
     <!-- Endregion -->
 
     <script>
+      const getSessionList = async () => {
+        try {
+          const response = await invoke("get", {
+            url: "http://127.0.0.1:4096/session",
+          });
+          console.log("getSessionList", response);
+
+          // return response;
+        } catch (error) {
+          console.error("Failed to create session:", error);
+          throw error;
+        }
+      };
+
+      let sessionId = "";
+      const createSession = async () => {
+        try {
+          const response = await invoke("postBody", {
+            url: "http://127.0.0.1:4096/session",
+          });
+          sessionId = response.data.id;
+          return sessionId;
+        } catch (error) {
+          console.error("Failed to create session:", error);
+          throw error;
+        }
+      };
+
+      const sessionMessage = async (message) => {
+        try {
+          console.log("sessionMessage", sessionId, message);
+
+          const response = await invoke("postBody", {
+            url: `http://127.0.0.1:4096/session/${sessionId}/message`,
+            data: {
+              agent: "build",
+              model: {
+                modelID: "big-pickle",
+                providerID: "opencode",
+              },
+              parts: [
+                {
+                  type: "text",
+                  text: message,
+                },
+              ],
+            },
+          });
+
+          console.log(response);
+        } catch (error) {
+          console.error("Failed to send session message:", error);
+          throw error;
+        }
+      };
+
+      window.onload = async () => {
+        await invoke("opencode");
+
+        setTimeout(async () => {
+          const session = await createSession();
+          // await invoke("create_workspace_file", { file: "记忆便签.md" });
+          await invoke("open_workspace");
+
+          console.log(session);
+        }, 3000);
+      };
+    </script>
+
+    <script>
       const appIcon = document.getElementById("app-icon");
       const menu = document.getElementById("menu");
       const overlay = document.getElementById("overlay");
@@ -421,7 +489,6 @@
         hidePanels();
         searchPanel.style.display = "flex";
         modalOverlay.style.display = "block";
-        renderMemories();
       }
 
       function hidePanels() {
@@ -433,56 +500,30 @@
       }
 
       // 数据管理
-      function getMemories() {
-        const data = localStorage.getItem("desktop_memories");
-        return data ? JSON.parse(data) : [];
-      }
 
-      function saveMemory() {
+      async function saveMemory() {
         const content = noteInput.value.trim();
         if (!content) return;
 
-        const memories = getMemories();
-        memories.unshift({
-          id: Date.now(),
-          content: content,
-          time: new Date().toLocaleString(),
-        });
+        await sessionMessage(
+          `往"记忆便签.md"中新增一条记录：${content.trim()};记住后面要加上时间戳`,
+        );
 
-        localStorage.setItem("desktop_memories", JSON.stringify(memories));
         noteInput.value = "";
         hidePanels();
         alert("记忆已存入！");
       }
 
-      function deleteMemory(id) {
-        if (confirm("确定要抹除这段记忆吗？")) {
-          const memories = getMemories().filter((m) => m.id !== id);
-          localStorage.setItem("desktop_memories", JSON.stringify(memories));
-          renderMemories();
-        }
-      }
+      async function searchMemory() {
+        const content = searchInput.value.trim();
+        if (!content) return;
 
-      function renderMemories() {
-        const keyword = searchInput.value.toLowerCase();
-        const memories = getMemories().filter((m) =>
-          m.content.toLowerCase().includes(keyword),
+        await sessionMessage(
+          `在"记忆便签.md"查找一下相关问题：${content.trim()}`,
         );
 
-        memoryList.innerHTML = memories.length
-          ? ""
-          : '<div style="text-align:center;color:#999;padding:20px;">空空如也</div>';
-
-        memories.forEach((m) => {
-          const item = document.createElement("div");
-          item.className = "memory-item";
-          item.innerHTML = `
-                    <div class="memory-content">${escapeHtml(m.content)}</div>
-                    <div class="memory-time">${m.time}</div>
-                    <div class="delete-btn" onclick="deleteMemory(${m.id})">删除</div>
-                `;
-          memoryList.appendChild(item);
-        });
+        searchInput.value = "";
+        hidePanels();
       }
 
       function escapeHtml(text) {
@@ -490,72 +531,6 @@
         div.textContent = text;
         return div.innerHTML;
       }
-    </script>
-
-    <script>
-      const getSessionList = async () => {
-        try {
-          const response = await invoke("get", {
-            url: "http://127.0.0.1:4096/session",
-          });
-          console.log("getSessionList", response);
-
-          // return response;
-        } catch (error) {
-          console.error("Failed to create session:", error);
-          throw error;
-        }
-      };
-
-      const createSession = async () => {
-        try {
-          const response = await invoke("postBody", {
-            url: "http://127.0.0.1:4096/session",
-          });
-          console.log("createSession", response);
-
-          return response.data.id;
-        } catch (error) {
-          console.error("Failed to create session:", error);
-          throw error;
-        }
-      };
-
-      const sessionMessage = async (sessionId, message) => {
-        try {
-          const response = await invoke("postBody", {
-            url: `http://127.0.0.1:4096/session/${sessionId}/message`,
-            data: {
-              agent: "build",
-              model: {
-                modelID: "big-pickle",
-                providerID: "opencode",
-              },
-              parts: [
-                {
-                  type: "text",
-                  text: message,
-                },
-              ],
-            },
-          });
-
-          // console.log(response);
-        } catch (error) {
-          console.error("Failed to send session message:", error);
-          throw error;
-        }
-      };
-
-      window.onload = async () => {
-        await invoke("opencode");
-
-        setTimeout(async () => {
-          const session = await createSession();
-          // getSessionList();
-          console.log(session);
-        }, 3000);
-      };
     </script>
   </body>
 </html>

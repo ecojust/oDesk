@@ -50,6 +50,8 @@ pub async fn fetch_request(
 
     // 添加请求体
     if let Some(body) = opts.body {
+        println!("fetch request: body= {}", body);
+
         request_builder = request_builder.body(body);
     }
 
