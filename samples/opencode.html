@@ -493,64 +493,40 @@
     </script>
 
     <script>
-      const createSession = async (baseUrl = "http://127.0.0.1:4096") => {
+      const createSession = async () => {
         try {
-          const response = await fetch(`${baseUrl}/session`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            timeout: 10000,
+          const response = await invoke("postBody", {
+            url: "http://127.0.0.1:4096/session",
           });
+          console.log("createSession", response);
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const res = await response.json();
-          console.log(res);
-          return res;
+          // return response;
         } catch (error) {
           console.error("Failed to create session:", error);
           throw error;
         }
       };
 
-      const sessionMessage = async (
-        sessionId,
-        message,
-        baseUrl = "http://127.0.0.1:4096",
-      ) => {
+      const sessionMessage = async (sessionId, message) => {
         try {
-          const response = await fetch(
-            `${baseUrl}/session/${sessionId}/message`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
+          const response = await invoke("postBody", {
+            url: `http://127.0.0.1:4096/session/${sessionId}/message`,
+            data: {
+              agent: "build",
+              model: {
+                modelID: "big-pickle",
+                providerID: "opencode",
               },
-              body: JSON.stringify({
-                agent: "build",
-                model: {
-                  modelID: "big-pickle",
-                  providerID: "opencode",
+              parts: [
+                {
+                  type: "text",
+                  text: message,
                 },
-                parts: [
-                  {
-                    type: "text",
-                    text: message,
-                  },
-                ],
-              }),
-              timeout: 10000,
+              ],
             },
-          );
+          });
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          return await response.json();
+          // console.log(response);
         } catch (error) {
           console.error("Failed to send session message:", error);
           throw error;
@@ -561,7 +537,7 @@
         await invoke("opencode");
 
         const session = await createSession();
-        console.log(client);
+        // console.log(session);
       };
     </script>
   </body>

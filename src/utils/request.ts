@@ -10,9 +10,13 @@ export default class RequestService {
         },
         body: JSON.stringify(option.data || {}),
       });
+
+      console.log("RequestService postBody", response);
       const data = await response.json();
       return data;
     } catch (error) {
+      console.log("RequestService postBody error", error);
+
       return null;
     }
   }
