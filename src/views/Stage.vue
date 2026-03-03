@@ -36,7 +36,7 @@ import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
 import Opencode from "@/service/shell/opencode";
-// import RequestService from "@/utils/request";
+import RequestService from "@/utils/request";
 
 const activeTab = ref("static");
 
@@ -50,10 +50,10 @@ const components = {
 const activeComponent = computed(() => components[activeTab.value] || null);
 
 onMounted(async () => {
-  // const res = await RequestService.postBody({
-  //   url: "http://127.0.0.1:4096/session",
-  // });
-  // console.log(res);
+  const res = await RequestService.postBody({
+    url: "http://127.0.0.1:4096/session",
+  });
+  console.log(res);
 });
 
 const testCreateWorkspace = async () => {

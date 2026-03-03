@@ -493,6 +493,20 @@
     </script>
 
     <script>
+      const getSessionList = async () => {
+        try {
+          const response = await invoke("get", {
+            url: "http://127.0.0.1:4096/session",
+          });
+          console.log("getSessionList", response);
+
+          // return response;
+        } catch (error) {
+          console.error("Failed to create session:", error);
+          throw error;
+        }
+      };
+
       const createSession = async () => {
         try {
           const response = await invoke("postBody", {
@@ -536,7 +550,8 @@
       window.onload = async () => {
         await invoke("opencode");
 
-        const session = await createSession();
+        // const session = await createSession();
+        getSessionList();
         // console.log(session);
       };
     </script>
