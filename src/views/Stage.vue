@@ -7,7 +7,7 @@
         <!-- <el-tab-pane label="三维壁纸" name="3d" /> -->
         <el-tab-pane label="网页壁纸" name="html" />
       </el-tabs>
-      <div class="test-buttons">
+      <!-- <div class="test-buttons">
         <el-button type="primary" size="small" @click="testCreateWorkspace"
           >测试创建工作区</el-button
         >
@@ -18,7 +18,7 @@
         <el-button type="warning" size="small" @click="testKillOpenServe"
           >测试销毁服务</el-button
         >
-      </div>
+      </div> -->
     </div>
 
     <div class="stage-content">
@@ -36,6 +36,7 @@ import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
 import Opencode from "@/service/shell/opencode";
+// import RequestService from "@/utils/request";
 
 const activeTab = ref("static");
 
@@ -48,7 +49,12 @@ const components = {
 
 const activeComponent = computed(() => components[activeTab.value] || null);
 
-onMounted(() => {});
+onMounted(async () => {
+  // const res = await RequestService.postBody({
+  //   url: "http://127.0.0.1:4096/session",
+  // });
+  // console.log(res);
+});
 
 const testCreateWorkspace = async () => {
   try {

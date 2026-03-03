@@ -16,6 +16,8 @@ import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import Opencode from "@/service/shell/opencode";
 import { onBeforeUnmount } from "vue";
 
+import RequestService from "@/utils/request";
+
 const parent = ref();
 const msg = ref([]);
 let instance = null;
@@ -36,6 +38,27 @@ const handleInvoke = async (id, method, payload) => {
 
   try {
     switch (method) {
+      case "get": {
+        const result = await RequestService.get(payload);
+        sendToIframe({
+          id,
+          code: 200,
+          data: result,
+          msg: "get return from shell",
+        });
+        break;
+      }
+      case "postBody": {
+        const result = await RequestService.postBody(payload);
+        sendToIframe({
+          id,
+          code: 200,
+          data: result,
+          msg: "get return from shell",
+        });
+        break;
+      }
+
       case "get_system_stats":
       case "open_executable": {
         // msg.value.push("invoke", payload);

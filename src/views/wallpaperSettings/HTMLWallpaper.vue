@@ -198,7 +198,8 @@ const handleMessage = async (event) => {
 
   // 处理调用请求
   if (data && data.id && data.method) {
-    await handleInvoke(data.id, data.method, data.payload);
+    // await handleInvoke(data.id, data.method, data.payload);
+
     return;
   }
 };
