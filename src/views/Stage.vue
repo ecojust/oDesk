@@ -50,10 +50,10 @@ const components = {
 const activeComponent = computed(() => components[activeTab.value] || null);
 
 onMounted(async () => {
-  const res = await RequestService.postBody({
-    url: "http://127.0.0.1:4096/session",
-  });
-  console.log(res);
+  // const res = await RequestService.postBody({
+  //   url: "http://127.0.0.1:4096/session",
+  // });
+  // console.log(res);
 });
 
 const testCreateWorkspace = async () => {

@@ -312,7 +312,7 @@
       const pendingCallbacks = new Map();
 
       const generateId = () =>
-        "msg_" + Date.now() + "_" + +Math.random().toString(36).substr(2, 9);
+        "msg_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
 
       window.addEventListener("message", async (event) => {
         const data = event.data;
@@ -550,9 +550,11 @@
       window.onload = async () => {
         await invoke("opencode");
 
-        // const session = await createSession();
-        getSessionList();
-        // console.log(session);
+        setTimeout(async () => {
+          const session = await createSession();
+          // getSessionList();
+          console.log(session);
+        }, 3000);
       };
     </script>
   </body>

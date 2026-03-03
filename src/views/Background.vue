@@ -50,8 +50,6 @@ const handleInvoke = async (id, method, payload) => {
       }
       case "postBody": {
         const result = await RequestService.postBody(payload);
-
-        console.log("postBody", payload, result);
         sendToIframe({
           id,
           code: 200,
