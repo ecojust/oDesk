@@ -308,7 +308,6 @@
 
     <!-- 内置的用于通信的sdk不要移除 -->
     <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@opencode-ai/sdk@1.2.15/dist/index.min.js"></script>
     <script>
       const pendingCallbacks = new Map();
 
@@ -491,10 +490,77 @@
         div.textContent = text;
         return div.innerHTML;
       }
+    </script>
+
+    <script>
+      const createSession = async (baseUrl = "http://127.0.0.1:4096") => {
+        try {
+          const response = await fetch(`${baseUrl}/session`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            timeout: 10000,
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const res = await response.json();
+          console.log(res);
+          return res;
+        } catch (error) {
+          console.error("Failed to create session:", error);
+          throw error;
+        }
+      };
+
+      const sessionMessage = async (
+        sessionId,
+        message,
+        baseUrl = "http://127.0.0.1:4096",
+      ) => {
+        try {
+          const response = await fetch(
+            `${baseUrl}/session/${sessionId}/message`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                agent: "build",
+                model: {
+                  modelID: "big-pickle",
+                  providerID: "opencode",
+                },
+                parts: [
+                  {
+                    type: "text",
+                    text: message,
+                  },
+                ],
+              }),
+              timeout: 10000,
+            },
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          return await response.json();
+        } catch (error) {
+          console.error("Failed to send session message:", error);
+          throw error;
+        }
+      };
 
       window.onload = async () => {
         await invoke("opencode");
-        const client = new Opencode();
+
+        const session = await createSession();
         console.log(client);
       };
     </script>
