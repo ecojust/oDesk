@@ -38,6 +38,10 @@
         {
           "name": "pkill",
           "args": ["-f", "opencode"]
+        },
+        {
+          "name": "yarn",
+          "args": ["run", "serve"]
         }
       ]
     }
