@@ -100,45 +100,56 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
         eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     }
 
-    println!("tokio::spawn opencode_serve");
+    let output = Command::new("opencode")
+        .arg("serve")
+        .current_dir(target_workspace)
+        .output()
+        .await
+        .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+
+    // println!("execute_opencode_serve ok------");
+
+    // println!("tokio::spawn opencode_serve");
+
+    // Ok("3344".to_string());
 
     // 在后台异步执行 opencode serve
-    tokio::spawn(async move {
-        #[cfg(target_os = "windows")]
-        let output = Command::new("cmd")
-            .args(["/C", "opencode serve"])
-            .current_dir(&target_workspace)
-            .output()
-            .await
-            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+    // tokio::spawn(async move {
+    //     #[cfg(target_os = "windows")]
+    //     let output = Command::new("cmd")
+    //         .args(["/C", "opencode serve"])
+    //         .current_dir(&target_workspace)
+    //         .output()
+    //         .await
+    //         .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-        // #[cfg(not(target_os = "windows"))]
-        // let output = Command::new("sh")
-        //     .args(["-c", "opencode serve"])
-        //     .current_dir(&target_workspace)
-        //     .output()
-        //     .await
-        //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
-        let output = Command::new("opencode")
-            .arg("serve")
-            .current_dir(target_workspace)
-            .output()
-            .await
-            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+    //     // #[cfg(not(target_os = "windows"))]
+    //     // let output = Command::new("sh")
+    //     //     .args(["-c", "opencode serve"])
+    //     //     .current_dir(&target_workspace)
+    //     //     .output()
+    //     //     .await
+    //     //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+    //     let output = Command::new("opencode")
+    //         .arg("serve")
+    //         .current_dir(target_workspace)
+    //         .output()
+    //         .await
+    //         .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-        println!("execute_opencode_serve ok------");
+    //     println!("execute_opencode_serve ok------");
 
-        if let Ok(output) = output {
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                println!("opencode serve failed with error: {}", stderr);
-            } else {
-                println!("execute_opencode_serve ok");
-            }
-        } else {
-            println!("opencode serve execution failed");
-        }
-    });
+    //     if let Ok(output) = output {
+    //         if !output.status.success() {
+    //             let stderr = String::from_utf8_lossy(&output.stderr);
+    //             println!("opencode serve failed with error: {}", stderr);
+    //         } else {
+    //             println!("execute_opencode_serve ok");
+    //         }
+    //     } else {
+    //         println!("opencode serve execution failed");
+    //     }
+    // });
 
     Ok(format!("opencode serve started successfully in "))
 }
