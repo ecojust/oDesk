@@ -112,10 +112,16 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .await
             .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-        #[cfg(not(target_os = "windows"))]
-        let output = Command::new("sh")
-            .args(["-c", "opencode serve"])
-            .current_dir(&target_workspace)
+        // #[cfg(not(target_os = "windows"))]
+        // let output = Command::new("sh")
+        //     .args(["-c", "opencode serve"])
+        //     .current_dir(&target_workspace)
+        //     .output()
+        //     .await
+        //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+        let output = Command::new("opencode")
+            .arg("serve")
+            .current_dir(target_workspace)
             .output()
             .await
             .map_err(|e| format!("Failed to execute opencode serve: {}", e));

@@ -44,6 +44,16 @@
           "args": ["run", "serve"]
         }
       ]
+    },
+    {
+      "identifier": "shell:allow-spawn",
+      "allow": [
+        {
+          "name": "opencode",
+          "cmd": "opencode",
+          "args": ["serve"]
+        }
+      ]
     }
   ],
   "tauri": {
