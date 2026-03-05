@@ -1,10 +1,7 @@
 use serde::{Deserialize, Serialize};
-use std::fs;
 use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
-
-use crate::fs_helper::{get_appdata_dir, open_folder};
 
 /// 等待窗口完全关闭的辅助函数
 pub fn wait_for_window_closed(

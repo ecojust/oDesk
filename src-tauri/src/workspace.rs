@@ -1,9 +1,6 @@
 use crate::fs_helper::{get_appdata_dir, open_folder};
-use serde::{Deserialize, Serialize};
 use std::fs;
 use std::process::Command;
-use sysinfo::System;
-use tauri::Manager;
 
 // Helper function to kill existing opencode processes
 #[tauri::command]
@@ -107,9 +104,18 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
 
     // 在后台异步执行 opencode serve
     tokio::spawn(async move {
-        let output = Command::new("opencode")
-            .arg("serve")
-            .current_dir(target_workspace)
+        #[cfg(target_os = "windows")]
+        let output = Command::new("cmd")
+            .args(["/C", "opencode serve"])
+            .current_dir(&target_workspace)
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+
+        #[cfg(not(target_os = "windows"))]
+        let output = Command::new("sh")
+            .args(["-c", "opencode serve"])
+            .current_dir(&target_workspace)
             .output()
             .await
             .map_err(|e| format!("Failed to execute opencode serve: {}", e));
