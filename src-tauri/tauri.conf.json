@@ -38,5 +38,17 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
+  },
+  "permissions": {
+    "shell": {
+      "scope": {
+        "allow": ["taskkill", "pkill", "opencode"]
+      }
+    },
+    "fs": {
+      "scope": {
+        "allow": ["$APPDATA/**", "$RESOURCE/**", "$APPCACHE/**"]
+      }
+    }
   }
 }

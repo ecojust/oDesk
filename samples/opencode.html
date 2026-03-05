@@ -773,6 +773,11 @@
     <!-- Endregion -->
 
     <script>
+      const sleep = async (t) => {
+        return new Promise((resolve) => {
+          setTimeout(resolve, t);
+        });
+      };
       const getSessionList = async () => {
         try {
           const response = await invoke("get", {
@@ -793,6 +798,8 @@
           const response = await invoke("postBody", {
             url: "http://127.0.0.1:4096/session",
           });
+
+          console.log("createSession", response);
           sessionId = response.data.id;
           return sessionId;
         } catch (error) {
@@ -832,15 +839,14 @@
       };
 
       window.onload = async () => {
+        await sleep(3000);
         await invoke("opencode");
+        await sleep(3000);
+        const session = await createSession();
+        console.log(session);
 
-        setTimeout(async () => {
-          const session = await createSession();
-          // await invoke("create_workspace_file", { file: "记忆便签.md" });
-          await invoke("open_workspace");
-
-          console.log(session);
-        }, 3000);
+        // await invoke("create_workspace_file", { file: "记忆便签.md" });
+        await invoke("open_workspace");
       };
     </script>
 
