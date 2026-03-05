@@ -30,8 +30,6 @@ pub fn kill_existing_opencode_processes() -> Result<(), String> {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(format!("Failed to kill opencode processes: {}", stderr));
         }
-
-        println!("opencode process closed");
     }
 
     Ok(())
@@ -91,7 +89,7 @@ pub fn workspace_file_insert_text(
 
 #[tauri::command]
 pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
-    println!("execute_opencode_serve");
+    println!("--------------execute_opencode_serve------------");
 
     use tokio::process::Command;
     let base_dir = get_appdata_dir()?;
@@ -101,6 +99,8 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
     if let Err(e) = kill_existing_opencode_processes() {
         eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     }
+
+    println!("tokio::spawn opencode_serve");
 
     // 在后台异步执行 opencode serve
     tokio::spawn(async move {
@@ -120,13 +120,17 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .await
             .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
+        println!("execute_opencode_serve ok------");
+
         if let Ok(output) = output {
             if !output.status.success() {
                 let stderr = String::from_utf8_lossy(&output.stderr);
-                eprintln!("opencode serve failed with error: {}", stderr);
+                println!("opencode serve failed with error: {}", stderr);
+            } else {
+                println!("execute_opencode_serve ok");
             }
         } else {
-            eprintln!("opencode serve execution failed");
+            println!("opencode serve execution failed");
         }
     });
 
