@@ -26,7 +26,15 @@
         "enable": true,
         "scope": ["$APPCACHE/**", "$APPDATA/**", "$RESOURCE/**", "**"]
       }
-    }
+    },
+    "capabilities": [
+      {
+        "identifier": "my-capability",
+        "description": "My application capability used for all windows",
+        "windows": ["*"],
+        "permissions": ["taskkill", "pkill", "opencode"]
+      }
+    ]
   },
   "bundle": {
     "active": true,
@@ -38,17 +46,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "permissions": {
-    "shell": {
-      "scope": {
-        "allow": ["taskkill", "pkill", "opencode"]
-      }
-    },
-    "fs": {
-      "scope": {
-        "allow": ["$APPDATA/**", "$RESOURCE/**", "$APPCACHE/**"]
-      }
-    }
   }
 }
