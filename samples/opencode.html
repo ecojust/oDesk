@@ -30,7 +30,7 @@
       /* 右上角应用Icon */
       #app-icon {
         position: absolute;
-        top: 20px;
+        top: 40px;
         right: 20px;
         width: 60px;
         height: 60px;
@@ -181,6 +181,30 @@
       #memory-list {
         overflow-y: auto;
         max-height: 300px;
+      }
+
+      .loading {
+        text-align: center;
+        color: #999;
+        padding: 20px;
+        font-style: italic;
+      }
+
+      .search-result {
+        padding: 12px;
+        border-bottom: 1px solid #eee;
+        position: relative;
+      }
+
+      .search-result:last-child {
+        border-bottom: none;
+      }
+
+      .search-content {
+        font-size: 14px;
+        color: #444;
+        line-height: 1.6;
+        word-break: break-all;
       }
 
       .memory-item {
@@ -412,8 +436,6 @@
 
       const sessionMessage = async (message) => {
         try {
-          console.log("sessionMessage", sessionId, message);
-
           const response = await invoke("postBody", {
             url: `http://127.0.0.1:4096/session/${sessionId}/message`,
             data: {
@@ -430,8 +452,12 @@
               ],
             },
           });
+          console.log("sessionMessage answer", response);
 
-          console.log(response);
+          return (
+            response?.data?.parts?.find((part) => part.type == "text")?.text ||
+            ""
+          );
         } catch (error) {
           console.error("Failed to send session message:", error);
           throw error;
@@ -489,6 +515,7 @@
         hidePanels();
         searchPanel.style.display = "flex";
         modalOverlay.style.display = "block";
+        memoryList.innerHTML = "<div ></div>";
       }
 
       function hidePanels() {
@@ -505,9 +532,14 @@
         const content = noteInput.value.trim();
         if (!content) return;
 
-        await sessionMessage(
-          `往"记忆便签.md"中新增一条记录：${content.trim()};记住后面要加上时间戳`,
-        );
+        // await sessionMessage(
+        //   `往"记忆便签.md"中新增一条记录：${content.trim()};记住后面要加上时间戳`,
+        // );
+
+        await invoke("workspace_file_insert_text", {
+          file_name: "记忆便签.md",
+          new_line: `${content}  ${new Date().toLocaleString()}`,
+        });
 
         noteInput.value = "";
         hidePanels();
@@ -518,12 +550,26 @@
         const content = searchInput.value.trim();
         if (!content) return;
 
-        await sessionMessage(
+        // Show loading state
+        memoryList.innerHTML = '<div class="loading">正在搜索...</div>';
+
+        const answer = await sessionMessage(
           `在"记忆便签.md"查找一下相关问题：${content.trim()}`,
         );
 
+        // Display results
+        if (answer) {
+          memoryList.innerHTML = `
+            <div class="search-result">
+              <div class="search-content">${escapeHtml(answer)}</div>
+            </div>
+          `;
+        } else {
+          memoryList.innerHTML = '<div class="loading">没有找到相关内容</div>';
+        }
+
         searchInput.value = "";
-        hidePanels();
+        // hidePanels();
       }
 
       function escapeHtml(text) {

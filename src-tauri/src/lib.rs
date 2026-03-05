@@ -7,13 +7,16 @@ mod wallpaper_animation;
 mod wallpaper_html;
 mod wallpaper_shader;
 mod wallpaper_static;
+mod workspace;
 
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{open_folder, read_file};
-use tool::{
-    create_workspace, execute_opencode_serve, get_system_stats, kill_existing_opencode_processes,
-    open_executable, open_workspace,
+use tool::{get_system_stats, open_executable};
+
+use workspace::{
+    create_workspace, execute_opencode_serve, kill_existing_opencode_processes, open_workspace,
+    workspace_file_insert_text,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -74,9 +77,11 @@ pub fn run() {
             // tool
             get_system_stats,
             open_executable,
+            //workspace
             create_workspace,
             open_workspace,
             execute_opencode_serve,
+            workspace_file_insert_text,
             kill_existing_opencode_processes
         ])
         .run(tauri::generate_context!())

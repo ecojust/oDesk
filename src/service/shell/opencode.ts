@@ -1,6 +1,28 @@
 import { invoke } from "@tauri-apps/api/core";
 
 export default class Opencode {
+  static async workspace_file_insert_text(
+    workspace: string,
+    payload: {
+      file_name: string;
+      new_line: string;
+    },
+  ) {
+    console.log("workspace_file_insert_text", payload);
+    try {
+      const result = await invoke("workspace_file_insert_text", {
+        workspace,
+        filename: payload.file_name,
+        newline: payload.new_line,
+      });
+      console.log(result);
+      return result;
+    } catch (e) {
+      alert("Failed to workspace_file_insert_text: " + e);
+      throw e;
+    }
+  }
+
   static async open_workspace(workspace: string) {
     try {
       const result = await invoke("open_workspace", { workspace });
@@ -41,17 +63,6 @@ export default class Opencode {
       return result;
     } catch (e) {
       console.log("Failed to kill existing processes: ", e);
-      throw e;
-    }
-  }
-
-  static async check_workspace_status(workspace: string) {
-    try {
-      const result = await invoke("check_workspace_status", { workspace });
-      console.log(result);
-      return result;
-    } catch (e) {
-      console.log("Failed to check workspace status: ", e);
       throw e;
     }
   }
