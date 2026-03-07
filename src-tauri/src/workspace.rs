@@ -113,13 +113,13 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
 
         match output {
             Ok(output) => {
-                let base_dir = match get_appdata_dir() {
-                    Ok(dir) => dir,
-                    Err(e) => {
-                        println!("Failed to get appdata directory: {}", e);
-                        return;
-                    }
-                };
+                // let base_dir = match get_appdata_dir() {
+                //     Ok(dir) => dir,
+                //     Err(e) => {
+                //         println!("Failed to get appdata directory: {}", e);
+                //         return;
+                //     }
+                // };
                 let log_content = format!(
                     "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
                     String::from_utf8_lossy(&output.stdout),
@@ -128,9 +128,9 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
                 );
                 log(log_content).await.unwrap();
 
-                if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
-                    println!("Failed to open appdata directory: {}", e);
-                }
+                // if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
+                //     println!("Failed to open appdata directory: {}", e);
+                // }
             }
             Err(e) => {
                 let log_content = format!("ERROR:{}\nSTDOUT:\nSTDERR:\nSTATUS: None\n", e);

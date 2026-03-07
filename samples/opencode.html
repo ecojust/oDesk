@@ -845,15 +845,6 @@
 
     window.onload = async () => {
       // await invoke("open_workspace");
-
-      await sleep(3000);
-      const res = await invoke("opencode");
-
-      // document.body.innerHTML = JSON.stringify(res.data);
-      await sleep(3000);
-      const session = await createSession();
-      console.log(session);
-
       // await invoke("create_workspace_file", { file: "记忆便签.md" });
     };
   </script>
@@ -879,11 +870,11 @@
 
     // 点击背景关闭菜单
     overlay.onclick = () => {
-      menu.style.display = "none";
-      overlay.style.display = "none";
+      // menu.style.display = "none";
+      // overlay.style.display = "none";
     };
 
-    modalOverlay.onclick = hidePanels;
+    // modalOverlay.onclick = hidePanels;
 
     // 播放器
     const playerContainer = document.getElementById("player-container");
@@ -930,11 +921,18 @@
       noteInput.focus();
     }
 
-    function showSearchPanel() {
+    async function showSearchPanel() {
       hidePanels();
       searchPanel.style.display = "flex";
       modalOverlay.style.display = "block";
       memoryList.innerHTML = "<div ></div>";
+
+      const res = await invoke("opencode");
+
+      // document.body.innerHTML = JSON.stringify(res.data);
+      await sleep(300);
+      const session = await createSession();
+      // console.log(session);
     }
 
     function hidePanels() {
@@ -993,7 +991,7 @@
         memoryList.innerHTML = '<div class="loading">没有找到相关内容</div>';
       }
 
-      searchInput.value = "";
+      // searchInput.value = "";
     }
 
     function escapeHtml(text) {
