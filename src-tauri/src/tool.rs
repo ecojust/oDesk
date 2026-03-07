@@ -1,7 +1,29 @@
+use crate::fs_helper::get_appdata_dir;
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
+use tokio::fs;
+
+#[tauri::command]
+pub async fn log(newline: String) -> Result<(), String> {
+    let base_dir = get_appdata_dir()?;
+    let log_file = base_dir.join("log.txt");
+
+    // Get current timestamp
+    let timestamp = chrono::Utc::now().to_rfc3339();
+
+    // Read existing content
+    let existing_content = fs::read_to_string(&log_file).await.ok().unwrap_or_default();
+
+    // Create new log entry with timestamp
+    let new_content = format!("{} \n[{}] {}", existing_content, timestamp, newline);
+
+    // Write back to file
+    fs::write(log_file, new_content)
+        .await
+        .map_err(|e| format!("Failed to write to log file: {}", e))
+}
 
 /// 等待窗口完全关闭的辅助函数
 pub fn wait_for_window_closed(

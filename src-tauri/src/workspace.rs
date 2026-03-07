@@ -1,4 +1,5 @@
-use crate::fs_helper::{get_appdata_dir, open_folder, write_file};
+use crate::fs_helper::{get_appdata_dir, open_folder};
+use crate::tool::log;
 use std::fs;
 use std::process::Command;
 
@@ -89,7 +90,9 @@ pub fn workspace_file_insert_text(
 
 #[tauri::command]
 pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
-    println!("--------------execute_opencode_serve------------");
+    log(" - -------------execute_opencode_serve - -----------".to_string())
+        .await
+        .unwrap();
 
     use tokio::process::Command;
     let base_dir = get_appdata_dir()?;
@@ -139,12 +142,13 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
         if let Ok(output) = output {
-            if !output.status.success() {
-                let stderr = String::from_utf8_lossy(&output.stderr);
-                println!("opencode serve failed with error: {}", stderr);
-            } else {
-                println!("execute_opencode_serve ok");
-            }
+            // if !output.status.success() {
+            //     let stderr = String::from_utf8_lossy(&output.stderr);
+            //     let errr = format!("opencode serve failed with error: {}", stderr);
+            //     log(errr).await.unwrap()
+            // } else {
+            //     log("execute_opencode_serve ok".to_string()).await.unwrap();
+            // }
 
             // Write command output to log.txt in appdata directory
             let base_dir = match get_appdata_dir() {
@@ -155,14 +159,12 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
                 }
             };
             let log_content = format!(
-                "STDOUT:\n{}\n\nSTDERR:\n{}\n\nSTATUS: {}\n",
+                "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
                 String::from_utf8_lossy(&output.stdout),
                 String::from_utf8_lossy(&output.stderr),
                 output.status
             );
-            if let Err(e) = write_file("log.txt".to_string(), log_content) {
-                println!("Failed to write log file: {}", e);
-            }
+            log(log_content).await.unwrap();
 
             // Open the appdata directory
             if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
