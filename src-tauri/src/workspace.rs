@@ -123,55 +123,51 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .args(["/C", "opencode serve"])
             .current_dir(&target_workspace)
             .output()
-            .await
-            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+            .await;
 
+        // #[cfg(not(target_os = "windows"))]
         // let output = Command::new("sh")
         //     .args(["-c", "opencode serve"])
         //     .current_dir(&target_workspace)
         //     .output()
-        //     .await
-        //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
-
+        //     .await;
         #[cfg(not(target_os = "windows"))]
-        let output = Command::new("opencode")
-            .arg("serve")
-            .current_dir(target_workspace)
+        let output = Command::new("bash")
+            .args([
+                "-l", // 👈 关键：login shell，加载 .zshrc/.bashrc
+                "-c",
+                "opencode serve",
+            ])
+            .current_dir(&target_workspace)
             .output()
-            .await
-            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+            .await;
 
-        if let Ok(output) = output {
-            // if !output.status.success() {
-            //     let stderr = String::from_utf8_lossy(&output.stderr);
-            //     let errr = format!("opencode serve failed with error: {}", stderr);
-            //     log(errr).await.unwrap()
-            // } else {
-            //     log("execute_opencode_serve ok".to_string()).await.unwrap();
-            // }
+        match output {
+            Ok(output) => {
+                let base_dir = match get_appdata_dir() {
+                    Ok(dir) => dir,
+                    Err(e) => {
+                        println!("Failed to get appdata directory: {}", e);
+                        return;
+                    }
+                };
+                let log_content = format!(
+                    "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
+                    String::from_utf8_lossy(&output.stdout),
+                    String::from_utf8_lossy(&output.stderr),
+                    output.status
+                );
+                log(log_content).await.unwrap();
 
-            // Write command output to log.txt in appdata directory
-            let base_dir = match get_appdata_dir() {
-                Ok(dir) => dir,
-                Err(e) => {
-                    println!("Failed to get appdata directory: {}", e);
-                    return;
+                if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
+                    println!("Failed to open appdata directory: {}", e);
                 }
-            };
-            let log_content = format!(
-                "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
-                String::from_utf8_lossy(&output.stdout),
-                String::from_utf8_lossy(&output.stderr),
-                output.status
-            );
-            log(log_content).await.unwrap();
-
-            // Open the appdata directory
-            if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
-                println!("Failed to open appdata directory: {}", e);
             }
-        } else {
-            println!("opencode serve execution failed");
+            Err(e) => {
+                let log_content = format!("ERROR:{}\nSTDOUT:\nSTDERR:\nSTATUS: None\n", e);
+
+                log(log_content).await.unwrap();
+            }
         }
     });
 
