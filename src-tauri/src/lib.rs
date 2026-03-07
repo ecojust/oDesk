@@ -12,7 +12,7 @@ mod workspace;
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{open_folder, read_file};
-use tool::{get_system_stats, open_executable};
+use tool::{get_system_stats, log, open_executable};
 
 use workspace::{
     create_workspace, execute_opencode_serve, kill_existing_opencode_processes, open_workspace,
@@ -78,6 +78,7 @@ pub fn run() {
             // tool
             get_system_stats,
             open_executable,
+            log,
             //workspace
             create_workspace,
             open_workspace,

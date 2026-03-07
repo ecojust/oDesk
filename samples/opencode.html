@@ -929,8 +929,7 @@
 
       const res = await invoke("opencode");
 
-      // document.body.innerHTML = JSON.stringify(res.data);
-      await sleep(300);
+      await sleep(3000);
       const session = await createSession();
       // console.log(session);
     }
@@ -978,7 +977,7 @@
         </div>`;
 
       const answer = await sessionMessage(
-        `在"记忆便签.md"查找一下相关问题：${content.trim()}`,
+        `在"记忆便签.md"查找一下相关问题,直接给出原始记录就好：${content.trim()}`,
       );
 
       if (answer) {
