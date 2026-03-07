@@ -6,6 +6,8 @@
   "permissions": [
     "core:default",
     "opener:default",
+    "shell:allow-execute",
+    "shell:allow-spawn",
     {
       "identifier": "http:default",
       "allow": [
@@ -25,33 +27,6 @@
         },
         {
           "url": "http://127.0.0.1:4096/*"
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-execute",
-      "allow": [
-        {
-          "name": "opencode",
-          "args": ["serve"]
-        },
-        {
-          "name": "pkill",
-          "args": ["-f", "opencode"]
-        },
-        {
-          "name": "yarn",
-          "args": ["run", "serve"]
-        }
-      ]
-    },
-    {
-      "identifier": "shell:allow-spawn",
-      "allow": [
-        {
-          "name": "opencode",
-          "cmd": "opencode",
-          "args": ["serve"]
         }
       ]
     }

@@ -1,4 +1,4 @@
-use crate::fs_helper::{get_appdata_dir, open_folder};
+use crate::fs_helper::{get_appdata_dir, open_folder, write_file};
 use std::fs;
 use std::process::Command;
 
@@ -100,12 +100,12 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
         eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     }
 
-    let output = Command::new("opencode")
-        .arg("serve")
-        .current_dir(target_workspace)
-        .output()
-        .await
-        .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+    // let output = Command::new("opencode")
+    //     .arg("serve")
+    //     .current_dir(target_workspace)
+    //     .output()
+    //     .await
+    //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
     // println!("execute_opencode_serve ok------");
 
@@ -114,42 +114,64 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
     // Ok("3344".to_string());
 
     // 在后台异步执行 opencode serve
-    // tokio::spawn(async move {
-    //     #[cfg(target_os = "windows")]
-    //     let output = Command::new("cmd")
-    //         .args(["/C", "opencode serve"])
-    //         .current_dir(&target_workspace)
-    //         .output()
-    //         .await
-    //         .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+    tokio::spawn(async move {
+        #[cfg(target_os = "windows")]
+        let output = Command::new("cmd")
+            .args(["/C", "opencode serve"])
+            .current_dir(&target_workspace)
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-    //     // #[cfg(not(target_os = "windows"))]
-    //     // let output = Command::new("sh")
-    //     //     .args(["-c", "opencode serve"])
-    //     //     .current_dir(&target_workspace)
-    //     //     .output()
-    //     //     .await
-    //     //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
-    //     let output = Command::new("opencode")
-    //         .arg("serve")
-    //         .current_dir(target_workspace)
-    //         .output()
-    //         .await
-    //         .map_err(|e| format!("Failed to execute opencode serve: {}", e));
+        // let output = Command::new("sh")
+        //     .args(["-c", "opencode serve"])
+        //     .current_dir(&target_workspace)
+        //     .output()
+        //     .await
+        //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-    //     println!("execute_opencode_serve ok------");
+        #[cfg(not(target_os = "windows"))]
+        let output = Command::new("opencode")
+            .arg("serve")
+            .current_dir(target_workspace)
+            .output()
+            .await
+            .map_err(|e| format!("Failed to execute opencode serve: {}", e));
 
-    //     if let Ok(output) = output {
-    //         if !output.status.success() {
-    //             let stderr = String::from_utf8_lossy(&output.stderr);
-    //             println!("opencode serve failed with error: {}", stderr);
-    //         } else {
-    //             println!("execute_opencode_serve ok");
-    //         }
-    //     } else {
-    //         println!("opencode serve execution failed");
-    //     }
-    // });
+        if let Ok(output) = output {
+            if !output.status.success() {
+                let stderr = String::from_utf8_lossy(&output.stderr);
+                println!("opencode serve failed with error: {}", stderr);
+            } else {
+                println!("execute_opencode_serve ok");
+            }
+
+            // Write command output to log.txt in appdata directory
+            let base_dir = match get_appdata_dir() {
+                Ok(dir) => dir,
+                Err(e) => {
+                    println!("Failed to get appdata directory: {}", e);
+                    return;
+                }
+            };
+            let log_content = format!(
+                "STDOUT:\n{}\n\nSTDERR:\n{}\n\nSTATUS: {}\n",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr),
+                output.status
+            );
+            if let Err(e) = write_file("log.txt".to_string(), log_content) {
+                println!("Failed to write log file: {}", e);
+            }
+
+            // Open the appdata directory
+            if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
+                println!("Failed to open appdata directory: {}", e);
+            }
+        } else {
+            println!("opencode serve execution failed");
+        }
+    });
 
     Ok(format!("opencode serve started successfully in "))
 }

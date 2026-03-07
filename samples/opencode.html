@@ -844,16 +844,17 @@
       };
 
       window.onload = async () => {
+        await invoke("open_workspace");
+
         await sleep(3000);
         const res = await invoke("opencode");
 
-        document.body.innerHTML = JSON.stringify(res.data);
+        // document.body.innerHTML = JSON.stringify(res.data);
         await sleep(3000);
         const session = await createSession();
         console.log(session);
 
         // await invoke("create_workspace_file", { file: "记忆便签.md" });
-        // await invoke("open_workspace");
       };
     </script>
 
