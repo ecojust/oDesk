@@ -26,13 +26,11 @@ pub async fn log(newline: String) -> Result<(), String> {
     let timestamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
 
     // Read existing content
-    let existing_content = fs::read_to_string(&log_file).await.ok().unwrap_or_default();
-
-    // Create new log entry with timestamp
-    let new_content = format!("{} \n[{}] {}", existing_content, timestamp, newline);
+    let mut content = fs::read_to_string(&log_file).await.ok().unwrap_or_default();
+    content.push_str(&format!("\n[{}] {}", timestamp, newline));
 
     // Write back to file
-    fs::write(log_file, new_content)
+    fs::write(log_file, &content)
         .await
         .map_err(|e| format!("Failed to write to log file: {}", e))
 }

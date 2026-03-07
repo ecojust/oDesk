@@ -1,9 +1,10 @@
-use crate::fs_helper::{get_appdata_dir, open_folder};
-use crate::tool::log;
-use std::fs;
-use std::process::Command;
+use crate::{
+    fs_helper::{get_appdata_dir, open_folder},
+    tool::log,
+};
+use std::{fs, process::Command};
 
-// Helper function to kill existing opencode processes
+/// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
 pub fn kill_existing_opencode_processes() -> Result<(), String> {
     #[cfg(target_os = "windows")]
@@ -11,11 +12,11 @@ pub fn kill_existing_opencode_processes() -> Result<(), String> {
         let output = Command::new("taskkill")
             .args(["/F", "/IM", "opencode.exe"])
             .output()
-            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+            .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to kill opencode processes: {}", stderr));
+            return Err(format!("Failed to kill opencode processes:：{}", stderr));
         }
     }
 
@@ -25,37 +26,39 @@ pub fn kill_existing_opencode_processes() -> Result<(), String> {
             .arg("-f")
             .arg("opencode")
             .output()
-            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+            .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to kill opencode processes: {}", stderr));
+            return Err(format!("Failed to kill opencode processes:：{}", stderr));
         }
     }
 
     Ok(())
 }
 
+/// 打开指定的工作区文件夹
 #[tauri::command]
 pub fn open_workspace(workspace: String) -> Result<String, String> {
     let target_folder = format!("workspaces/{}", workspace);
-    return open_folder(target_folder);
+    open_folder(target_folder)
 }
 
+/// 创建新的工作区目录
 #[tauri::command]
 pub fn create_workspace(workspace: String) -> Result<String, String> {
     let base_dir = get_appdata_dir()?;
-    let target_workspace = base_dir.join("workspaces").join(workspace);
+    let target_path = base_dir.join("workspaces").join(workspace);
 
-    fs::create_dir_all(&target_workspace)
-        .map_err(|e| format!("Failed to create directory: {}", e))?;
+    fs::create_dir_all(&target_path).map_err(|e| format!("Failed to create directory：{}", e))?;
 
     Ok(format!(
-        "worksapce created successfully: {}",
-        target_workspace.display()
+        "worksapce created successfully：{}",
+        target_path.display()
     ))
 }
 
+/// 向工作区中的文件追加一行文本（不存在则自动创建）
 #[tauri::command]
 pub fn workspace_file_insert_text(
     workspace: String,
@@ -63,24 +66,18 @@ pub fn workspace_file_insert_text(
     newline: String,
 ) -> Result<String, String> {
     let base_dir = get_appdata_dir()?;
+    let file_path = base_dir.join("workspaces").join(workspace).join(filename);
 
-    println!("workspace_file_insert_text： {}", newline);
+    println!("workspace_file_insert_text：{}", newline);
 
-    let target_file = base_dir.join("workspaces").join(workspace).join(filename);
+    let mut content = fs::read_to_string(&file_path).unwrap_or_default();
+    content.push_str(&format!("\n{}", newline));
 
-    let content = match fs::read_to_string(&target_file) {
-        Ok(content) => content,
-        Err(_) => String::new(),
-    };
-
-    let updated_content = format!("{}\n{}", content, newline);
-
-    fs::write(&target_file, updated_content)
-        .map_err(|e| format!("Failed to write to file: {}", e))?;
+    fs::write(&file_path, &content).map_err(|e| format!("Failed to write to file：{}", e))?;
 
     Ok(format!(
-        "Successfully inserted line into file: {}",
-        target_file.display()
+        "Successfully inserted line into file：{}",
+        file_path.display()
     ))
 }
 
