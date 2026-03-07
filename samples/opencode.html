@@ -699,277 +699,277 @@
         <!-- 记忆条目动态渲染 -->
       </div>
     </div>
+  </body>
 
-    <!-- 内置的用于通信的sdk不要移除 -->
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-    <script>
-      const pendingCallbacks = new Map();
+  <!-- 内置的用于通信的sdk不要移除 -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script>
+    const pendingCallbacks = new Map();
 
-      const generateId = () =>
-        "msg_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
+    const generateId = () =>
+      "msg_" + Date.now() + "_" + Math.random().toString(36).substr(2, 9);
 
-      window.addEventListener("message", async (event) => {
-        const data = event.data;
+    window.addEventListener("message", async (event) => {
+      const data = event.data;
 
-        if (data && data.id) {
-          const callback = pendingCallbacks.get(data.id);
-          if (callback) {
-            // 有回调，说明是响应消息
-            if (data.code === 200) {
-              callback.resolve(data);
-            } else {
-              callback.reject(new Error(data.msg));
-            }
-            pendingCallbacks.delete(data.id);
+      if (data && data.id) {
+        const callback = pendingCallbacks.get(data.id);
+        if (callback) {
+          // 有回调，说明是响应消息
+          if (data.code === 200) {
+            callback.resolve(data);
           } else {
-            // 没有回调，说明是请求消息，需要处理
-            console.log("收到消息----", data.method);
-
-            // action from shell
-            switch (data.method) {
-              case "screenshot":
-                const canvas = await html2canvas(document.body, {
-                  backgroundColor: "#1a1a2e",
-                  scale: 0.5,
-                });
-                window.parent.postMessage(
-                  {
-                    id: data.id,
-                    method: data.method,
-                    code: 200,
-                    data: canvas.toDataURL("image/png"),
-                  },
-                  "*",
-                );
-                break;
-
-              default:
-                window.parent.postMessage(
-                  {
-                    id: data.id,
-                    method: data.method,
-                    code: 404,
-                    data: null,
-                    msg: "unknown method",
-                  },
-                  "*",
-                );
-                break;
-            }
+            callback.reject(new Error(data.msg));
           }
-          return;
+          pendingCallbacks.delete(data.id);
+        } else {
+          // 没有回调，说明是请求消息，需要处理
+          console.log("收到消息----", data.method);
+
+          // action from shell
+          switch (data.method) {
+            case "screenshot":
+              const canvas = await html2canvas(document.body, {
+                backgroundColor: "#1a1a2e",
+                scale: 0.5,
+              });
+              window.parent.postMessage(
+                {
+                  id: data.id,
+                  method: data.method,
+                  code: 200,
+                  data: canvas.toDataURL("image/png"),
+                },
+                "*",
+              );
+              break;
+
+            default:
+              window.parent.postMessage(
+                {
+                  id: data.id,
+                  method: data.method,
+                  code: 404,
+                  data: null,
+                  msg: "unknown method",
+                },
+                "*",
+              );
+              break;
+          }
         }
+        return;
+      }
+    });
+
+    async function invoke(data_type, payload) {
+      return new Promise((resolve, reject) => {
+        const id = generateId();
+        pendingCallbacks.set(id, { resolve, reject });
+        parent.postMessage({ id, method: data_type, payload }, "*");
+        setTimeout(() => {
+          if (pendingCallbacks.has(id)) {
+            pendingCallbacks.delete(id);
+            reject(new Error("Request timeout"));
+          }
+        }, 30000);
+      });
+    }
+  </script>
+  <!-- Endregion -->
+
+  <script>
+    const sleep = async (t) => {
+      return new Promise((resolve) => {
+        setTimeout(resolve, t);
+      });
+    };
+    const getSessionList = async () => {
+      try {
+        const response = await invoke("get", {
+          url: "http://127.0.0.1:4096/session",
+        });
+        console.log("getSessionList", response);
+
+        // return response;
+      } catch (error) {
+        console.error("Failed to create session:", error);
+        throw error;
+      }
+    };
+
+    let sessionId = "";
+    const createSession = async () => {
+      try {
+        const response = await invoke("postBody", {
+          url: "http://127.0.0.1:4096/session",
+        });
+
+        console.log("createSession", response);
+        sessionId = response.data.id;
+        return sessionId;
+      } catch (error) {
+        console.error("Failed to create session:", error);
+        throw error;
+      }
+    };
+
+    const sessionMessage = async (message) => {
+      try {
+        const response = await invoke("postBody", {
+          url: `http://127.0.0.1:4096/session/${sessionId}/message`,
+          data: {
+            agent: "build",
+            model: {
+              modelID: "big-pickle",
+              providerID: "opencode",
+            },
+            parts: [
+              {
+                type: "text",
+                text: message,
+              },
+            ],
+          },
+        });
+        console.log("sessionMessage answer", response);
+
+        return (
+          response?.data?.parts?.find((part) => part.type == "text")?.text || ""
+        );
+      } catch (error) {
+        console.error("Failed to send session message:", error);
+        throw error;
+      }
+    };
+
+    window.onload = async () => {
+      // await invoke("open_workspace");
+
+      await sleep(3000);
+      const res = await invoke("opencode");
+
+      // document.body.innerHTML = JSON.stringify(res.data);
+      await sleep(3000);
+      const session = await createSession();
+      console.log(session);
+
+      // await invoke("create_workspace_file", { file: "记忆便签.md" });
+    };
+  </script>
+
+  <script>
+    const appIcon = document.getElementById("app-icon");
+    const menu = document.getElementById("menu");
+    const overlay = document.getElementById("overlay");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const savePanel = document.getElementById("save-panel");
+    const searchPanel = document.getElementById("search-panel");
+    const noteInput = document.getElementById("note-input");
+    const searchInput = document.getElementById("search-input");
+    const memoryList = document.getElementById("memory-list");
+
+    // 切换菜单显示
+    appIcon.onclick = (e) => {
+      e.stopPropagation();
+      const isVisible = menu.style.display === "flex";
+      menu.style.display = isVisible ? "none" : "flex";
+      overlay.style.display = isVisible ? "none" : "block";
+    };
+
+    // 点击背景关闭菜单
+    overlay.onclick = () => {
+      menu.style.display = "none";
+      overlay.style.display = "none";
+    };
+
+    modalOverlay.onclick = hidePanels;
+
+    // 播放器
+    const playerContainer = document.getElementById("player-container");
+    const playBtn = document.getElementById("play-btn");
+    const playerFrame = document.getElementById("player-frame");
+    const miniPlayer = document.getElementById("mini-player");
+
+    function showPlayer() {
+      playerContainer.style.display = "flex";
+      modalOverlay.style.display = "block";
+      playBtn.style.display = "none";
+    }
+
+    function minimizePlayer() {
+      playerContainer.style.display = "none";
+      modalOverlay.style.display = "none";
+      miniPlayer.style.display = "flex";
+      playBtn.style.display = "none";
+    }
+
+    function restorePlayer() {
+      playerContainer.style.display = "flex";
+      modalOverlay.style.display = "block";
+      miniPlayer.style.display = "none";
+    }
+
+    function hidePlayer() {
+      playerContainer.style.display = "none";
+      modalOverlay.style.display = "none";
+      miniPlayer.style.display = "none";
+      playBtn.style.display = "flex";
+      playerFrame.src = playerFrame.src;
+    }
+
+    modalOverlay.onclick = () => {
+      hidePanels();
+      hidePlayer();
+    };
+
+    function showSavePanel() {
+      hidePanels();
+      savePanel.style.display = "flex";
+      modalOverlay.style.display = "block";
+      noteInput.focus();
+    }
+
+    function showSearchPanel() {
+      hidePanels();
+      searchPanel.style.display = "flex";
+      modalOverlay.style.display = "block";
+      memoryList.innerHTML = "<div ></div>";
+    }
+
+    function hidePanels() {
+      savePanel.style.display = "none";
+      searchPanel.style.display = "none";
+      modalOverlay.style.display = "none";
+      menu.style.display = "none";
+      overlay.style.display = "none";
+    }
+
+    // 数据管理
+
+    async function saveMemory() {
+      const content = noteInput.value.trim();
+      if (!content) return;
+
+      // await sessionMessage(
+      //   `往"记忆便签.md"中新增一条记录：${content.trim()};记住后面要加上时间戳`,
+      // );
+
+      await invoke("workspace_file_insert_text", {
+        file_name: "记忆便签.md",
+        new_line: `${content}  ${new Date().toLocaleString()}`,
       });
 
-      async function invoke(data_type, payload) {
-        return new Promise((resolve, reject) => {
-          const id = generateId();
-          pendingCallbacks.set(id, { resolve, reject });
-          parent.postMessage({ id, method: data_type, payload }, "*");
-          setTimeout(() => {
-            if (pendingCallbacks.has(id)) {
-              pendingCallbacks.delete(id);
-              reject(new Error("Request timeout"));
-            }
-          }, 30000);
-        });
-      }
-    </script>
-    <!-- Endregion -->
+      noteInput.value = "";
+      hidePanels();
+      alert("记忆已存入！");
+    }
 
-    <script>
-      const sleep = async (t) => {
-        return new Promise((resolve) => {
-          setTimeout(resolve, t);
-        });
-      };
-      const getSessionList = async () => {
-        try {
-          const response = await invoke("get", {
-            url: "http://127.0.0.1:4096/session",
-          });
-          console.log("getSessionList", response);
+    async function searchMemory() {
+      const content = searchInput.value.trim();
+      if (!content) return;
 
-          // return response;
-        } catch (error) {
-          console.error("Failed to create session:", error);
-          throw error;
-        }
-      };
-
-      let sessionId = "";
-      const createSession = async () => {
-        try {
-          const response = await invoke("postBody", {
-            url: "http://127.0.0.1:4096/session",
-          });
-
-          console.log("createSession", response);
-          sessionId = response.data.id;
-          return sessionId;
-        } catch (error) {
-          console.error("Failed to create session:", error);
-          throw error;
-        }
-      };
-
-      const sessionMessage = async (message) => {
-        try {
-          const response = await invoke("postBody", {
-            url: `http://127.0.0.1:4096/session/${sessionId}/message`,
-            data: {
-              agent: "build",
-              model: {
-                modelID: "big-pickle",
-                providerID: "opencode",
-              },
-              parts: [
-                {
-                  type: "text",
-                  text: message,
-                },
-              ],
-            },
-          });
-          console.log("sessionMessage answer", response);
-
-          return (
-            response?.data?.parts?.find((part) => part.type == "text")?.text ||
-            ""
-          );
-        } catch (error) {
-          console.error("Failed to send session message:", error);
-          throw error;
-        }
-      };
-
-      window.onload = async () => {
-        await invoke("open_workspace");
-
-        await sleep(3000);
-        const res = await invoke("opencode");
-
-        // document.body.innerHTML = JSON.stringify(res.data);
-        await sleep(3000);
-        const session = await createSession();
-        console.log(session);
-
-        // await invoke("create_workspace_file", { file: "记忆便签.md" });
-      };
-    </script>
-
-    <script>
-      const appIcon = document.getElementById("app-icon");
-      const menu = document.getElementById("menu");
-      const overlay = document.getElementById("overlay");
-      const modalOverlay = document.getElementById("modal-overlay");
-      const savePanel = document.getElementById("save-panel");
-      const searchPanel = document.getElementById("search-panel");
-      const noteInput = document.getElementById("note-input");
-      const searchInput = document.getElementById("search-input");
-      const memoryList = document.getElementById("memory-list");
-
-      // 切换菜单显示
-      appIcon.onclick = (e) => {
-        e.stopPropagation();
-        const isVisible = menu.style.display === "flex";
-        menu.style.display = isVisible ? "none" : "flex";
-        overlay.style.display = isVisible ? "none" : "block";
-      };
-
-      // 点击背景关闭菜单
-      overlay.onclick = () => {
-        menu.style.display = "none";
-        overlay.style.display = "none";
-      };
-
-      modalOverlay.onclick = hidePanels;
-
-      // 播放器
-      const playerContainer = document.getElementById("player-container");
-      const playBtn = document.getElementById("play-btn");
-      const playerFrame = document.getElementById("player-frame");
-      const miniPlayer = document.getElementById("mini-player");
-
-      function showPlayer() {
-        playerContainer.style.display = "flex";
-        modalOverlay.style.display = "block";
-        playBtn.style.display = "none";
-      }
-
-      function minimizePlayer() {
-        playerContainer.style.display = "none";
-        modalOverlay.style.display = "none";
-        miniPlayer.style.display = "flex";
-        playBtn.style.display = "none";
-      }
-
-      function restorePlayer() {
-        playerContainer.style.display = "flex";
-        modalOverlay.style.display = "block";
-        miniPlayer.style.display = "none";
-      }
-
-      function hidePlayer() {
-        playerContainer.style.display = "none";
-        modalOverlay.style.display = "none";
-        miniPlayer.style.display = "none";
-        playBtn.style.display = "flex";
-        playerFrame.src = playerFrame.src;
-      }
-
-      modalOverlay.onclick = () => {
-        hidePanels();
-        hidePlayer();
-      };
-
-      function showSavePanel() {
-        hidePanels();
-        savePanel.style.display = "flex";
-        modalOverlay.style.display = "block";
-        noteInput.focus();
-      }
-
-      function showSearchPanel() {
-        hidePanels();
-        searchPanel.style.display = "flex";
-        modalOverlay.style.display = "block";
-        memoryList.innerHTML = "<div ></div>";
-      }
-
-      function hidePanels() {
-        savePanel.style.display = "none";
-        searchPanel.style.display = "none";
-        modalOverlay.style.display = "none";
-        menu.style.display = "none";
-        overlay.style.display = "none";
-      }
-
-      // 数据管理
-
-      async function saveMemory() {
-        const content = noteInput.value.trim();
-        if (!content) return;
-
-        // await sessionMessage(
-        //   `往"记忆便签.md"中新增一条记录：${content.trim()};记住后面要加上时间戳`,
-        // );
-
-        await invoke("workspace_file_insert_text", {
-          file_name: "记忆便签.md",
-          new_line: `${content}  ${new Date().toLocaleString()}`,
-        });
-
-        noteInput.value = "";
-        hidePanels();
-        alert("记忆已存入！");
-      }
-
-      async function searchMemory() {
-        const content = searchInput.value.trim();
-        if (!content) return;
-
-        memoryList.innerHTML = `<div class="loading searching">
+      memoryList.innerHTML = `<div class="loading searching">
           <div class="scan-line"></div>
           <div class="loading-text">正在搜索</div>
           <div class="tech-dots">
@@ -979,28 +979,27 @@
           </div>
         </div>`;
 
-        const answer = await sessionMessage(
-          `在"记忆便签.md"查找一下相关问题：${content.trim()}`,
-        );
+      const answer = await sessionMessage(
+        `在"记忆便签.md"查找一下相关问题：${content.trim()}`,
+      );
 
-        if (answer) {
-          memoryList.innerHTML = `
+      if (answer) {
+        memoryList.innerHTML = `
             <div class="search-result fade-in">
               <div class="search-content">${escapeHtml(answer)}</div>
             </div>
           `;
-        } else {
-          memoryList.innerHTML = '<div class="loading">没有找到相关内容</div>';
-        }
-
-        searchInput.value = "";
+      } else {
+        memoryList.innerHTML = '<div class="loading">没有找到相关内容</div>';
       }
 
-      function escapeHtml(text) {
-        const div = document.createElement("div");
-        div.textContent = text;
-        return div.innerHTML;
-      }
-    </script>
-  </body>
+      searchInput.value = "";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML;
+    }
+  </script>
 </html>

@@ -12,7 +12,7 @@ import {
   highlightActiveLine,
 } from "@codemirror/view";
 import { defaultKeymap, history, historyKeymap } from "@codemirror/commands";
-import { cpp } from "@codemirror/lang-cpp";
+import { html } from "@codemirror/lang-html";
 import { oneDark } from "@codemirror/theme-one-dark";
 import {
   syntaxHighlighting,
@@ -26,7 +26,7 @@ function makeUniqueName() {
   return Math.random().toString(36).slice(2, 8);
 }
 
-export class CodemirrorShaderEditor {
+export class CodemirrorHTMLEditor {
   private editorView: EditorView = null as any;
 
   constructor(
@@ -67,7 +67,7 @@ export class CodemirrorShaderEditor {
           bracketMatching(),
           highlightActiveLine(),
           keymap.of([...defaultKeymap, ...historyKeymap]),
-          cpp(),
+          html(),
           oneDark,
           updateListener,
           EditorView.theme({
@@ -270,5 +270,5 @@ export class HTML {
 
 export default {
   HTML,
-  CodemirrorShaderEditor,
+  CodemirrorHTMLEditor,
 };

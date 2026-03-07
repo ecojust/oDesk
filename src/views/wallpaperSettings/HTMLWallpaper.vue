@@ -116,7 +116,7 @@ import { ElMessageBox } from "element-plus";
 import { sleep } from "@/utils/util";
 import html2canvas from "html2canvas";
 
-import { HTML, CodemirrorShaderEditor } from "@/service/html";
+import { HTML, CodemirrorHTMLEditor } from "@/service/html";
 
 const htmlWallpapers = ref([]);
 const loading = ref(true);
@@ -237,7 +237,7 @@ const initEditor = async () => {
   const container = monacoContainer.value;
   if (container) {
     container.innerHTML = "";
-    monacoEditor = new CodemirrorShaderEditor(
+    monacoEditor = new CodemirrorHTMLEditor(
       container,
       currentHTML.value.code,
       (code) => {
