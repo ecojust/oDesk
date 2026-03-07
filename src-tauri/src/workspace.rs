@@ -47,7 +47,6 @@ pub fn create_workspace(workspace: String) -> Result<String, String> {
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
 
-    // 创建目录，如果已存在则不会失败
     fs::create_dir_all(&target_workspace)
         .map_err(|e| format!("Failed to create directory: {}", e))?;
 

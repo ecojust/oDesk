@@ -1,17 +1,29 @@
 use crate::fs_helper::get_appdata_dir;
+use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
 use std::process::Command;
 use sysinfo::System;
 use tauri::Manager;
 use tokio::fs;
 
+#[derive(Serialize, Deserialize)]
+pub struct SystemStats {
+    pub cpu_usage_percent: f32,
+    pub memory_used: u64,
+    pub memory_total: u64,
+    pub memory_usage_percent: f32,
+}
+
 #[tauri::command]
 pub async fn log(newline: String) -> Result<(), String> {
     let base_dir = get_appdata_dir()?;
-    let log_file = base_dir.join("log.txt");
+
+    let now = Local::now();
+    let log_filename = format!("{:04}-{:02}-{:02}.log", now.year(), now.month(), now.day());
+    let log_file = base_dir.join(log_filename);
 
     // Get current timestamp
-    let timestamp = chrono::Utc::now().to_rfc3339();
+    let timestamp = now.format("%Y-%m-%d %H:%M:%S").to_string();
 
     // Read existing content
     let existing_content = fs::read_to_string(&log_file).await.ok().unwrap_or_default();
@@ -25,7 +37,6 @@ pub async fn log(newline: String) -> Result<(), String> {
         .map_err(|e| format!("Failed to write to log file: {}", e))
 }
 
-/// 等待窗口完全关闭的辅助函数
 pub fn wait_for_window_closed(
     app: &tauri::AppHandle,
     window_label: &str,
@@ -53,14 +64,6 @@ pub fn wait_for_window_closed(
     } else {
         Ok(())
     }
-}
-
-#[derive(Serialize, Deserialize)]
-pub struct SystemStats {
-    pub cpu_usage_percent: f32,
-    pub memory_used: u64,
-    pub memory_total: u64,
-    pub memory_usage_percent: f32,
 }
 
 #[tauri::command]

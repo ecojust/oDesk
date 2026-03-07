@@ -17,6 +17,7 @@ import Opencode from "@/service/shell/opencode";
 import { onBeforeUnmount } from "vue";
 
 import RequestService from "@/utils/request";
+import System from "@/service/shell/system";
 
 const parent = ref();
 const msg = ref([]);

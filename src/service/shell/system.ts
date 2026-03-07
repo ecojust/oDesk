@@ -10,6 +10,16 @@ export default class System {
     }
   }
 
+  static async log(message: string) {
+    try {
+      await invoke("log", {
+        newline: message,
+      });
+    } catch (e) {
+      alert("read_config: " + e);
+    }
+  }
+
   // static async open_executable(path: string) {
   //   try {
   //     const result = await invoke("open_executable", { path });
