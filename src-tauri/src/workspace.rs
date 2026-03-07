@@ -69,16 +69,13 @@ pub fn workspace_file_insert_text(
 
     let target_file = base_dir.join("workspaces").join(workspace).join(filename);
 
-    // Read existing file content
     let content = match fs::read_to_string(&target_file) {
         Ok(content) => content,
-        Err(_) => String::new(), // If file doesn't exist, start with empty content
+        Err(_) => String::new(),
     };
 
-    // Append new line with newline character
     let updated_content = format!("{}\n{}", content, newline);
 
-    // Write updated content back to file
     fs::write(&target_file, updated_content)
         .map_err(|e| format!("Failed to write to file: {}", e))?;
 
@@ -98,25 +95,11 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
 
-    // 先杀死已有的 opencode 进程
     if let Err(e) = kill_existing_opencode_processes() {
         eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     }
 
-    // let output = Command::new("opencode")
-    //     .arg("serve")
-    //     .current_dir(target_workspace)
-    //     .output()
-    //     .await
-    //     .map_err(|e| format!("Failed to execute opencode serve: {}", e));
-
-    // println!("execute_opencode_serve ok------");
-
-    // println!("tokio::spawn opencode_serve");
-
-    // Ok("3344".to_string());
-
-    // 在后台异步执行 opencode serve
+    //  opencode serve
     tokio::spawn(async move {
         #[cfg(target_os = "windows")]
         let output = Command::new("cmd")
@@ -125,19 +108,9 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .output()
             .await;
 
-        // #[cfg(not(target_os = "windows"))]
-        // let output = Command::new("sh")
-        //     .args(["-c", "opencode serve"])
-        //     .current_dir(&target_workspace)
-        //     .output()
-        //     .await;
         #[cfg(not(target_os = "windows"))]
         let output = Command::new("bash")
-            .args([
-                "-l", // 👈 关键：login shell，加载 .zshrc/.bashrc
-                "-c",
-                "opencode serve",
-            ])
+            .args(["-l", "-c", "opencode serve"])
             .current_dir(&target_workspace)
             .output()
             .await;
