@@ -13,7 +13,6 @@
 - [安装说明](#-安装说明)
 - [使用说明](#-使用说明)
 - [HTML壁纸API](#-html壁纸api)
-- [项目结构](#-项目结构)
 - [贡献指南](#-贡献指南)
 - [许可证](#-许可证)
 
@@ -159,33 +158,17 @@ npm run dev
 
 然后你可以通过如下**接口**获取数据/执行事务：
 
-| 接口名称 | 用途 | 示例 | 返回值 |
-|:---------|:-----|:-----|:-------|
-| `get_system_stats` | 获取系统状态 | `await invoke("get_system_stats");` | `Object` |
-| `open_workspace` | 打开当前工作空间文件夹 | `await invoke("open_workspace");` | - |
-| `opencode` | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");` | - |
-| `get` | 发起 GET 请求 | `await invoke("get");` | `Object` |
-| `postBody` | 发起 POST 请求 | `await invoke("postBody", {url: "http://127.0.0.1:4096/session"});` | `Object` |
-| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据 | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | - |
-| `open_executable` | 基于绝对路径打开本地程序 | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });` | - |
+| 接口名称                     | 用途                               | 示例                                                                                     | 返回值   |
+| :--------------------------- | :--------------------------------- | :--------------------------------------------------------------------------------------- | :------- |
+| `get_system_stats`           | 获取系统状态                       | `await invoke("get_system_stats");`                                                      | `Object` |
+| `open_workspace`             | 打开当前工作空间文件夹             | `await invoke("open_workspace");`                                                        | -        |
+| `opencode`                   | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");`                                                              | -        |
+| `get`                        | 发起 GET 请求                      | `await invoke("get");`                                                                   | `Object` |
+| `postBody`                   | 发起 POST 请求                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session"});`                      | `Object` |
+| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据     | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | -        |
+| `open_executable`            | 基于绝对路径打开本地程序           | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -        |
 
 > 💡 实际案例请参照 `samples` 文件夹下的示例文件
-
-## 📁 项目结构
-
-```
-oDesk/
-├── src/                    # 源代码
-│   ├── main/              # 主程序入口
-│   ├── renderer/          # 渲染进程
-│   └── preload/           # 预加载脚本
-├── samples/               # 示例文件
-│   ├── html/             # HTML 壁纸示例
-│   └── shader/           # Shader 壁纸示例
-├── preview/              # 预览图
-├── README.md             # 中文说明
-└── README_EN.md          # English documentation
-```
 
 ## 🤝 贡献指南
 
