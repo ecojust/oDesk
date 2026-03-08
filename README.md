@@ -1,4 +1,6 @@
-# oDesk
+<p align="center">
+    <img width="200" alt="" src="./preview/pxArt.png" />
+</p>
 
 <p align="center">
   <a href="README_EN.md">English</a> |
