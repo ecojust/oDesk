@@ -1,8 +1,21 @@
 # oDesk
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Platform](https://img.shields.io/badge/platform-macOS-blue)
+
 一款功能强大的动态桌面壁纸管理工具，支持多种壁纸类型，包括静态壁纸、Shader 着色器壁纸和 HTML 网页壁纸。
 
 ![预览图](./preview/oDesk.png)
+
+## 📋 目录
+
+- [功能特性](#-功能特性)
+- [安装说明](#-安装说明)
+- [使用说明](#-使用说明)
+- [HTML壁纸API](#-html壁纸api)
+- [项目结构](#-项目结构)
+- [贡献指南](#-贡献指南)
+- [许可证](#-许可证)
 
 ## 🎖︎ 功能特性
 
@@ -38,20 +51,38 @@
 - 支持执行 opencode 服务
 - 工作区文件编辑功能
 
+## 📥 安装说明
+
+```bash
+# 克隆项目
+git clone https://github.com/yourusername/oDesk.git
+
+# 进入目录
+cd oDesk
+
+# 安装依赖
+npm install
+
+# 启动应用
+npm run dev
+```
+
 ## 📄 使用说明
 
 1. **静态壁纸**：在"静态壁纸"标签页中，可以浏览本地壁纸、下载云端壁纸、设置壁纸轮播
 2. **Shader 壁纸**：在"着色器壁纸"标签页中，可以创建、编辑和预览 GLSL 着色器
 3. **HTML 壁纸**：在"网页壁纸"标签页中，可以将任意网页设为壁纸，支持实时编辑预览
 
-## 🍟 HTML壁纸支持的api列表
+## 🍟 HTML壁纸API
 
-1. 首先，请在你的自定义html壁纸加载必须的**sdk**文件代码：
+### 1. 引入 SDK
 
-```
- //这个是为了生成预览截图
- <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
- <script>
+首先，请在你的自定义 HTML 壁纸中加载必须的 **SDK** 文件代码：
+
+```javascript
+// 这个是为了生成预览截图
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script>
     const pendingCallbacks = new Map();
 
     const generateId = () =>
@@ -107,7 +138,7 @@
       }
     });
 
-    //invoke函数用于发起请求让客户端执行事务
+    // invoke函数用于发起请求让客户端执行事务
     async function invoke(data_type, payload) {
       return new Promise((resolve, reject) => {
         const id = generateId();
@@ -121,32 +152,63 @@
         }, 30000);
       });
     }
-  </script>
-
+</script>
 ```
 
-2. 然后你可以通过如下**接口**获取数据/执行事务
+### 2. 调用接口
 
----
+然后你可以通过如下**接口**获取数据/执行事务：
 
-| 名称                       | 用途                                     | 示例                                                                                    | 返回值 |
-| -------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------- | ------ |
-| get_system_stats           | 获取系统状态                             | `await invoke("get_system_stats");`                                                     | Object |
-| open_workspace             | 打开当前工作空间文件夹                   | `await invoke("open_workspace");`                                                       | NA     |
-| opencode                   | 基于当前工作空间，执行opencode命令       | `await invoke("opencode");`                                                             | NA     |
-| get                        | 发起get请求                              | `await invoke("get");`                                                                  | Object |
-| postBody                   | 发起post请求                             | `await invoke("postBody", {url: "http://127.0.0.1:4096/session"});`                     | Object |
-| workspace_file_insert_text | 往当前工作空间中某个文本文件新增一条数据 | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt",new_line:"xxxxxx"});` | NA     |
-| open_executable            | 基于绝对路径打开本地程序                 | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`         | NA     |
+| 接口名称 | 用途 | 示例 | 返回值 |
+|:---------|:-----|:-----|:-------|
+| `get_system_stats` | 获取系统状态 | `await invoke("get_system_stats");` | `Object` |
+| `open_workspace` | 打开当前工作空间文件夹 | `await invoke("open_workspace");` | - |
+| `opencode` | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");` | - |
+| `get` | 发起 GET 请求 | `await invoke("get");` | `Object` |
+| `postBody` | 发起 POST 请求 | `await invoke("postBody", {url: "http://127.0.0.1:4096/session"});` | `Object` |
+| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据 | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | - |
+| `open_executable` | 基于绝对路径打开本地程序 | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });` | - |
 
----
+> 💡 实际案例请参照 `samples` 文件夹下的示例文件
 
-## 实际案例请参照samples文件夹下的示例文件
+## 📁 项目结构
 
-## 贡献
+```
+oDesk/
+├── src/                    # 源代码
+│   ├── main/              # 主程序入口
+│   ├── renderer/          # 渲染进程
+│   └── preload/           # 预加载脚本
+├── samples/               # 示例文件
+│   ├── html/             # HTML 壁纸示例
+│   └── shader/           # Shader 壁纸示例
+├── preview/              # 预览图
+├── README.md             # 中文说明
+└── README_EN.md          # English documentation
+```
+
+## 🤝 贡献指南
 
 欢迎提交 Issue 和 Pull Request！
 
-## 许可证
+### 提交 Issue
 
-MIT License
+1. 搜索现有 Issue，确认是否已有相同问题
+2. 使用清晰的问题描述，包含复现步骤
+3. 附上相关截图和日志
+
+### 提交 Pull Request
+
+1. Fork 本项目
+2. 创建功能分支 (`git checkout -b feature/xxx`)
+3. 提交更改 (`git commit -m 'Add xxx'`)
+4. 推送分支 (`git push origin feature/xxx`)
+5. 创建 Pull Request
+
+## �许可证
+
+MIT License - 查看 [LICENSE](LICENSE) 了解详情
+
+---
+
+Made with ❤️ by oDesk Team
