@@ -163,8 +163,8 @@ npm run dev
 | `get_system_stats`           | 获取系统状态                       | `await invoke("get_system_stats");`                                                      | `Object` |
 | `open_workspace`             | 打开当前工作空间文件夹             | `await invoke("open_workspace");`                                                        | -        |
 | `opencode`                   | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");`                                                              | -        |
-| `get`                        | 发起 GET 请求                      | `await invoke("get");`                                                                   | `Object` |
-| `postBody`                   | 发起 POST 请求                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session"});`                      | `Object` |
+| `get`                        | 发起 GET 请求                      | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                            | `Object` |
+| `postBody`                   | 发起 POST 请求                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`              | `Object` |
 | `workspace_file_insert_text` | 往当前工作空间文本文件新增数据     | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | -        |
 | `open_executable`            | 基于绝对路径打开本地程序           | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -        |
 
