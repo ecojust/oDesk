@@ -173,15 +173,15 @@ npm run 4dev
 
 然后你可以通过如下**接口**获取数据/执行事务：
 
-| 接口名称                     | 用途                               | 示例                                                                                     | 返回值   |
-| :--------------------------- | :--------------------------------- | :--------------------------------------------------------------------------------------- | :------- |
-| `get_system_stats`           | 获取系统状态                       | `await invoke("get_system_stats");`                                                      | `Object` |
-| `open_workspace`             | 打开当前工作空间文件夹             | `await invoke("open_workspace");`                                                        | -        |
-| `opencode`                   | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");`                                                              | -        |
-| `get`                        | 发起 GET 请求                      | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                            | `Object` |
-| `postBody`                   | 发起 POST 请求                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`              | `Object` |
-| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据     | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | -        |
-| `open_executable`            | 基于绝对路径打开本地程序           | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -        |
+| 接口名称                     | 用途                               | 示例                                                                                   | 返回值   |
+| :--------------------------- | :--------------------------------- | :------------------------------------------------------------------------------------- | :------- |
+| `get_system_stats`           | 获取系统状态                       | `await invoke("get_system_stats");`                                                    | `Object` |
+| `open_workspace`             | 打开当前工作空间文件夹             | `await invoke("open_workspace");`                                                      | -        |
+| `opencode`                   | 基于当前工作空间执行 opencode 命令 | `await invoke("opencode");`                                                            | -        |
+| `get`                        | 发起 GET 请求                      | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object` |
+| `postBody`                   | 发起 POST 请求                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`            | `Object` |
+| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据     | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});` | -        |
+| `open_executable`            | 基于绝对路径打开本地程序           | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`        | -        |
 
 > 💡 实际案例请参照 `samples` 文件夹下的示例文件
 

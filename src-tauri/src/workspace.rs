@@ -1,8 +1,9 @@
 use crate::{
-    fs_helper::{get_appdata_dir, open_folder},
+    fs_helper::{get_appdata_dir, open_folder, read_folder_files},
     tool::log,
 };
-use std::{fs, process::Command};
+
+use std::{fs, path::PathBuf, process::Command};
 
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
@@ -79,6 +80,39 @@ pub fn workspace_file_insert_text(
         "Successfully inserted line into file：{}",
         file_path.display()
     ))
+}
+
+#[tauri::command]
+pub async fn scan_worksapce_file(
+    workspace: String,
+    path: String,
+    postfix: String,
+) -> Result<Vec<String>, String> {
+    let log_content = format!(
+        "scan files: \nworkspace:{}\npath: {}\npostfix: {}",
+        workspace, path, postfix
+    );
+    log(log_content).await.unwrap();
+
+    let base_dir = get_appdata_dir()?;
+    let folder_path = base_dir.join("workspaces").join(workspace).join(path);
+    let all_files = read_folder_files(folder_path.to_string_lossy().to_string())?;
+    let mut files = Vec::new();
+
+    for file in &all_files {
+        let ext = PathBuf::from(file)
+            .extension()
+            .and_then(|ext| ext.to_str())
+            .unwrap_or("")
+            .to_lowercase();
+        if ext != postfix {
+            println!("Skipping non-{} file: {}", postfix, file);
+            continue; // 跳过非图片文件
+        }
+
+        files.push(file.clone());
+    }
+    Ok(files)
 }
 
 #[tauri::command]

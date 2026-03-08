@@ -1,19 +1,20 @@
 import { invoke } from "@tauri-apps/api/core";
+import { convertFileSrc } from "@tauri-apps/api/core";
 
 export default class Opencode {
   static async workspace_file_insert_text(
     workspace: string,
     payload: {
-      file_name: string;
-      new_line: string;
+      fileName: string;
+      newLine: string;
     },
   ) {
     console.log("workspace_file_insert_text", payload);
     try {
       const result = await invoke("workspace_file_insert_text", {
         workspace,
-        filename: payload.file_name,
-        newline: payload.new_line,
+        filename: payload.fileName,
+        newline: payload.newLine,
       });
       console.log(result);
       return result;
@@ -63,6 +64,37 @@ export default class Opencode {
       return result;
     } catch (e) {
       console.log("Failed to kill existing processes: ", e);
+      throw e;
+    }
+  }
+
+  static async scan_worksapce_file(
+    workspace: string,
+    payload: {
+      path: string;
+      postfix: string;
+    },
+  ) {
+    try {
+      const result = await invoke("scan_worksapce_file", {
+        workspace,
+        ...payload,
+      });
+      console.log(result);
+
+      if (result instanceof Array) {
+        return result.map((filePath, index) => {
+          const fileUrl = convertFileSrc(filePath);
+          return {
+            title: filePath.split("/").pop() || `本地图片 ${index + 1}`,
+            url: fileUrl,
+          };
+        });
+      }
+
+      return [];
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
       throw e;
     }
   }

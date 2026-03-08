@@ -36,7 +36,11 @@ const sendToIframe = (data) => {
 // 处理来自 iframe 的调用请求
 const handleInvoke = async (id, method, payload) => {
   // msg.value.push("invoke", method);
-
+  let workspace = "";
+  if (config.value.mode == "html") {
+    const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
+    workspace = htmlPath.split("wallpaper_html")[1].split("/")[1];
+  }
   try {
     switch (method) {
       case "get": {
@@ -78,10 +82,28 @@ const handleInvoke = async (id, method, payload) => {
         break;
       }
 
+      case "scan_worksapce_file": {
+        if (workspace) {
+          const data = await Opencode.scan_worksapce_file(workspace, payload);
+          sendToIframe({
+            id,
+            code: 200,
+            data: data,
+            msg: "scan workspace successful!",
+          });
+        } else {
+          sendToIframe({
+            id,
+            code: 403,
+            data: null,
+            msg: "current mode don't support open workspace!",
+          });
+        }
+        break;
+      }
+
       case "open_workspace": {
-        if (config.value.mode == "html") {
-          const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
-          const workspace = htmlPath.split("wallpaper_html")[1].split("/")[1];
+        if (workspace) {
           await Opencode.open_workspace(workspace);
           sendToIframe({
             id,
@@ -101,9 +123,7 @@ const handleInvoke = async (id, method, payload) => {
       }
 
       case "workspace_file_insert_text": {
-        if (config.value.mode == "html") {
-          const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
-          const workspace = htmlPath.split("wallpaper_html")[1].split("/")[1];
+        if (workspace) {
           await Opencode.workspace_file_insert_text(workspace, payload);
           sendToIframe({
             id,

@@ -16,7 +16,7 @@ use tool::{get_system_stats, log, open_executable};
 
 use workspace::{
     create_workspace, execute_opencode_serve, kill_existing_opencode_processes, open_workspace,
-    workspace_file_insert_text,
+    scan_worksapce_file, workspace_file_insert_text,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -84,7 +84,8 @@ pub fn run() {
             open_workspace,
             execute_opencode_serve,
             workspace_file_insert_text,
-            kill_existing_opencode_processes
+            kill_existing_opencode_processes,
+            scan_worksapce_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

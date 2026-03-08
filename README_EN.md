@@ -172,15 +172,15 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
 
 Then you can use the following **interfaces** to get data or execute tasks:
 
-| API Name                     | Purpose                                       | Example                                                                                  | Return Value |
-| :--------------------------- | :-------------------------------------------- | :--------------------------------------------------------------------------------------- | :----------- |
-| `get_system_stats`           | Get system status                             | `await invoke("get_system_stats");`                                                      | `Object`     |
-| `open_workspace`             | Open current workspace folder                 | `await invoke("open_workspace");`                                                        | -            |
-| `opencode`                   | Execute opencode command in current workspace | `await invoke("opencode");`                                                              | -            |
-| `get`                        | Make a GET request                            | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                            | `Object`     |
-| `postBody`                   | Make a POST request                           | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`              | `Object`     |
-| `workspace_file_insert_text` | Insert data into a text file in workspace     | `await invoke("workspace_file_insert_text", {file_name: "xxx.txt", new_line:"xxxxxx"});` | -            |
-| `open_executable`            | Open a local application by absolute path     | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -            |
+| API Name                     | Purpose                                       | Example                                                                                | Return Value |
+| :--------------------------- | :-------------------------------------------- | :------------------------------------------------------------------------------------- | :----------- |
+| `get_system_stats`           | Get system status                             | `await invoke("get_system_stats");`                                                    | `Object`     |
+| `open_workspace`             | Open current workspace folder                 | `await invoke("open_workspace");`                                                      | -            |
+| `opencode`                   | Execute opencode command in current workspace | `await invoke("opencode");`                                                            | -            |
+| `get`                        | Make a GET request                            | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object`     |
+| `postBody`                   | Make a POST request                           | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`            | `Object`     |
+| `workspace_file_insert_text` | 往当前工作空间文本文件新增数据                | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});` | -            |
+| `open_executable`            | Open a local application by absolute path     | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`        | -            |
 
 > 💡 For practical examples, please refer to the sample files in the `samples` folder
 

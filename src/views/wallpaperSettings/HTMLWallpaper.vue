@@ -19,7 +19,10 @@
               <div
                 v-for="item in htmlWallpapers"
                 :key="item.name"
-                class="html-item"
+                :class="[
+                  'html-item',
+                  workspace == item.title ? 'html-item-active' : '',
+                ]"
               >
                 <div class="thumb" @click="setHTMLBackground(item)">
                   <img
@@ -101,7 +104,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount, onActivated } from "vue";
+import {
+  ref,
+  onMounted,
+  computed,
+  nextTick,
+  onBeforeUnmount,
+  onActivated,
+} from "vue";
 import {
   ElButton,
   ElDivider,
@@ -136,6 +146,15 @@ import { invoke } from "@tauri-apps/api/core";
 
 const iframeRef = ref(null);
 const isFullscreen = ref(false);
+const config = ref({});
+
+const workspace = computed(() => {
+  if (config.value.mode == "html") {
+    const htmlPath = config.value.htmlPath; ///Users/juzisang/Library/Application Support/oDesk/wallpaper_html/h_l3mefl/index.html
+    return htmlPath.split("wallpaper_html")[1].split("/")[1];
+  }
+  return "";
+});
 
 const toggleFullscreen = () => {
   isFullscreen.value = !isFullscreen.value;
@@ -341,6 +360,7 @@ const removeHTMLBackground = async (item) => {
 // 设置为桌面壁纸
 const setHTMLBackground = async (item) => {
   await HTML.setHTMLBackground(item.url);
+  readConfig();
 };
 
 const goBack = () => {
@@ -352,13 +372,21 @@ const goBack = () => {
   fetchList();
 };
 
+const readConfig = async () => {
+  config.value = await HTML.readConfig();
+
+  console.log(config.value);
+};
+
 onMounted(() => {
   fetchList();
+  readConfig();
   window.addEventListener("message", handleMessage);
 });
 
 onActivated(() => {
   fetchList();
+  readConfig();
 });
 
 onBeforeUnmount(() => {
@@ -411,9 +439,10 @@ onBeforeUnmount(() => {
         transition:
           transform 0.2s ease,
           box-shadow 0.2s ease;
+
         &:hover {
           transform: translateY(-4px);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+          // box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
         }
         .thumb {
           height: 150px;
@@ -462,6 +491,9 @@ onBeforeUnmount(() => {
             }
           }
         }
+      }
+      .html-item-active {
+        box-shadow: 0 0px 2px 2px rgba(1255, 0, 0, 1);
       }
     }
 
