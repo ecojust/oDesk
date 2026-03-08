@@ -72,7 +72,7 @@ cd oDesk
 npm install
 
 # 启动应用
-npm run dev
+npm run 4dev
 ```
 
 ## 📄 使用说明

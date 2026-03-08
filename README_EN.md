@@ -72,7 +72,7 @@ cd oDesk
 npm install
 
 # Start the application
-npm run dev
+npm run 4dev
 ```
 
 ## 📄 Usage
