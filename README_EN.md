@@ -1,7 +1,14 @@
 # oDesk
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Platform](https://img.shields.io/badge/platform-macOS-blue)
+<p align="center">
+  <a href="README_EN.md">English</a> |
+  <a href="README.md">简体中文</a> 
+</p>
+
+<p align="center">
+  <a href="https://opensource.org/licenses/MIT"><img alt="Discord" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
+  <img alt="npm" src="https://img.shields.io/badge/platform-macOS-blue" />
+</p>
 
 A powerful dynamic desktop wallpaper management tool that supports multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web wallpapers.
 
