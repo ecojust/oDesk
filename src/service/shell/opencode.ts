@@ -76,14 +76,13 @@ export default class Opencode {
     },
   ) {
     try {
-      const result = await invoke("scan_worksapce_file", {
+      let result = await invoke("scan_worksapce_file", {
         workspace,
         ...payload,
       });
-      console.log(result);
 
       if (result instanceof Array) {
-        return result.map((filePath, index) => {
+        result = result.map((filePath, index) => {
           const fileUrl = convertFileSrc(filePath);
           return {
             title: filePath.split("/").pop() || `本地图片 ${index + 1}`,
@@ -91,8 +90,7 @@ export default class Opencode {
           };
         });
       }
-
-      return [];
+      return result;
     } catch (e) {
       console.log("Failed to start opencode serve: ", e);
       throw e;
