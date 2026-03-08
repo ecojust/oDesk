@@ -3,6 +3,10 @@
 </p>
 
 <p align="center">
+    A powerful dynamic desktop wallpaper management tool that supports multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web wallpapers.
+</p>
+
+<p align="center">
   <a href="README_EN.md">English</a> |
   <a href="README.md">简体中文</a> 
 </p>
@@ -10,9 +14,10 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img alt="Discord" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
   <img alt="npm" src="https://img.shields.io/badge/platform-macOS-blue" />
+  <a href="./examples/">
+     <img alt="npm" src="https://img.shields.io/badge/examples-8A2BE2" />
+     </a>
 </p>
-
-A powerful dynamic desktop wallpaper management tool that supports multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web wallpapers.
 
 ![Preview](./preview/oDesk.png)
 

@@ -3,16 +3,22 @@
 </p>
 
 <p align="center">
+    一款功能强大的动态桌面壁纸管理工具，支持多种壁纸类型，包括静态壁纸、Shader 着色器壁纸和 HTML 网页壁纸。
+</p>
+
+<p align="center">
   <a href="README_EN.md">English</a> |
-  <a href="README.md">简体中文</a> 
+  <a href="README.md">简体中文</a>
+
 </p>
 
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img alt="Discord" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
   <img alt="npm" src="https://img.shields.io/badge/platform-macOS-blue" />
+  <a href="./examples/">
+   <img alt="npm" src="https://img.shields.io/badge/examples-8A2BE2" />
+   </a>
 </p>
-
-一款功能强大的动态桌面壁纸管理工具，支持多种壁纸类型，包括静态壁纸、Shader 着色器壁纸和 HTML 网页壁纸。
 
 ![预览图](./preview/oDesk.png)
 
