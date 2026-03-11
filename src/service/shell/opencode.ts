@@ -1,7 +1,43 @@
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import RequestService from "@/utils/request";
 
 export default class Opencode {
+  static worksapce: string = "";
+  static sessionId: string = "";
+
+  static async send_message(message: string) {
+    const result = await RequestService.postBody({
+      url: `http://127.0.0.1:4096/session/${Opencode.sessionId}/message`,
+      data: {
+        agent: "build",
+        model: {
+          modelID: "big-pickle",
+          providerID: "opencode",
+        },
+        parts: [
+          {
+            type: "text",
+            text: message,
+          },
+        ],
+      },
+    });
+    return result.parts?.find((part: any) => part.type == "text")?.text || "";
+  }
+
+  static async new_session() {
+    try {
+      const result = await RequestService.postBody({
+        url: "http://127.0.0.1:4096/session",
+      });
+      Opencode.sessionId = result.id || "";
+    } catch (error) {
+      console.error("Failed to create session:", error);
+      throw error;
+    }
+  }
+
   static async workspace_file_insert_text(
     workspace: string,
     payload: {
@@ -48,7 +84,9 @@ export default class Opencode {
 
   static async execute_opencode_serve(workspace: string) {
     try {
+      Opencode.worksapce = "";
       const result = await invoke("execute_opencode_serve", { workspace });
+      Opencode.worksapce = workspace;
       console.log(result);
       return result;
     } catch (e) {

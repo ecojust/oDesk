@@ -1,0 +1,60 @@
+const list = [
+  {
+    title: "Schedule Manager",
+    key: "ScheduleManager",
+    description: "Manage and organize your work schedule",
+    icon: "📅",
+    category: "Productivity",
+    color: "#98D8C8",
+  },
+  // {
+  //   title: "Music Download",
+  //   key: "MusicDownload",
+  //   description: "Download music from various sources",
+  //   icon: "🎵",
+  //   category: "Media",
+  //   color: "#FF6B6B",
+  // },
+  // {
+  //   title: "File Converter",
+  //   key: "FileConverter",
+  //   description: "Convert files between different formats",
+  //   icon: "🔄",
+  //   category: "Utilities",
+  //   color: "#4ECDC4",
+  // },
+  // {
+  //   title: "Image Editor",
+  //   key: "ImageEditor",
+  //   description: "Edit and enhance your images",
+  //   icon: "🖼️",
+  //   category: "Graphics",
+  //   color: "#45B7D1",
+  // },
+  // {
+  //   title: "Code Formatter",
+  //   key: "CodeFormatter",
+  //   description: "Format and beautify your code",
+  //   icon: "💻",
+  //   category: "Development",
+  //   color: "#96CEB4",
+  // },
+  // {
+  //   title: "PDF Tools",
+  //   key: "PDFTools",
+  //   description: "Merge, split, and edit PDF files",
+  //   icon: "📄",
+  //   category: "Documents",
+  //   color: "#FFEAA7",
+  // },
+  // {
+  //   title: "Video Compressor",
+  //   key: "VideoCompressor",
+  //   description: "Compress videos to reduce file size",
+  //   icon: "🎥",
+  //   category: "Media",
+  //   color: "#DDA0DD",
+  // },
+];
+
+export default list;

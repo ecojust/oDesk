@@ -2,7 +2,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 import System from "@/service/shell/system";
 
 export default class RequestService {
-  static async postBody(option: { url: string; data: Object }) {
+  static async postBody(option: { url: string; data?: Object }) {
     await System.log(JSON.stringify(option));
 
     try {

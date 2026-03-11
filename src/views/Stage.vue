@@ -2,10 +2,50 @@
   <div class="stage">
     <div class="stage-header">
       <el-tabs v-model="activeTab" class="stage-tabs">
-        <el-tab-pane label="静态壁纸" name="static" />
-        <el-tab-pane label="着色器壁纸" name="shader" />
-        <!-- <el-tab-pane label="三维壁纸" name="3d" /> -->
-        <el-tab-pane label="网页壁纸" name="html" />
+        <el-tab-pane name="static">
+          <template #label>
+            <span class="custom-tabs-label">
+              <span>静态壁纸</span>
+              <span class="platform-icons">
+                <el-icon class="windows-icon"><Monitor /></el-icon>
+                <el-icon class="mac-icon"><Apple /></el-icon>
+              </span>
+            </span>
+          </template>
+        </el-tab-pane>
+        <el-tab-pane label="着色器壁纸" name="shader">
+          <template #label>
+            <span class="custom-tabs-label">
+              <span>着色器壁纸</span>
+              <span class="platform-icons">
+                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
+                <el-icon class="mac-icon"><Apple /></el-icon>
+              </span>
+            </span>
+          </template>
+        </el-tab-pane>
+        <el-tab-pane label="网页壁纸" name="html">
+          <template #label>
+            <span class="custom-tabs-label">
+              <span>网页壁纸</span>
+              <span class="platform-icons">
+                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
+                <el-icon class="mac-icon"><Apple /></el-icon>
+              </span>
+            </span>
+          </template>
+        </el-tab-pane>
+        <el-tab-pane label="skillapps" name="skillapps">
+          <template #label>
+            <span class="custom-tabs-label">
+              <span>SKILL-APPS</span>
+              <span class="platform-icons">
+                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
+                <el-icon class="mac-icon"><Apple /></el-icon>
+              </span>
+            </span>
+          </template>
+        </el-tab-pane>
       </el-tabs>
       <!-- <div class="test-buttons">
         <el-button type="primary" size="small" @click="testCreateWorkspace"
@@ -31,10 +71,13 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { Calendar, Apple, Monitor } from "@element-plus/icons-vue";
 import StaticWallpaper from "./wallpaperSettings/StaticWallpaper.vue";
 import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
+import SKILL from "./skillapps/index.vue";
+
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 
@@ -45,6 +88,7 @@ const components = {
   shader: ShaderWallpaper,
   "3d": ThreeDWallpaper,
   html: HTMLWallpaper,
+  skillapps: SKILL,
 };
 
 const activeComponent = computed(() => components[activeTab.value] || null);
@@ -130,6 +174,31 @@ const testKillOpenServe = async () => {
 
       .el-tabs__active-bar {
         background-color: #007bff;
+      }
+
+      .custom-tabs-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        .platform-icons {
+          display: flex;
+          gap: 4px;
+
+          .el-icon {
+            font-size: 16px;
+          }
+
+          .windows-icon {
+            color: #d45800;
+            font-weight: 900;
+          }
+
+          .mac-icon {
+            color: #d45800;
+            font-weight: 900;
+          }
+        }
       }
     }
   }
