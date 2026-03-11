@@ -31,7 +31,7 @@
           <h2>{{ selectedApp?.title }}</h2>
           <button class="close-btn" @click="closeDialog">×</button>
         </div>
-        <div class="dialog-content">
+        <div class="dialog-content-app">
           <component :is="activeComponent" />
         </div>
       </div>
@@ -219,7 +219,7 @@ const closeDialog = () => {
     background: white;
     border-radius: 16px;
     width: 100%;
-    max-width: 800px;
+    max-width: 1200px;
     max-height: 80vh;
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
@@ -261,7 +261,7 @@ const closeDialog = () => {
     }
   }
 
-  .dialog-content {
+  .dialog-content-app {
     padding: 24px;
     overflow-y: auto;
     max-height: calc(80vh - 80px);
