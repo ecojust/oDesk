@@ -53,6 +53,13 @@
       </div> -->
 
       <div class="main-container">
+        <div class="skills-header">
+          <div class="skills-tags">
+            <span v-for="skill in skills" :key="skill" class="skill-tag">{{
+              skill
+            }}</span>
+          </div>
+        </div>
         <div class="input-section">
           <div class="input-card">
             <div class="input-header">
@@ -193,6 +200,7 @@ import {
 } from "vue";
 import Opencode from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
+import { Open } from "@element-plus/icons-vue";
 const APPID = "oDesk-schedule-manager";
 
 // 响应式数据
@@ -211,6 +219,8 @@ const downloadQueue = ref([]);
 const isDownloading = ref(false);
 const musicFolders = ref([]);
 const currentPlaying = ref(null);
+
+const skills = ref([]);
 
 const sessionId = ref("");
 const isConnected = ref(false);
@@ -318,6 +328,14 @@ const activeWorkspace = async () => {
       postfix: "html",
     });
 
+    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
+      path: ".opencode/skill/",
+    });
+
+    console.log("skills", skillsList);
+    // 将 skills 赋值给响应式变量
+    skills.value = skillsList;
+
     searchResults.value = htmls;
     // 连接成功
     isConnected.value = true;
@@ -334,7 +352,8 @@ onMounted(() => {
   activeWorkspace();
 });
 
-onBeforeUnmount(() => {
+onBeforeUnmount(async () => {
+  await Opencode.killAllOpencodeServer();
   console.log("ScheduleManager unmounting");
 });
 </script>
@@ -581,6 +600,39 @@ onBeforeUnmount(() => {
     display: grid;
     grid-template-columns: 1fr;
     gap: 16px;
+
+    .skills-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 16px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+
+      .skills-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+
+        .skill-tag {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 12px;
+          font-weight: 600;
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+          transition: all 0.3s ease;
+
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          }
+        }
+      }
+    }
 
     .input-section {
       .input-card {

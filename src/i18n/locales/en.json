@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "oDesk"
+  },
+  "stage": {
+    "tabs": {
+      "skillapps": "SKILL-APPS",
+      "static": "Static Wallpaper",
+      "shader": "Shader Wallpaper",
+      "html": "HTML Wallpaper"
+    },
+    "platforms": {
+      "windows": "Windows",
+      "mac": "Mac"
+    },
+    "testButtons": {
+      "createWorkspace": "Test Create Workspace",
+      "executeServe": "Test Execute Serve",
+      "killServe": "Test Kill Serve"
+    }
+  },
+  "wallpaper": {
+    "static": {
+      "title": "Static Wallpaper",
+      "description": "Set a static image as your wallpaper"
+    },
+    "shader": {
+      "title": "Shader Wallpaper",
+      "description": "Set a shader as your wallpaper"
+    },
+    "html": {
+      "title": "HTML Wallpaper",
+      "description": "Set an HTML page as your wallpaper"
+    }
+  },
+  "skillapps": {
+    "title": "Skill Apps",
+    "description": "Install and manage skill apps"
+  }
+}

@@ -1,5 +1,5 @@
 use crate::{
-    fs_helper::{get_appdata_dir, open_folder, read_folder_files},
+    fs_helper::{get_appdata_dir, open_folder, read_folder_files, read_folder_folders},
     tool::log,
 };
 
@@ -7,7 +7,11 @@ use std::{fs, path::PathBuf, process::Command};
 
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
-pub fn kill_existing_opencode_processes() -> Result<(), String> {
+pub async fn kill_existing_opencode_processes() -> Result<(), String> {
+    log("kill_existing_opencode_processes-----".to_string())
+        .await
+        .unwrap();
+
     #[cfg(target_os = "windows")]
     {
         let output = Command::new("taskkill")
@@ -27,12 +31,21 @@ pub fn kill_existing_opencode_processes() -> Result<(), String> {
             .arg("-f")
             .arg("opencode")
             .output()
-            .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
+            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
 
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to kill opencode processes:：{}", stderr));
+            return Err(format!("Failed to kill opencode processes: {}", stderr));
         }
+
+        // 打印日志
+        let log_content = format!(
+            "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+            output.status
+        );
+        log(log_content).await.unwrap();
     }
 
     Ok(())
@@ -116,6 +129,18 @@ pub async fn scan_worksapce_file(
 }
 
 #[tauri::command]
+pub async fn scan_worksapce_folder(workspace: String, path: String) -> Result<Vec<String>, String> {
+    let log_content = format!("scan files: \nworkspace:{}\npath: {}", workspace, path);
+    log(log_content).await.unwrap();
+
+    let base_dir = get_appdata_dir()?;
+    let folder_path = base_dir.join("workspaces").join(workspace).join(path);
+    let all_folders = read_folder_folders(folder_path.to_string_lossy().to_string())?;
+
+    Ok(all_folders)
+}
+
+#[tauri::command]
 pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
     log(" - -------------execute_opencode_serve - -----------".to_string())
         .await
@@ -125,9 +150,9 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
 
-    if let Err(e) = kill_existing_opencode_processes() {
-        eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
-    }
+    // if let Err(e) = kill_existing_opencode_processes() {
+    //     eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
+    // }
 
     //  opencode serve
     tokio::spawn(async move {

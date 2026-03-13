@@ -1,10 +1,17 @@
 <template>
   <div id="app">
-    <router-view />
+    <div class="app-container">
+      <router-view />
+    </div>
+    <div class="language-switcher-container">
+      <LanguageSwitcher />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import LanguageSwitcher from "./components/LanguageSwitcher.vue";
+
 // 路由应用的主入口
 </script>
 
@@ -41,6 +48,19 @@
   width: 100vw;
   height: 100vh;
   background: inherit;
+  position: relative;
+}
+
+.app-container {
+  width: 100%;
+  height: 100%;
+}
+
+.language-switcher-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  z-index: 10;
 }
 
 @media (prefers-color-scheme: dark) {

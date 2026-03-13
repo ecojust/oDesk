@@ -1,0 +1,40 @@
+{
+  "app": {
+    "title": "oDesk"
+  },
+  "stage": {
+    "tabs": {
+      "skillapps": "SKILL-APPS",
+      "static": "静态壁纸",
+      "shader": "着色器壁纸",
+      "html": "网页壁纸"
+    },
+    "platforms": {
+      "windows": "Windows",
+      "mac": "Mac"
+    },
+    "testButtons": {
+      "createWorkspace": "测试创建工作区",
+      "executeServe": "测试执行服务",
+      "killServe": "测试销毁服务"
+    }
+  },
+  "wallpaper": {
+    "static": {
+      "title": "静态壁纸",
+      "description": "设置静态图片为壁纸"
+    },
+    "shader": {
+      "title": "着色器壁纸",
+      "description": "设置着色器为壁纸"
+    },
+    "html": {
+      "title": "网页壁纸",
+      "description": "设置网页为壁纸"
+    }
+  },
+  "skillapps": {
+    "title": "技能应用",
+    "description": "安装和管理技能应用"
+  }
+}

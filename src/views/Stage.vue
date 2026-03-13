@@ -2,10 +2,21 @@
   <div class="stage">
     <div class="stage-header">
       <el-tabs v-model="activeTab" class="stage-tabs">
+        <el-tab-pane name="skillapps">
+          <template #label>
+            <span class="custom-tabs-label">
+              <span>{{ $t("stage.tabs.skillapps") }}</span>
+              <span class="platform-icons">
+                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
+                <el-icon class="mac-icon"><Apple /></el-icon>
+              </span>
+            </span>
+          </template>
+        </el-tab-pane>
         <el-tab-pane name="static">
           <template #label>
             <span class="custom-tabs-label">
-              <span>静态壁纸</span>
+              <span>{{ $t("stage.tabs.static") }}</span>
               <span class="platform-icons">
                 <el-icon class="windows-icon"><Monitor /></el-icon>
                 <el-icon class="mac-icon"><Apple /></el-icon>
@@ -13,10 +24,10 @@
             </span>
           </template>
         </el-tab-pane>
-        <el-tab-pane label="着色器壁纸" name="shader">
+        <el-tab-pane name="shader">
           <template #label>
             <span class="custom-tabs-label">
-              <span>着色器壁纸</span>
+              <span>{{ $t("stage.tabs.shader") }}</span>
               <span class="platform-icons">
                 <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
                 <el-icon class="mac-icon"><Apple /></el-icon>
@@ -24,21 +35,10 @@
             </span>
           </template>
         </el-tab-pane>
-        <el-tab-pane label="网页壁纸" name="html">
+        <el-tab-pane name="html">
           <template #label>
             <span class="custom-tabs-label">
-              <span>网页壁纸</span>
-              <span class="platform-icons">
-                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
-                <el-icon class="mac-icon"><Apple /></el-icon>
-              </span>
-            </span>
-          </template>
-        </el-tab-pane>
-        <el-tab-pane label="skillapps" name="skillapps">
-          <template #label>
-            <span class="custom-tabs-label">
-              <span>SKILL-APPS</span>
+              <span>{{ $t("stage.tabs.html") }}</span>
               <span class="platform-icons">
                 <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
                 <el-icon class="mac-icon"><Apple /></el-icon>
@@ -49,14 +49,14 @@
       </el-tabs>
       <!-- <div class="test-buttons">
         <el-button type="primary" size="small" @click="testCreateWorkspace"
-          >测试创建工作区</el-button
+          >{{ $t("stage.testButtons.createWorkspace") }}</el-button
         >
         <el-button type="success" size="small" @click="testExecuteOpenServe"
-          >测试执行服务</el-button
+          >{{ $t("stage.testButtons.executeServe") }}</el-button
         >
 
         <el-button type="warning" size="small" @click="testKillOpenServe"
-          >测试销毁服务</el-button
+          >{{ $t("stage.testButtons.killServe") }}</el-button
         >
       </div> -->
     </div>
@@ -81,7 +81,7 @@ import SKILL from "./skillapps/index.vue";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 
-const activeTab = ref("static");
+const activeTab = ref("skillapps");
 
 const components = {
   static: StaticWallpaper,

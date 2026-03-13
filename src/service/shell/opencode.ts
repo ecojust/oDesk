@@ -134,4 +134,33 @@ export default class Opencode {
       throw e;
     }
   }
+
+  static async killAllOpencodeServer() {
+    const result = await invoke("kill_existing_opencode_processes");
+    console.log("killAllOpencodeServer", result);
+  }
+
+  static async scan_worksapce_skills(
+    workspace: string,
+    payload: {
+      path: string;
+    },
+  ) {
+    try {
+      let result = await invoke("scan_worksapce_folder", {
+        workspace,
+        ...payload,
+      });
+
+      if (result instanceof Array) {
+        result = result.map((folderPath) => {
+          return folderPath.split("/").pop();
+        });
+      }
+      return result;
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
+      throw e;
+    }
+  }
 }
