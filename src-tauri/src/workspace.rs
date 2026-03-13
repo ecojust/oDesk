@@ -13,40 +13,26 @@ pub async fn kill_existing_opencode_processes() -> Result<(), String> {
         .unwrap();
 
     #[cfg(target_os = "windows")]
-    {
-        let output = Command::new("taskkill")
-            .args(["/F", "/IM", "opencode.exe"])
-            .output()
-            .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
-
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to kill opencode processes:：{}", stderr));
-        }
-    }
+    let output = Command::new("taskkill")
+        .args(["/F", "/IM", "opencode.exe"])
+        .output()
+        .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
 
     #[cfg(not(target_os = "windows"))]
-    {
-        let output = Command::new("pkill")
-            .arg("-f")
-            .arg("opencode")
-            .output()
-            .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+    let output = Command::new("pkill")
+        .arg("-f")
+        .arg("opencode")
+        .output()
+        .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
 
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(format!("Failed to kill opencode processes: {}", stderr));
-        }
-
-        // 打印日志
-        let log_content = format!(
-            "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
-            String::from_utf8_lossy(&output.stdout),
-            String::from_utf8_lossy(&output.stderr),
-            output.status
-        );
-        log(log_content).await.unwrap();
-    }
+    // 打印日志
+    let log_content = format!(
+        "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+        output.status
+    );
+    log(log_content).await.unwrap();
 
     Ok(())
 }
@@ -172,13 +158,6 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
 
         match output {
             Ok(output) => {
-                // let base_dir = match get_appdata_dir() {
-                //     Ok(dir) => dir,
-                //     Err(e) => {
-                //         println!("Failed to get appdata directory: {}", e);
-                //         return;
-                //     }
-                // };
                 let log_content = format!(
                     "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
                     String::from_utf8_lossy(&output.stdout),
@@ -186,14 +165,9 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
                     output.status
                 );
                 log(log_content).await.unwrap();
-
-                // if let Err(e) = open_folder(base_dir.to_string_lossy().to_string()) {
-                //     println!("Failed to open appdata directory: {}", e);
-                // }
             }
             Err(e) => {
                 let log_content = format!("ERROR:{}\nSTDOUT:\nSTDERR:\nSTATUS: None\n", e);
-
                 log(log_content).await.unwrap();
             }
         }
