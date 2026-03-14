@@ -114,19 +114,26 @@ export default class Opencode {
     },
   ) {
     try {
-      let result = await invoke("scan_worksapce_file", {
+      let result: any[] = await invoke("scan_worksapce_file", {
         workspace,
         ...payload,
       });
 
       if (result instanceof Array) {
-        result = result.map((filePath, index) => {
+        result = result.map((item, index) => {
+          const filePath = item[0];
+          console.log(filePath);
           const fileUrl = convertFileSrc(filePath);
+          const title = filePath.split("/").pop() || `本地图片 ${index + 1}`;
           return {
-            title: filePath.split("/").pop() || `本地图片 ${index + 1}`,
+            title: title,
             url: fileUrl,
+            time: item[1],
+            type: title.split(".").pop(),
           };
         });
+
+        result = result.filter((r: any) => r.type == "html");
       }
       return result;
     } catch (e) {

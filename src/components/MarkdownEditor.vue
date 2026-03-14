@@ -65,8 +65,6 @@ const initEditor = async () => {
         }
       },
     );
-
-    await previewHTML();
   }
 };
 

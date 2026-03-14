@@ -57,11 +57,7 @@
           </div>
 
           <div class="editor-wrapper">
-            <MarkdownEditor
-              v-model="question"
-              @update:modelValue="handleQuestionInput"
-              class="markdown-editor"
-            />
+            <MarkdownEditor v-model="question" class="markdown-editor" />
           </div>
         </div>
 
@@ -120,7 +116,7 @@
                       <div class="schedule-header">
                         <h4>{{ result.title || "排班表" }}</h4>
                         <span class="schedule-date">{{
-                          result.date || "2024年4月"
+                          result.time || "2024年4月"
                         }}</span>
                       </div>
 
@@ -239,9 +235,9 @@ const handleQuestion = async () => {
 
     const htmls = await Opencode.scan_worksapce_file(APPID, {
       path: "",
-      postfix: "html",
     });
 
+    console.log("htmls", htmls);
     searchResults.value = htmls;
 
     // // 模拟生成排班结果

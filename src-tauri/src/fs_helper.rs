@@ -1,3 +1,4 @@
+use chrono::{DateTime, Utc};
 use std::fs;
 use std::process::Command;
 
@@ -104,6 +105,50 @@ pub fn read_folder_files(path: String) -> Result<Vec<String>, String> {
 
     // 按文件名排序
     files.sort();
+
+    Ok(files)
+}
+
+#[tauri::command]
+pub fn read_folder_files_with_message(path: String) -> Result<Vec<(String, String)>, String> {
+    // 确保目录存在
+    fs::create_dir_all(&path)
+        .map_err(|e| format!("Failed to create wallpaper_static directory: {}", e))?;
+
+    // 读取目录中的文件
+    let entries = fs::read_dir(&path)
+        .map_err(|e| format!("Failed to read wallpaper_static directory: {}", e))?;
+
+    let mut files = Vec::new();
+
+    for entry in entries {
+        let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+        let path = entry.path();
+
+        // 只处理文件，跳过目录
+        if path.is_file() {
+            if let Some(path_str) = path.to_str() {
+                // 获取文件修改时间
+                let metadata = fs::metadata(&path)
+                    .map_err(|e| format!("Failed to get file metadata: {}", e))?;
+                let modified_time = metadata
+                    .modified()
+                    .map_err(|e| format!("Failed to get file modified time: {}", e))?;
+                let modified_time_str = modified_time
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map_err(|e| format!("Failed to convert time: {}", e))?
+                    .as_secs();
+                let datetime: DateTime<Utc> = DateTime::from_timestamp(modified_time_str as i64, 0)
+                    .ok_or_else(|| "Invalid timestamp".to_string())?;
+                let modified_time_str = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+
+                files.push((path_str.to_string(), modified_time_str));
+            }
+        }
+    }
+
+    // 按文件名排序
+    files.sort_by(|a, b| a.0.cmp(&b.0));
 
     Ok(files)
 }

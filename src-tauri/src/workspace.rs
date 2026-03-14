@@ -1,5 +1,8 @@
 use crate::{
-    fs_helper::{get_appdata_dir, open_folder, read_folder_files, read_folder_folders},
+    fs_helper::{
+        get_appdata_dir, open_folder, read_folder_files, read_folder_files_with_message,
+        read_folder_folders,
+    },
     tool::log,
 };
 
@@ -88,33 +91,28 @@ pub fn workspace_file_insert_text(
 pub async fn scan_worksapce_file(
     workspace: String,
     path: String,
-    postfix: String,
-) -> Result<Vec<String>, String> {
-    let log_content = format!(
-        "scan files: \nworkspace:{}\npath: {}\npostfix: {}",
-        workspace, path, postfix
-    );
+) -> Result<Vec<(String, String)>, String> {
+    let log_content = format!("scan files: \nworkspace:{}\npath: {}\n", workspace, path);
     log(log_content).await.unwrap();
 
     let base_dir = get_appdata_dir()?;
     let folder_path = base_dir.join("workspaces").join(workspace).join(path);
-    let all_files = read_folder_files(folder_path.to_string_lossy().to_string())?;
-    let mut files = Vec::new();
+    let all_files = read_folder_files_with_message(folder_path.to_string_lossy().to_string())?;
 
-    for file in &all_files {
-        let ext = PathBuf::from(file)
-            .extension()
-            .and_then(|ext| ext.to_str())
-            .unwrap_or("")
-            .to_lowercase();
-        if ext != postfix {
-            println!("Skipping non-{} file: {}", postfix, file);
-            continue; // 跳过非图片文件
-        }
+    // for file in &all_files {
+    //     let ext = PathBuf::from(file)
+    //         .extension()
+    //         .and_then(|ext| ext.to_str())
+    //         .unwrap_or("")
+    //         .to_lowercase();
+    //     if ext != postfix {
+    //         println!("Skipping non-{} file: {}", postfix, file);
+    //         continue; // 跳过非图片文件
+    //     }
 
-        files.push(file.clone());
-    }
-    Ok(files)
+    //     files.push(file.clone());
+    // }
+    Ok(all_files)
 }
 
 #[tauri::command]
