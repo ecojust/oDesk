@@ -170,4 +170,30 @@ export default class Opencode {
       throw e;
     }
   }
+
+  static async export_workspace_skill(
+    workspace: string,
+    payload: {
+      skill: string;
+      target_path: string;
+    },
+  ) {
+    try {
+      let result = await invoke("export_workspace_skill", {
+        workspace,
+        ...payload,
+      });
+      console.log("result", result);
+
+      // if (result instanceof Array) {
+      //   result = result.map((folderPath) => {
+      //     return folderPath.split("/").pop();
+      //   });
+      // }
+      // return result;
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
+      throw e;
+    }
+  }
 }

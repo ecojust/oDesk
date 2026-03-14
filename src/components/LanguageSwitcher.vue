@@ -46,6 +46,6 @@ if (savedLanguage) {
   display: flex;
   justify-content: center;
   background: transparent;
-  border-bottom: 1px solid #e4e7ed;
+  /* border-bottom: 1px solid #e4e7ed; */
 }
 </style>

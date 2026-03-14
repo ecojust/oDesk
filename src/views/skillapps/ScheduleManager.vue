@@ -41,9 +41,13 @@
     <div v-else class="main-container">
       <div class="skills-header">
         <div class="skills-tags">
-          <span v-for="skill in skills" :key="skill" class="skill-tag">{{
-            skill
-          }}</span>
+          <span
+            @click="exportSkill(skill)"
+            v-for="skill in skills"
+            :key="skill"
+            class="skill-tag"
+            >{{ skill }}</span
+          >
         </div>
       </div>
 
@@ -56,22 +60,22 @@
               <div class="title-section">
                 <h3>提示词编辑区</h3>
                 <p>请输入排班需求，系统将为您生成最优排班表</p>
+                <button
+                  @click="handleQuestion"
+                  :disabled="isLoading"
+                  class="generate-toggle-btn"
+                  :class="{ 'is-loading': isLoading }"
+                >
+                  <span v-if="!isLoading">
+                    <i class="icon">📊</i>
+                    {{ showGeneratePanel ? "收起排班表" : "生成排班表" }}
+                  </span>
+                  <span v-else>
+                    <i class="icon">⏳</i>
+                    生成中...
+                  </span>
+                </button>
               </div>
-              <button
-                @click="handleQuestion"
-                :disabled="isLoading"
-                class="generate-toggle-btn"
-                :class="{ 'is-loading': isLoading }"
-              >
-                <span v-if="!isLoading">
-                  <i class="icon">📊</i>
-                  {{ showGeneratePanel ? "收起排班表" : "生成排班表" }}
-                </span>
-                <span v-else>
-                  <i class="icon">⏳</i>
-                  生成中...
-                </span>
-              </button>
             </div>
           </div>
 
@@ -139,6 +143,7 @@
             </div>
 
             <div class="loading-section" v-if="isLoading">
+              <div class="loading-overlay"></div>
               <div class="loading-card">
                 <div class="loading-icon">⏳</div>
                 <h3>正在生成排班表...</h3>
@@ -215,6 +220,12 @@ const isConnected = ref(false);
 const dialogVisible = ref(false);
 const dialogUrl = ref("");
 
+const exportSkill = async (skill) => {
+  console.log("skill", skill);
+  await Opencode.export_workspace_skill(APPID, {
+    skill: skill,
+  });
+};
 // 方法定义
 const handleQuestion = async () => {
   if (!question.value.trim()) return;
@@ -571,41 +582,53 @@ onBeforeUnmount(async () => {
       //   gap: 16px;
       // }
 
-      // 生成按钮容器样式
-      .generate-button-container {
-        position: absolute;
-        top: 16px;
-        left: 16px;
-        z-index: 10;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+      .title-section {
+        position: relative;
+        flex: 1;
+
+        h3 {
+          margin: 0 0 4px 0;
+          font-size: 18px;
+          color: #333;
+          font-weight: 700;
+          padding-right: 160px;
+        }
+
+        p {
+          margin: 0;
+          color: #666;
+          font-size: 12px;
+          padding-right: 160px;
+        }
 
         .generate-toggle-btn {
+          position: absolute;
+          top: 0;
+          right: 0;
           background: linear-gradient(135deg, #667eea, #764ba2);
           color: white;
           border: none;
-          padding: 12px 16px;
-          border-radius: 12px;
-          font-size: 14px;
+          padding: 10px 18px;
+          border-radius: 20px;
+          font-size: 13px;
           font-weight: 700;
           cursor: pointer;
           transition: all 0.3s ease;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          gap: 8px;
+          gap: 6px;
           box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
           border: 1px solid rgba(255, 255, 255, 0.3);
-          backdrop-filter: blur(10px);
+          white-space: nowrap;
 
           &:hover:not(:disabled) {
-            transform: translateY(-2px);
+            transform: translateY(-2px) scale(1.02);
             box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
           }
 
           &:active:not(:disabled) {
-            transform: translateY(0);
+            transform: translateY(0) scale(1);
           }
 
           &:disabled {
@@ -621,7 +644,7 @@ onBeforeUnmount(async () => {
           }
 
           .icon {
-            font-size: 16px;
+            font-size: 14px;
           }
         }
       }
@@ -806,9 +829,10 @@ onBeforeUnmount(async () => {
           height: 100%;
           display: flex;
           flex-direction: column;
-          min-height: 0; // 允许flex子项收缩，防止溢出
+          min-height: 0;
           flex: 1;
           overflow: hidden;
+          position: relative;
           .results-section {
             flex: 1;
             overflow-y: auto;
@@ -1030,18 +1054,36 @@ onBeforeUnmount(async () => {
           }
 
           .loading-section {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            .loading-overlay {
+              position: absolute;
+              top: 0;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              background: rgba(255, 255, 255, 0.85);
+              backdrop-filter: blur(4px);
+            }
+
             .loading-card {
+              position: relative;
+              z-index: 1;
               background: white;
               border-radius: 16px;
-              padding: 16px;
+              padding: 24px 32px;
               text-align: center;
-              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              height: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
+              box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
+              border: 1px solid rgba(102, 126, 234, 0.2);
+              min-width: 280px;
 
               .loading-icon {
                 font-size: 36px;

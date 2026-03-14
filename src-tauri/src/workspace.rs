@@ -1,7 +1,7 @@
 use crate::{
     fs_helper::{
-        get_appdata_dir, open_folder, read_folder_files, read_folder_files_with_message,
-        read_folder_folders,
+        compress_export_folder, get_appdata_dir, open_folder, read_folder_files,
+        read_folder_files_with_message, read_folder_folders,
     },
     tool::log,
 };
@@ -48,6 +48,33 @@ pub async fn kill_existing_opencode_processes() -> Result<(), String> {
 pub fn open_workspace(workspace: String) -> Result<String, String> {
     let target_folder = format!("workspaces/{}", workspace);
     open_folder(target_folder)
+}
+
+#[tauri::command]
+pub fn export_workspace_skill(
+    workspace: String,
+    skill: String,
+    target_path: Option<String>,
+) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let skill_path = base_dir
+        .join("workspaces")
+        .join(workspace)
+        .join(".opencode/skill")
+        .join(skill.to_string());
+
+    // 如果没有提供目标路径，则使用下载目录
+    let target = if let Some(target_path) = target_path {
+        target_path
+    } else {
+        // 获取下载目录
+        let downloads_dir =
+            dirs::download_dir().ok_or_else(|| "Failed to get downloads directory".to_string())?;
+        downloads_dir.to_string_lossy().to_string()
+    };
+
+    let result = compress_export_folder(skill_path.to_string_lossy().to_string(), target)?;
+    Ok(format!("skill exported successfully: {} ", skill))
 }
 
 /// 创建新的工作区目录

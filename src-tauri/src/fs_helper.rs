@@ -1,5 +1,6 @@
 use chrono::{DateTime, Local, Utc};
 use std::fs;
+use std::path::Path;
 use std::process::Command;
 
 // 获取 appdata 目录下的 oDesk 路径
@@ -198,4 +199,129 @@ pub fn create_directory(path: String) -> Result<String, String> {
         "Directory created successfully: {}",
         target_path.display()
     ))
+}
+
+#[tauri::command]
+pub fn compress_export_folder(source_path: String, target_path: String) -> Result<String, String> {
+    let source = std::path::Path::new(&source_path);
+
+    if !source.exists() {
+        return Err(format!("Source folder does not exist: {}", source_path));
+    }
+
+    if !source.is_dir() {
+        return Err(format!("Source path is not a directory: {}", source_path));
+    }
+
+    let target_path = std::path::Path::new(&target_path);
+
+    // 创建目标目录
+    fs::create_dir_all(target_path)
+        .map_err(|e| format!("Failed to create target directory: {}", e))?;
+
+    // 压缩源文件夹并导出
+    compress_and_export(source, target_path)?;
+
+    Ok(format!(
+        "Folder exported successfully from {} to {}",
+        source_path,
+        target_path.display()
+    ))
+}
+
+fn copy_dir_recursive(source: &std::path::Path, target: &std::path::Path) -> Result<(), String> {
+    if !source.is_dir() {
+        return Err("Source is not a directory".to_string());
+    }
+
+    if !target.exists() {
+        fs::create_dir_all(target)
+            .map_err(|e| format!("Failed to create target directory: {}", e))?;
+    }
+
+    for entry in
+        fs::read_dir(source).map_err(|e| format!("Failed to read source directory: {}", e))?
+    {
+        let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+        let path = entry.path();
+        let file_name = entry.file_name();
+
+        let target_path = target.join(file_name);
+
+        if path.is_dir() {
+            // 递归复制子目录
+            copy_dir_recursive(&path, &target_path)?;
+        } else {
+            // 复制文件
+            fs::copy(&path, &target_path).map_err(|e| format!("Failed to copy file: {}", e))?;
+        }
+    }
+
+    Ok(())
+}
+
+fn compress_and_export(source: &Path, target: &Path) -> Result<(), String> {
+    // 生成压缩文件名（使用源文件夹名 + .zip）
+    let folder_name = source
+        .file_name()
+        .ok_or_else(|| "Failed to get folder name".to_string())?;
+    let zip_file_name = format!("{}.zip", folder_name.to_string_lossy());
+    let zip_path = target.join(zip_file_name);
+
+    // 创建压缩文件
+    let zip_file =
+        fs::File::create(&zip_path).map_err(|e| format!("Failed to create zip file: {}", e))?;
+    let mut zip = zip::ZipWriter::new(zip_file);
+
+    // 递归添加文件到压缩包
+    add_dir_to_zip(source, source, &mut zip)?;
+
+    // 完成压缩
+    zip.finish()
+        .map_err(|e| format!("Failed to finish zip: {}", e))?;
+
+    Ok(())
+}
+
+fn add_dir_to_zip(
+    source_dir: &Path,
+    current_dir: &Path,
+    zip: &mut zip::ZipWriter<fs::File>,
+) -> Result<(), String> {
+    let options = zip::write::FileOptions::default()
+        .compression_method(zip::CompressionMethod::Deflated)
+        .unix_permissions(0o755);
+
+    for entry in
+        fs::read_dir(current_dir).map_err(|e| format!("Failed to read directory: {}", e))?
+    {
+        let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
+        let path = entry.path();
+        let file_name = entry.file_name();
+
+        let relative_path = path
+            .strip_prefix(source_dir)
+            .map_err(|e| format!("Failed to strip prefix: {}", e))?;
+
+        if path.is_dir() {
+            // 添加目录条目
+            let dir_path = relative_path.to_path_buf();
+            zip.add_directory(dir_path.to_string_lossy(), options)
+                .map_err(|e| format!("Failed to add directory to zip: {}", e))?;
+
+            // 递归处理子目录
+            add_dir_to_zip(source_dir, &path, zip)?;
+        } else {
+            // 添加文件
+            zip.start_file(relative_path.to_string_lossy(), options)
+                .map_err(|e| format!("Failed to start file in zip: {}", e))?;
+
+            let mut file =
+                fs::File::open(&path).map_err(|e| format!("Failed to open file: {}", e))?;
+            std::io::copy(&mut file, zip)
+                .map_err(|e| format!("Failed to copy file to zip: {}", e))?;
+        }
+    }
+
+    Ok(())
 }
