@@ -5,6 +5,9 @@ use crate::{
 
 use std::{fs, path::PathBuf, process::Command};
 
+use tauri_plugin_shell::process::CommandEvent;
+use tauri_plugin_shell::ShellExt;
+
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
 pub async fn kill_existing_opencode_processes() -> Result<(), String> {
@@ -127,7 +130,10 @@ pub async fn scan_worksapce_folder(workspace: String, path: String) -> Result<Ve
 }
 
 #[tauri::command]
-pub async fn execute_opencode_serve(workspace: String) -> Result<String, String> {
+pub async fn execute_opencode_serve(
+    app: tauri::AppHandle,
+    workspace: String,
+) -> Result<String, String> {
     log(" - -------------execute_opencode_serve - -----------".to_string())
         .await
         .unwrap();
@@ -155,6 +161,11 @@ pub async fn execute_opencode_serve(workspace: String) -> Result<String, String>
             .current_dir(&target_workspace)
             .output()
             .await;
+        // let sidecar_command = app.shell().sidecar("opencode").unwrap().arg("serve");
+        // let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
+        // let sidecar_command = app.shell().sidecar("opencode").unwrap().arg("serve");
+        // let output = sidecar_command.output();
+        // let response = String::from_utf8(output.stdout).unwrap();
 
         match output {
             Ok(output) => {
