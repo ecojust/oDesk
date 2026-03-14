@@ -1,4 +1,4 @@
-use chrono::{DateTime, Utc};
+use chrono::{DateTime, Local, Utc};
 use std::fs;
 use std::process::Command;
 
@@ -140,7 +140,8 @@ pub fn read_folder_files_with_message(path: String) -> Result<Vec<(String, Strin
                     .as_secs();
                 let datetime: DateTime<Utc> = DateTime::from_timestamp(modified_time_str as i64, 0)
                     .ok_or_else(|| "Invalid timestamp".to_string())?;
-                let modified_time_str = datetime.format("%Y-%m-%d %H:%M:%S").to_string();
+                let local_datetime = datetime.with_timezone(&Local);
+                let modified_time_str = local_datetime.format("%Y-%m-%d %H:%M:%S").to_string();
 
                 files.push((path_str.to_string(), modified_time_str));
             }

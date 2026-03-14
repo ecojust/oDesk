@@ -884,6 +884,9 @@ onBeforeUnmount(async () => {
                     }
 
                     .schedule-details {
+                      iframe {
+                        width: 100%;
+                      }
                       .detail-row {
                         display: flex;
                         justify-content: space-between;
