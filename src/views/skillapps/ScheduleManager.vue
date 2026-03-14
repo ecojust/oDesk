@@ -204,13 +204,12 @@ const APPID = "oDesk-schedule-manager";
 
 // 响应式数据
 const question = ref(`
+# 现在用户的输入数据为：
+- 员工数量：25；
+- 月份：4月；
+- 班次：7点班，10点班，14点班，16点班
 
-现在用户的输入数据为：
-员工数量：25；
-月份：4月；
-班次：7点班，10点班，14点班，16点班
 请生成排班表
-
 `);
 const isLoading = ref(false);
 const searchResults = ref([]);
@@ -531,7 +530,6 @@ onBeforeUnmount(async () => {
     gap: 16px;
     box-sizing: border-box;
     height: 100%;
-    border: 1px solid rgb(0, 255, 38);
 
     .skills-header {
       background: rgba(255, 255, 255, 0.95);
@@ -763,7 +761,6 @@ onBeforeUnmount(async () => {
 
         &.right-panel {
           height: 100%;
-          border: 1px solid red;
           display: flex;
           flex-direction: column;
           min-height: 0; // 允许flex子项收缩，防止溢出

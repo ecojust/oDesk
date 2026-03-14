@@ -23,15 +23,26 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from "vue";
+import { computed, ref, onMounted, watch, defineProps, defineEmits } from "vue";
 import { useI18n } from "vue-i18n";
 import { CodemirrorMarkdownEditor } from "@/service/markdown";
 
 const { locale } = useI18n();
 
+const props = defineProps({
+  modelValue: {
+    type: String,
+    default: "",
+  },
+});
+
+const emit = defineEmits(["update:modelValue"]);
+
+const { t } = useI18n();
+
 const currentLocale = computed(() => locale.value);
 const monacoContainer = ref(null);
-const currentCode = ref("");
+const currentCode = ref(props.modelValue);
 const previewMode = ref(false);
 const fullscreen = ref(false);
 const renderedHTML = ref("");
@@ -48,6 +59,7 @@ const initEditor = async () => {
       currentCode.value,
       (code) => {
         currentCode.value = code;
+        emit("update:modelValue", code);
         if (previewMode.value) {
           renderMarkdown();
         }
@@ -84,6 +96,23 @@ watch(currentCode, (newCode) => {
     renderMarkdown();
   }
 });
+
+// 监听外部传入的 modelValue 变化
+watch(
+  () => props.modelValue,
+  (newValue) => {
+    if (newValue !== currentCode.value) {
+      currentCode.value = newValue;
+      if (monacoEditor && monacoEditor.setValue) {
+        monacoEditor.setValue(newValue);
+      }
+      if (previewMode.value) {
+        renderMarkdown();
+      }
+    }
+  },
+  { immediate: true },
+);
 
 onMounted(() => {
   initEditor();
