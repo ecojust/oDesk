@@ -269,7 +269,6 @@ onUnmounted(() => {
       height: 100vh;
       border-radius: 0;
       background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      border: 1px solid rgb(0, 255, 38);
       box-sizing: border-box;
 
       .el-dialog__header {
@@ -350,7 +349,6 @@ onUnmounted(() => {
   }
 
   .dialog-content-app {
-    flex: 1;
     // padding: 24px;
     overflow-y: auto;
     background: rgba(255, 255, 255, 0.9);
@@ -360,7 +358,6 @@ onUnmounted(() => {
     margin-top: 80px; // 为固定header留出空间
     height: calc(100vh - 130px); // 减去header高度
     box-sizing: border-box;
-    border: 1px solid red;
 
     // 平滑滚动
     scrollbar-width: thin;
@@ -383,6 +380,11 @@ onUnmounted(() => {
         background: #667eea;
       }
     }
+
+    // 确保内容不会溢出
+    display: flex;
+    flex-direction: column;
+    min-height: 0; // 允许flex子项收缩
   }
 
   // 进入和退出动画

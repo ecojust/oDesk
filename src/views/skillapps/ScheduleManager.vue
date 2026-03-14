@@ -95,7 +95,9 @@
 
         <!-- 右侧：结果列表 -->
         <div class="layout-panel right-panel">
-          <el-scrollbar :wrap-style="{ height: '100%' }">
+          <el-scrollbar :wrap-style="{ maxHeight: '100%' }">
+            <!-- <div v-for="i in 100" :key="i">{{ i }}</div> -->
+
             <div class="results-section" v-if="searchResults.length > 0">
               <div class="results-card">
                 <div class="results-header">
@@ -447,9 +449,10 @@ onBeforeUnmount(async () => {
   }
 
   // 原有样式保持不变
-  height: calc(100% - 0px);
+  // height: calc(100vh - 130px);
+  height: 100%;
+
   box-sizing: border-box;
-  border: 1px solid green;
 
   // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   // padding: 16px;
@@ -521,81 +524,6 @@ onBeforeUnmount(async () => {
     }
   }
 
-  .header-section {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 16px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-
-    .header-content {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 16px;
-
-      @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
-
-      .title-section {
-        flex: 1;
-
-        .main-title {
-          margin: 0 0 4px 0;
-          font-size: 24px;
-          font-weight: 800;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          letter-spacing: -1px;
-        }
-
-        .subtitle {
-          margin: 0;
-          font-size: 14px;
-          color: #666;
-          font-weight: 500;
-        }
-      }
-
-      .session-info {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        padding: 8px 12px;
-        background: #f8f9fa;
-        border-radius: 8px;
-        border: 1px solid #e9ecef;
-
-        .session-label {
-          font-size: 11px;
-          font-weight: 600;
-          color: #666;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-
-        .session-id {
-          font-family: "Courier New", monospace;
-          font-size: 12px;
-          font-weight: 700;
-          color: #333;
-          background: white;
-          padding: 4px 8px;
-          border-radius: 6px;
-          border: 1px solid #e9ecef;
-          box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-        }
-      }
-    }
-  }
-
   .main-container {
     display: flex;
     flex-direction: column;
@@ -603,6 +531,7 @@ onBeforeUnmount(async () => {
     gap: 16px;
     box-sizing: border-box;
     height: 100%;
+    border: 1px solid rgb(0, 255, 38);
 
     .skills-header {
       background: rgba(255, 255, 255, 0.95);
@@ -613,7 +542,7 @@ onBeforeUnmount(async () => {
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
       // border: 1px solid rgba(255, 255, 255, 0.3);
       // border: 1px solid blue;
-      border: 1px solid red;
+      // border: 1px solid red;
 
       .skills-tags {
         display: flex;
@@ -647,7 +576,8 @@ onBeforeUnmount(async () => {
       gap: 16px;
       box-sizing: border-box;
       flex: 1;
-      border: 1px solid red;
+      height: calc(100% - 140px);
+      // border: 1px solid red;
 
       // @media (max-width: 1024px) {
       //   grid-template-columns: 1fr;
@@ -664,8 +594,10 @@ onBeforeUnmount(async () => {
         flex-direction: column;
         overflow: hidden;
         height: 100%;
+        min-height: 0; // 允许flex子项收缩，防止溢出
 
         &.left-panel {
+          width: 40%;
           .panel-header {
             padding: 16px;
             border-bottom: 1px solid #e9ecef;
@@ -832,7 +764,16 @@ onBeforeUnmount(async () => {
         &.right-panel {
           height: 100%;
           border: 1px solid red;
+          display: flex;
+          flex-direction: column;
+          min-height: 0; // 允许flex子项收缩，防止溢出
+          flex: 1;
+          overflow: hidden;
           .results-section {
+            flex: 1;
+            overflow-y: auto;
+            padding-right: 4px;
+
             .results-card {
               background: white;
               border-radius: 16px;
@@ -1188,18 +1129,6 @@ onBeforeUnmount(async () => {
 
   @media (max-width: 768px) {
     padding: 16px;
-
-    .header-section {
-      padding: 16px;
-
-      .header-content {
-        .title-section {
-          .main-title {
-            font-size: 24px;
-          }
-        }
-      }
-    }
 
     .main-container {
       .input-section {
