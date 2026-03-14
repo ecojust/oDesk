@@ -73,8 +73,11 @@ pub fn export_workspace_skill(
         downloads_dir.to_string_lossy().to_string()
     };
 
-    let result = compress_export_folder(skill_path.to_string_lossy().to_string(), target)?;
-    Ok(format!("skill exported successfully: {} ", skill))
+    let message = compress_export_folder(skill_path.to_string_lossy().to_string(), target.clone())?;
+
+    let result = open_folder(target.clone());
+    Ok(format!("{}", target))
+    // Ok(format!("skill exported successfully: {} ", message))
 }
 
 /// 创建新的工作区目录

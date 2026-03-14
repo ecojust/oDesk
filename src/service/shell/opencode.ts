@@ -183,6 +183,7 @@ export default class Opencode {
         workspace,
         ...payload,
       });
+
       console.log("result", result);
 
       // if (result instanceof Array) {
