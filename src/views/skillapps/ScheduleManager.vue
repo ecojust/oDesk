@@ -52,40 +52,31 @@
         <!-- 左侧：提示词编辑区 -->
         <div class="layout-panel left-panel">
           <div class="panel-header">
-            <h3>提示词编辑区</h3>
-            <p>请输入排班需求，系统将为您生成最优排班表</p>
+            <div class="header-content">
+              <div class="title-section">
+                <h3>提示词编辑区</h3>
+                <p>请输入排班需求，系统将为您生成最优排班表</p>
+              </div>
+              <button
+                @click="handleQuestion"
+                :disabled="isLoading"
+                class="generate-toggle-btn"
+                :class="{ 'is-loading': isLoading }"
+              >
+                <span v-if="!isLoading">
+                  <i class="icon">📊</i>
+                  {{ showGeneratePanel ? "收起排班表" : "生成排班表" }}
+                </span>
+                <span v-else>
+                  <i class="icon">⏳</i>
+                  生成中...
+                </span>
+              </button>
+            </div>
           </div>
 
           <div class="editor-wrapper">
             <MarkdownEditor v-model="question" class="markdown-editor" />
-          </div>
-        </div>
-
-        <!-- 中间：生成按钮 -->
-        <div class="layout-panel center-panel">
-          <div class="generate-section">
-            <div class="generate-card">
-              <div class="generate-icon">📊</div>
-              <h3>生成排班表</h3>
-              <p>点击按钮开始生成排班方案</p>
-
-              <div class="generate-actions">
-                <button
-                  @click="handleQuestion"
-                  :disabled="isLoading"
-                  class="generate-btn"
-                >
-                  <span v-if="!isLoading">
-                    <i class="icon">🚀</i>
-                    开始生成
-                  </span>
-                  <span v-else>
-                    <i class="icon">⏳</i>
-                    生成中...
-                  </span>
-                </button>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -215,6 +206,7 @@ const musicFolders = ref([]);
 const currentPlaying = ref(null);
 
 const skills = ref([]);
+const showGeneratePanel = ref(false);
 
 const sessionId = ref("");
 const isConnected = ref(false);
@@ -578,6 +570,61 @@ onBeforeUnmount(async () => {
       //   height: calc(100vh - 100px);
       //   gap: 16px;
       // }
+
+      // 生成按钮容器样式
+      .generate-button-container {
+        position: absolute;
+        top: 16px;
+        left: 16px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+
+        .generate-toggle-btn {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+          border: none;
+          padding: 12px 16px;
+          border-radius: 12px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+          border: 1px solid rgba(255, 255, 255, 0.3);
+          backdrop-filter: blur(10px);
+
+          &:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+          }
+
+          &:active:not(:disabled) {
+            transform: translateY(0);
+          }
+
+          &:disabled {
+            background: linear-gradient(135deg, #a0a0a0, #808080);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            border-color: rgba(255, 255, 255, 0.1);
+          }
+
+          &.is-loading {
+            animation: pulse 1.5s infinite;
+          }
+
+          .icon {
+            font-size: 16px;
+          }
+        }
+      }
 
       .layout-panel {
         background: white;
