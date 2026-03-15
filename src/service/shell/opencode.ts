@@ -196,6 +196,7 @@ export default class Opencode {
       console.log("export_workspace_file", parameters);
 
       let result = await invoke("export_workspace_file", parameters);
+      return result;
     } catch (e) {
       console.log("Failed to export_workspace_file ", e);
       throw e;

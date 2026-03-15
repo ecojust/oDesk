@@ -1,5 +1,3 @@
-import { invoke, convertFileSrc } from "@tauri-apps/api/core";
-
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
