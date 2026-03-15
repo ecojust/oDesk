@@ -325,3 +325,36 @@ fn add_dir_to_zip(
 
     Ok(())
 }
+
+#[tauri::command]
+pub fn export_file(source_path: String, target_path: String) -> Result<String, String> {
+    let source = std::path::Path::new(&source_path);
+
+    println!("export_file {}", source_path);
+    println!("export_file {}", target_path);
+
+    if !source.exists() {
+        return Err(format!("Source file does not exist: {}", source_path));
+    }
+
+    if !source.is_file() {
+        return Err(format!("Source path is not a file: {}", source_path));
+    }
+
+    let target_path = std::path::Path::new(&target_path);
+
+    // 创建目标目录
+    if let Some(parent) = target_path.parent() {
+        fs::create_dir_all(parent)
+            .map_err(|e| format!("Failed to create target directory: {}", e))?;
+    }
+
+    // 复制文件
+    fs::copy(source, target_path).map_err(|e| format!("Failed to copy file: {}", e))?;
+
+    Ok(format!(
+        "File exported successfully from {} to {}",
+        source_path,
+        target_path.display()
+    ))
+}

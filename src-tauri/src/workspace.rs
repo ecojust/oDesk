@@ -1,6 +1,6 @@
 use crate::{
     fs_helper::{
-        compress_export_folder, get_appdata_dir, open_folder, read_folder_files,
+        compress_export_folder, export_file, get_appdata_dir, open_folder, read_folder_files,
         read_folder_files_with_message, read_folder_folders,
     },
     tool::log,
@@ -51,10 +51,48 @@ pub fn open_workspace(workspace: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn export_workspace_file(
+    workspace: String,
+    filepath: String,
+    targetpath: Option<String>,
+) -> Result<String, String> {
+    println!("export_workspace_file file_path {}", filepath);
+
+    let base_dir = get_appdata_dir()?;
+    let source_path = base_dir
+        .join("workspaces")
+        .join(workspace)
+        .join(filepath.to_string());
+
+    // 如果没有提供目标路径，则使用下载目录
+    let target = if let Some(target_path) = targetpath {
+        target_path
+    } else {
+        // 获取下载目录
+        let downloads_dir =
+            dirs::download_dir().ok_or_else(|| "Failed to get downloads directory".to_string())?;
+        downloads_dir.to_string_lossy().to_string()
+    };
+
+    let target_folder = std::path::Path::new(&target);
+    let message = export_file(
+        source_path.to_string_lossy().to_string(),
+        target_folder
+            .join(filepath.to_string())
+            .to_string_lossy()
+            .to_string(),
+    )?;
+
+    let result = open_folder(target_folder.to_string_lossy().to_string().clone());
+    Ok(format!("{}", target))
+    // Ok(format!("skill exported successfully: {} ", message))
+}
+
+#[tauri::command]
 pub fn export_workspace_skill(
     workspace: String,
     skill: String,
-    target_path: Option<String>,
+    targetpath: Option<String>,
 ) -> Result<String, String> {
     let base_dir = get_appdata_dir()?;
     let skill_path = base_dir
@@ -64,7 +102,7 @@ pub fn export_workspace_skill(
         .join(skill.to_string());
 
     // 如果没有提供目标路径，则使用下载目录
-    let target = if let Some(target_path) = target_path {
+    let target = if let Some(target_path) = targetpath {
         target_path
     } else {
         // 获取下载目录

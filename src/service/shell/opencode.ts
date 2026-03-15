@@ -1,10 +1,19 @@
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import RequestService from "@/utils/request";
+import { sleep } from "@/utils/util";
 
 export default class Opencode {
   static worksapce: string = "";
   static sessionId: string = "";
+
+  static async initialize_workspace_serve(workspace: string) {
+    await Opencode.create_workspace(workspace);
+    await sleep(1000);
+    await Opencode.execute_opencode_serve(workspace);
+    await sleep(3000);
+    await Opencode.new_session();
+  }
 
   static async send_message(message: string) {
     const result = await RequestService.postBody({
@@ -171,11 +180,33 @@ export default class Opencode {
     }
   }
 
+  static async export_workspace_file(
+    workspace: string,
+    payload: {
+      filePath: string;
+      targetPath: string;
+    },
+  ) {
+    try {
+      const parameters = {
+        workspace,
+        filepath: payload.filePath,
+        targetpath: payload.targetPath,
+      };
+      console.log("export_workspace_file", parameters);
+
+      let result = await invoke("export_workspace_file", parameters);
+    } catch (e) {
+      console.log("Failed to export_workspace_file ", e);
+      throw e;
+    }
+  }
+
   static async export_workspace_skill(
     workspace: string,
     payload: {
       skill: string;
-      target_path: string;
+      targetpath: string;
     },
   ) {
     try {
@@ -185,13 +216,6 @@ export default class Opencode {
       });
 
       console.log("result", result);
-
-      // if (result instanceof Array) {
-      //   result = result.map((folderPath) => {
-      //     return folderPath.split("/").pop();
-      //   });
-      // }
-      // return result;
     } catch (e) {
       console.log("Failed to start opencode serve: ", e);
       throw e;

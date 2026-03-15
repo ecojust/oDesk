@@ -1,5 +1,65 @@
 <template>
   <div class="schedule-manager">
+    <!-- 技能信息弹窗 -->
+    <el-dialog
+      v-model="skillsDialogVisible"
+      title="工作区状态"
+      width="600px"
+      :before-close="handleSkillsDialogClose"
+      class="skills-dialog"
+      center
+      align-center
+    >
+      <div class="skill-info-content">
+        <div class="info-details">
+          <div class="detail-item">
+            <label>连接状态:</label>
+            <span
+              class="status-badge"
+              :class="isConnected ? 'status-connected' : 'status-disconnected'"
+            >
+              {{ isConnected ? "已连接" : "未连接" }}
+            </span>
+          </div>
+
+          <div class="detail-item">
+            <label>会话ID:</label>
+            <span class="session-id">{{ sessionId || "无" }}</span>
+          </div>
+        </div>
+
+        <div class="skills-list" v-if="skills.length > 0">
+          <div class="skills-list-header">可用技能</div>
+          <div class="skill-cards">
+            <div
+              v-for="skill in skills"
+              :key="skill"
+              :class="['skill-card', { active: currentSkill === skill }]"
+              @click="selectSkill(skill)"
+            >
+              <div class="skill-icon">🛠️</div>
+              <div class="skill-content">
+                <div class="skill-name">{{ skill }}</div>
+                <div class="skill-actions">
+                  <button class="export-btn">
+                    <i class="icon">📤</i>
+                    导出
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="handleSkillsDialogClose">关闭</el-button>
+        </div>
+      </template>
+    </el-dialog>
+
+    <!-- 原有的排班表预览弹窗 -->
     <el-dialog
       v-model="dialogVisible"
       title="排班表预览"
@@ -8,49 +68,52 @@
       fullscreen
     >
       <div class="dialog-content">
-        <iframe
-          v-if="dialogUrl"
-          :src="dialogUrl"
-          frameborder="0"
-          class="preview-iframe"
-        ></iframe>
-      </div>
-      <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleClose">关闭</el-button>
-          <el-button type="primary" @click="handleClose">确定</el-button>
-        </div>
-      </template>
-    </el-dialog>
-    <!-- 连接状态显示 -->
-    <div class="connection-status" v-if="!isConnected">
-      <div class="status-card">
-        <div class="status-icon">⏳</div>
-        <h3>正在连接服务...</h3>
-        <p>请稍候，系统正在建立连接</p>
-        <div class="status-progress">
-          <div class="progress-bar">
-            <div class="progress-fill"></div>
+        <div class="preview-container">
+          <div class="preview-frame">
+            <iframe
+              v-if="dialogUrl"
+              :src="dialogUrl"
+              frameborder="0"
+              class="preview-iframe"
+            ></iframe>
           </div>
-          <span class="progress-text">连接中...</span>
+        </div>
+      </div>
+    </el-dialog>
+
+    <div class="server-status">
+      <!-- 连接状态指示器 -->
+      <div class="connection-indicator" v-if="isConnected">
+        <div class="indicator-content">
+          <div class="indicator-icon">✅</div>
+          <span class="indicator-text">已连接</span>
+          <button class="skills-manage-btn" @click="openSkillsDialog">
+            💻
+          </button>
+        </div>
+      </div>
+      <div class="connection-indicator warning" v-else>
+        <div class="indicator-content">
+          <div class="indicator-icon" :class="{ connecting: isConnectting }">
+            <span v-if="isConnectting" class="loading-spinner"></span>
+            <span v-else>⚠️</span>
+          </div>
+          <span class="indicator-text">
+            {{ isConnectting ? "正在连接..." : "未连接" }}
+          </span>
+          <button
+            v-if="!isConnectting"
+            class="reconnect-btn"
+            @click="activeWorkspace"
+          >
+            重试连接
+          </button>
         </div>
       </div>
     </div>
 
-    <!-- 主界面 - 仅在连接成功后显示 -->
-    <div v-else class="main-container">
-      <div class="skills-header">
-        <div class="skills-tags">
-          <span
-            @click="exportSkill(skill)"
-            v-for="skill in skills"
-            :key="skill"
-            class="skill-tag"
-            >{{ skill }}</span
-          >
-        </div>
-      </div>
-
+    <!-- 主界面 - 始终显示，但根据连接状态调整内容 -->
+    <div class="main-container">
       <!-- 三栏布局 -->
       <div class="layout-container">
         <!-- 左侧：提示词编辑区 -->
@@ -127,7 +190,10 @@
                           <i class="icon">👁️</i>
                           查看详情
                         </button>
-                        <button class="action-btn export-btn">
+                        <button
+                          @click="exportExcel(result)"
+                          class="action-btn export-btn"
+                        >
                           <i class="icon">📤</i>
                           导出Excel
                         </button>
@@ -210,8 +276,12 @@ const isDownloading = ref(false);
 const musicFolders = ref([]);
 const currentPlaying = ref(null);
 
+const isConnectting = ref(false);
+
 const skills = ref([]);
 const showGeneratePanel = ref(false);
+const showDropdown = ref(false);
+const currentSkill = ref("");
 
 const sessionId = ref("");
 const isConnected = ref(false);
@@ -219,6 +289,24 @@ const isConnected = ref(false);
 // Dialog 状态管理
 const dialogVisible = ref(false);
 const dialogUrl = ref("");
+const skillsDialogVisible = ref(false);
+
+const exportExcel = async (result) => {
+  const excel = result.title.replace(".html", ".xlsx");
+  await Opencode.export_workspace_file(APPID, {
+    filePath: excel,
+  });
+};
+
+// 打开技能管理弹窗
+const openSkillsDialog = () => {
+  skillsDialogVisible.value = true;
+};
+
+// 关闭技能管理弹窗
+const handleSkillsDialogClose = () => {
+  skillsDialogVisible.value = false;
+};
 
 const exportSkill = async (skill) => {
   console.log("skill", skill);
@@ -307,40 +395,51 @@ const showExamples = () => {
 
 const activeWorkspace = async () => {
   console.log("activeWorkspace---");
+  // 设置连接状态为正在连接
+  isConnected.value = false;
+  isConnectting.value = true;
   try {
-    // 设置连接状态为正在连接
-    isConnected.value = false;
-
-    await Opencode.create_workspace(APPID);
-    await sleep(1000);
-    const result = await Opencode.execute_opencode_serve(APPID);
-    await sleep(3000);
-    await Opencode.new_session();
-
+    await Opencode.initialize_workspace_serve(APPID);
     sessionId.value = Opencode.sessionId;
-    await Opencode.open_workspace(APPID);
 
     const htmls = await Opencode.scan_worksapce_file(APPID, {
       path: "",
       postfix: "html",
     });
+    searchResults.value = htmls;
 
     const skillsList = await Opencode.scan_worksapce_skills(APPID, {
       path: ".opencode/skill/",
     });
-
-    console.log("skills", skillsList);
-    // 将 skills 赋值给响应式变量
     skills.value = skillsList;
 
-    searchResults.value = htmls;
+    // 设置默认技能
+    if (skillsList.length > 0) {
+      currentSkill.value = skillsList[0];
+    }
+
+    await Opencode.open_workspace(APPID);
+
     // 连接成功
     isConnected.value = true;
   } catch (error) {
     console.error("Workspace activation failed:", error);
     // 连接失败，保持未连接状态
-    isConnected.value = false;
+  } finally {
+    isConnectting.value = false;
   }
+};
+
+// 下拉菜单控制方法
+const toggleDropdown = () => {
+  showDropdown.value = !showDropdown.value;
+};
+
+const selectSkill = async (skill) => {
+  console.log("skill", skill);
+  await Opencode.export_workspace_skill(APPID, {
+    skill: skill,
+  });
 };
 
 // 初始化
@@ -357,166 +456,109 @@ onBeforeUnmount(async () => {
 
 <style lang="less" scoped>
 .schedule-manager {
-  // Dialog 样式优化
-  :deep(.el-dialog) {
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  position: relative;
+  height: 100%;
+  box-sizing: border-box;
+  // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  // padding: 16px;
+  // border: 1px solid red;
 
-    &.el-dialog--fullscreen {
-      border-radius: 0;
-      margin: 0;
-      // height: 100vh;
-      width: 100vw !important;
-    }
+  // 连接状态样式 - 简化版本
+  .server-status {
+    position: absolute;
+    top: -10px;
+    right: 0;
+    z-index: 100;
 
-    .el-dialog__header {
-      padding: 16px 20px;
-      border-bottom: 1px solid #e9ecef;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      color: white;
+    // 连接状态指示器样式
+    .connection-indicator {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 100;
+      background: white;
+      border-radius: 8px;
+      padding: 4px 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      position: relative;
 
-      .el-dialog__title {
-        font-size: 16px;
-        font-weight: 700;
-      }
-
-      .el-dialog__headerbtn {
-        .el-dialog__close {
-          color: white;
-          font-size: 18px;
-          opacity: 0.8;
-
-          &:hover {
-            opacity: 1;
-          }
-        }
-      }
-    }
-
-    .el-dialog__body {
-      padding: 0;
-      height: calc(100vh - 60px);
-      overflow: hidden;
-
-      .dialog-content {
-        width: 100%;
-        height: 100%;
-        position: relative;
-
-        .preview-iframe {
-          width: 100%;
-          height: 100%;
-          border: none;
-          display: block;
-        }
-      }
-    }
-
-    .el-dialog__footer {
-      padding: 12px 16px;
-      border-top: 1px solid #e9ecef;
-      background: #f8f9fa;
-
-      .dialog-footer {
+      .indicator-content {
         display: flex;
-        justify-content: flex-end;
-        gap: 8px;
+        align-items: center;
+        gap: 4px;
 
-        .el-button {
-          border-radius: 8px;
-          font-weight: 600;
-          padding: 8px 16px;
+        .indicator-icon {
+          font-size: 12px;
+          animation: pulse 2s infinite;
+        }
+
+        .indicator-text {
+          color: #333;
+        }
+
+        .skills-manage-btn {
+          color: white;
+          border: none;
+          padding: 3px 8px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 500;
+          cursor: pointer;
           transition: all 0.3s ease;
+          white-space: nowrap;
 
           &:hover {
             transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
           }
+        }
+      }
 
-          &.el-button--primary {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            border: none;
+      &.warning {
+        background: #fff3e0;
+        border-color: #ffcc02;
 
-            &:hover {
-              background: linear-gradient(135deg, #5a6fd8, #6a41b0);
+        .indicator-text {
+          color: #f57c00;
+        }
+
+        .indicator-icon {
+          &.connecting {
+            animation: none;
+            .loading-spinner {
+              display: inline-block;
+              width: 12px;
+              height: 12px;
+              border: 2px solid #ffcc02;
+              border-top-color: #f57c00;
+              border-radius: 50%;
+              animation: spin 0.8s linear infinite;
             }
           }
         }
-      }
-    }
-  }
 
-  // 原有样式保持不变
-  // height: calc(100vh - 130px);
-  height: 100%;
+        .reconnect-btn {
+          background: linear-gradient(135deg, #ff9800, #f57c00);
+          color: white;
+          border: none;
+          padding: 3px 8px;
+          border-radius: 4px;
+          font-size: 10px;
+          font-weight: 500;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          margin-left: 4px;
 
-  box-sizing: border-box;
-
-  // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  // padding: 16px;
-
-  // 连接状态样式
-  .connection-status {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    // min-height: 50vh;
-
-    .status-card {
-      background: white;
-      border-radius: 16px;
-      padding: 24px;
-      text-align: center;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      max-width: 350px;
-      width: 100%;
-
-      .status-icon {
-        font-size: 48px;
-        margin-bottom: 16px;
-        animation: pulse 1.5s infinite;
-      }
-
-      h3 {
-        margin: 0 0 8px 0;
-        font-size: 20px;
-        color: #333;
-        font-weight: 700;
-      }
-
-      p {
-        margin: 0 0 16px 0;
-        color: #666;
-        font-size: 14px;
-      }
-
-      .status-progress {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        .progress-bar {
-          flex: 1;
-          height: 6px;
-          background: #e9ecef;
-          border-radius: 3px;
-          overflow: hidden;
-
-          .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #667eea, #764ba2);
-            width: 60%;
-            transition: width 0.5s ease;
-            animation: shimmer 2s infinite;
+          &:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(255, 152, 0, 0.4);
           }
-        }
-
-        .progress-text {
-          font-size: 12px;
-          color: #666;
-          font-weight: 600;
-          white-space: nowrap;
         }
       }
     }
@@ -529,6 +571,8 @@ onBeforeUnmount(async () => {
     gap: 16px;
     box-sizing: border-box;
     height: 100%;
+    position: relative;
+    padding-top: 50px;
 
     .skills-header {
       background: rgba(255, 255, 255, 0.95);
@@ -1188,6 +1232,338 @@ onBeforeUnmount(async () => {
     }
   }
 
+  // Skills Dialog 样式
+  :deep(.skills-dialog) {
+    margin: auto;
+
+    .el-dialog__body {
+      padding: 16px;
+    }
+
+    .skill-info-content {
+      .skill-header {
+        text-align: center;
+        padding: 16px 0;
+        border-bottom: 1px solid #e9ecef;
+        margin-bottom: 16px;
+
+        .skill-icon {
+          font-size: 32px;
+          margin-bottom: 8px;
+        }
+
+        .skill-name {
+          font-size: 18px;
+          font-weight: 700;
+          color: #333;
+        }
+      }
+
+      .info-details {
+        margin-bottom: 16px;
+
+        .detail-item {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid #f0f0f0;
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+          label {
+            font-size: 13px;
+            color: #666;
+            font-weight: 500;
+          }
+
+          span {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
+          }
+
+          .status-badge {
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+
+            &.status-active {
+              background: #e8f5e9;
+              color: #2e7d32;
+            }
+
+            &.status-inactive {
+              background: #ffebee;
+              color: #c62828;
+            }
+
+            &.status-connected {
+              background: #e3f2fd;
+              color: #1976d2;
+            }
+
+            &.status-disconnected {
+              background: #fff3e0;
+              color: #f57c00;
+            }
+          }
+
+          .session-id {
+            font-family: monospace;
+            font-size: 11px;
+            background: #e9ecef;
+            padding: 2px 6px;
+            border-radius: 4px;
+          }
+        }
+      }
+
+      .skills-list {
+        .skills-list-header {
+          font-size: 13px;
+          color: #666;
+          margin-bottom: 8px;
+          font-weight: 500;
+        }
+
+        .skill-cards {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 12px;
+
+          .skill-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 12px;
+            padding: 12px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            &:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+              border-color: #dee2e6;
+            }
+
+            &.active {
+              background: linear-gradient(135deg, #667eea, #764ba2);
+              color: white;
+              border-color: rgba(255, 255, 255, 0.3);
+
+              .skill-name {
+                color: white;
+              }
+
+              .export-btn {
+                background: rgba(255, 255, 255, 0.2);
+                color: white;
+                border-color: rgba(255, 255, 255, 0.4);
+
+                &:hover {
+                  background: rgba(255, 255, 255, 0.3);
+                }
+              }
+            }
+
+            .skill-icon {
+              font-size: 20px;
+              flex-shrink: 0;
+            }
+
+            .skill-content {
+              flex: 1;
+              display: flex;
+              flex-direction: column;
+              gap: 6px;
+
+              .skill-name {
+                font-size: 13px;
+                font-weight: 600;
+                color: #333;
+                line-height: 1.2;
+              }
+
+              .skill-actions {
+                display: flex;
+                justify-content: flex-end;
+
+                .export-btn {
+                  background: #e3f2fd;
+                  color: #1976d2;
+                  border: 1px solid #bbdefb;
+                  padding: 4px 8px;
+                  border-radius: 6px;
+                  font-size: 11px;
+                  font-weight: 600;
+                  cursor: pointer;
+                  transition: all 0.3s ease;
+                  display: inline-flex;
+                  align-items: center;
+                  gap: 4px;
+
+                  &:hover {
+                    background: #bbdefb;
+                    transform: translateY(-1px);
+                  }
+
+                  .icon {
+                    font-size: 12px;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // Dialog 样式优化
+  :deep(.el-dialog) {
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+    &.is-fullscreen {
+      border-radius: 0;
+      margin: 0;
+      // height: 100vh;
+      width: 100vw !important;
+
+      .el-dialog__header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e9ecef;
+        // background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+
+        .el-dialog__title {
+          font-size: 16px;
+          font-weight: 700;
+        }
+
+        .el-dialog__headerbtn {
+          .el-dialog__close {
+            color: #764ba2;
+            font-size: 18px;
+            opacity: 0.8;
+
+            &:hover {
+              opacity: 1;
+            }
+          }
+        }
+      }
+
+      .el-dialog__body {
+        padding: 0;
+        height: calc(100vh - 100px);
+        overflow: hidden;
+
+        .dialog-content {
+          width: 100%;
+          height: 100%;
+          position: relative;
+
+          .preview-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: #f8f9fa;
+
+            .preview-header {
+              padding: 16px 20px;
+              border-bottom: 1px solid #e9ecef;
+              background: white;
+
+              h3 {
+                margin: 0 0 4px 0;
+                font-size: 18px;
+                color: #333;
+                font-weight: 700;
+              }
+
+              p {
+                margin: 0;
+                color: #666;
+                font-size: 12px;
+              }
+            }
+
+            .preview-frame {
+              flex: 1;
+              padding: 16px;
+              background: #ffffff;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              .preview-iframe {
+                width: 100%;
+                height: 100%;
+                border: none;
+                border-radius: 8px;
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                background: white;
+              }
+            }
+          }
+
+          iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+          }
+        }
+      }
+
+      .el-dialog__footer {
+        padding: 12px 16px;
+        border-top: 1px solid #e9ecef;
+        background: #f8f9fa;
+
+        .dialog-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 8px;
+
+          .footer-btn {
+            border-radius: 8px;
+            font-weight: 600;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+            background: white;
+            color: #666;
+            cursor: pointer;
+
+            &:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            }
+
+            &.primary {
+              background: linear-gradient(135deg, #667eea, #764ba2);
+              color: white;
+              border: none;
+
+              &:hover {
+                background: linear-gradient(135deg, #5a6fd8, #6a41b0);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   @keyframes pulse {
     0% {
       transform: scale(1);
@@ -1200,6 +1576,15 @@ onBeforeUnmount(async () => {
     100% {
       transform: scale(1);
       opacity: 1;
+    }
+  }
+
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
     }
   }
 

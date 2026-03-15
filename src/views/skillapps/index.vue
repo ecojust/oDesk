@@ -26,26 +26,31 @@
     </div>
 
     <!-- App Dialog -->
-    <el-dialog
-      destroy-on-close
-      v-model="isDialogOpen"
-      fullscreen
-      :show-close="false"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      class="app-dialog-custom"
-      @close="closeDialog"
-    >
-      <template #header>
-        <div class="dialog-header">
-          <h2>{{ selectedApp?.title }}</h2>
-          <button class="close-btn" @click="closeDialog">×</button>
+
+    <div class="full-app" v-if="isDialogOpen">
+      <div class="full-app-header">
+        <div class="header-content">
+          <div class="app-info">
+            <div
+              class="app-icon-large"
+              :style="{ backgroundColor: selectedApp?.color + '20' }"
+            >
+              {{ selectedApp?.icon }}
+            </div>
+            <div class="app-details">
+              <h2 class="app-title">{{ selectedApp?.title }}</h2>
+              <p class="app-category">{{ selectedApp?.category }}</p>
+            </div>
+          </div>
+          <div class="header-actions">
+            <button class="close-btn" @click="closeDialog">×</button>
+          </div>
         </div>
-      </template>
-      <div class="dialog-content-app">
+      </div>
+      <div class="full-app-content">
         <component :is="activeComponent" />
       </div>
-    </el-dialog>
+    </div>
   </div>
 </template>
 
@@ -139,6 +144,143 @@ onUnmounted(() => {
   // background: #f8f9fa;
   box-sizing: border-box;
   // min-height: 100vh;
+
+  .full-app {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1999;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    animation: fadeIn 0.3s ease-out;
+
+    .full-app-header {
+      height: 80px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      padding: 0 24px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+      .header-content {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        max-width: 1200px;
+        margin: 0 auto;
+
+        .app-info {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+
+          .app-icon-large {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            animation: float 3s ease-in-out infinite;
+
+            &:hover {
+              transform: scale(1.05);
+              box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            }
+          }
+
+          .app-details {
+            .app-title {
+              margin: 0;
+              font-size: 20px;
+              font-weight: 600;
+              color: white;
+              text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+            }
+
+            .app-category {
+              margin: 2px 0 0 0;
+              font-size: 12px;
+              color: rgba(255, 255, 255, 0.7);
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              font-weight: 500;
+            }
+          }
+        }
+
+        .header-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+      }
+    }
+
+    .full-app-content {
+      box-sizing: border-box;
+
+      flex: 1;
+      background: rgba(255, 255, 255, 0.95);
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 16px;
+      position: relative;
+
+      // 添加微妙的装饰元素
+      &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.5),
+          transparent
+        );
+        opacity: 0.6;
+      }
+
+      // 添加网格背景
+      &::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-image:
+          linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.3;
+        pointer-events: none;
+      }
+
+      // 确保组件内容在装饰层之上
+      > * {
+        position: relative;
+        z-index: 1;
+      }
+    }
+  }
 
   .app-grid {
     display: grid;
@@ -261,67 +403,6 @@ onUnmounted(() => {
     }
   }
 
-  // App Dialog Styles
-  .app-dialog-custom {
-    // 自定义弹窗样式
-    .el-dialog {
-      margin: 0;
-      height: 100vh;
-      border-radius: 0;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      box-sizing: border-box;
-
-      .el-dialog__header {
-        padding: 0;
-        border: none;
-        background: transparent;
-      }
-
-      .el-dialog__body {
-        padding: 0;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-      }
-    }
-  }
-
-  .dialog-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 20px 24px;
-    border-bottom: 1px solid #e9ecef;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 1000;
-    backdrop-filter: blur(10px);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    height: 80px;
-  }
-
-  .dialog-header h2 {
-    margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-
-    &::before {
-      content: "";
-      width: 4px;
-      height: 20px;
-      background: rgba(255, 255, 255, 0.3);
-      border-radius: 2px;
-    }
-  }
-
   .close-btn {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -348,43 +429,40 @@ onUnmounted(() => {
     }
   }
 
-  .dialog-content-app {
-    // padding: 24px;
-    overflow-y: auto;
-    background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(10px);
-    border-radius: 0 0 16px 16px;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
-    margin-top: 80px; // 为固定header留出空间
-    height: calc(100vh - 130px); // 减去header高度
-    box-sizing: border-box;
+  .full-app {
+  }
 
-    // 平滑滚动
-    scrollbar-width: thin;
-    scrollbar-color: #c3cfe2 #f5f7fa;
-
-    &::-webkit-scrollbar {
-      width: 8px;
+  // 添加浮动动画
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
     }
-
-    &::-webkit-scrollbar-track {
-      background: #f5f7fa;
-      border-radius: 4px;
+    50% {
+      transform: translateY(-6px);
     }
+  }
 
-    &::-webkit-scrollbar-thumb {
-      background: #c3cfe2;
-      border-radius: 4px;
-
-      &:hover {
-        background: #667eea;
-      }
+  // 添加淡入动画
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
     }
+    to {
+      opacity: 1;
+    }
+  }
 
-    // 确保内容不会溢出
-    display: flex;
-    flex-direction: column;
-    min-height: 0; // 允许flex子项收缩
+  // 添加滑上动画
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
   }
 
   // 进入和退出动画
@@ -421,20 +499,79 @@ onUnmounted(() => {
     transform: translateY(-20px) scale(0.95);
   }
 
-  @keyframes dialogSlideIn {
-    from {
-      opacity: 0;
-      transform: translateY(-20px) scale(0.95);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
+  // Responsive design
+  @media (max-width: 1024px) {
+    .full-app {
+      .full-app-header {
+        height: 70px;
+        padding: 0 20px;
+
+        .header-content {
+          .app-info {
+            gap: 14px;
+
+            .app-icon-large {
+              width: 44px;
+              height: 44px;
+              font-size: 22px;
+            }
+
+            .app-details {
+              .app-title {
+                font-size: 18px;
+              }
+
+              .app-category {
+                font-size: 11px;
+              }
+            }
+          }
+        }
+      }
+
+      .full-app-content {
+        padding: 20px;
+      }
     }
   }
 
-  // Responsive design
   @media (max-width: 768px) {
     padding: 16px;
+
+    .full-app {
+      .full-app-header {
+        height: 70px;
+        padding: 0 16px;
+
+        .header-content {
+          .app-info {
+            gap: 12px;
+
+            .app-icon-large {
+              width: 40px;
+              height: 40px;
+              font-size: 20px;
+            }
+
+            .app-details {
+              .app-title {
+                font-size: 16px;
+              }
+
+              .app-category {
+                font-size: 10px;
+              }
+            }
+          }
+        }
+      }
+
+      .full-app-content {
+        padding: 16px;
+        border-top-left-radius: 20px;
+        border-top-right-radius: 20px;
+      }
+    }
 
     .app-grid {
       grid-template-columns: 1fr;
@@ -464,28 +601,6 @@ onUnmounted(() => {
       }
     }
 
-    .app-dialog-custom {
-      .el-dialog {
-        background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
-      }
-    }
-
-    .dialog-header {
-      padding: 16px 20px;
-      font-size: 18px;
-
-      h2 {
-        font-size: 18px;
-      }
-    }
-
-    .dialog-content-app {
-      padding: 16px 20px;
-      border-radius: 0 0 12px 12px;
-      margin-top: 70px; // 移动端header高度
-      height: calc(100vh - 70px);
-    }
-
     .close-btn {
       width: 36px;
       height: 36px;
@@ -495,6 +610,41 @@ onUnmounted(() => {
 
   @media (max-width: 480px) {
     padding: 12px;
+
+    .full-app {
+      .full-app-header {
+        height: 60px;
+        padding: 0 12px;
+
+        .header-content {
+          .app-info {
+            gap: 10px;
+
+            .app-icon-large {
+              width: 36px;
+              height: 36px;
+              font-size: 18px;
+            }
+
+            .app-details {
+              .app-title {
+                font-size: 14px;
+              }
+
+              .app-category {
+                font-size: 9px;
+              }
+            }
+          }
+        }
+      }
+
+      .full-app-content {
+        padding: 12px;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+      }
+    }
 
     .app-card {
       padding: 12px;
@@ -521,27 +671,47 @@ onUnmounted(() => {
       }
     }
 
-    .dialog-header {
-      padding: 12px 16px;
-      font-size: 16px;
-
-      h2 {
-        font-size: 16px;
-        gap: 8px;
-      }
-    }
-
-    .dialog-content-app {
-      padding: 12px 16px;
-      border-radius: 0 0 10px 10px;
-      margin-top: 60px; // 小屏幕header高度
-      height: calc(100vh - 60px);
-    }
-
     .close-btn {
       width: 32px;
       height: 32px;
       font-size: 18px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .full-app {
+      .full-app-header {
+        height: 70px;
+        padding: 0 12px;
+
+        .header-content {
+          .app-info {
+            gap: 10px;
+
+            .app-icon-large {
+              width: 44px;
+              height: 44px;
+              font-size: 22px;
+            }
+
+            .app-details {
+              .app-title {
+                font-size: 18px;
+              }
+
+              .app-category {
+                font-size: 9px;
+              }
+            }
+          }
+        }
+      }
+
+      .full-app-content {
+        padding: 8px;
+        border-top-left-radius: 12px;
+        border-top-right-radius: 12px;
+      }
     }
   }
 }

@@ -11,11 +11,11 @@ mod workspace;
 
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
-use fs_helper::{open_folder, read_file};
+use fs_helper::{export_file, open_folder, read_file};
 use tool::{get_system_stats, log, open_executable};
 
 use workspace::{
-    create_workspace, execute_opencode_serve, export_workspace_skill,
+    create_workspace, execute_opencode_serve, export_workspace_file, export_workspace_skill,
     kill_existing_opencode_processes, open_workspace, scan_worksapce_file, scan_worksapce_folder,
     workspace_file_insert_text,
 };
@@ -88,7 +88,8 @@ pub fn run() {
             kill_existing_opencode_processes,
             scan_worksapce_file,
             scan_worksapce_folder,
-            export_workspace_skill
+            export_workspace_skill,
+            export_workspace_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
