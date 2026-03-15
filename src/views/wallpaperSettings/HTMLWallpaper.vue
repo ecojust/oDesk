@@ -4,7 +4,7 @@
       <transition name="fade-slide" mode="out-in">
         <div v-if="view === 'list'" key="list" class="wallpaper-list">
           <el-scrollbar>
-            <div v-if="loading" class="loading">加载中...</div>
+            <div v-if="loading" class="loading">{{ t('htmlWallpaper.loading') }}</div>
             <div v-else class="grid">
               <!-- 新增 HTML 按钮 -->
               <div class="html-item add-new" @click="createNewHTML">
@@ -12,7 +12,7 @@
                   <el-icon size="48"><Plus /></el-icon>
                 </div>
                 <div class="meta">
-                  <h3>新建 HTML</h3>
+                  <h3>{{ t('htmlWallpaper.newHtml') }}</h3>
                 </div>
               </div>
               <!-- 现有 HTML 列表 -->
@@ -37,10 +37,10 @@
                       size="small"
                       type="danger"
                       @click="removeHTMLBackground(item)"
-                      >移除</el-button
+                      >{{ t('htmlWallpaper.remove') }}</el-button
                     >
                     <el-button size="small" @click="openDetail(item)"
-                      >编辑</el-button
+                      >{{ t('htmlWallpaper.edit') }}</el-button
                     >
                   </div>
                 </div>
@@ -58,20 +58,20 @@
                 <el-icon><ArrowLeft /></el-icon>
               </el-button>
               <span class="detail-title">{{
-                currentHTML?.title || "HTML 编辑"
+                currentHTML?.title || t('htmlWallpaper.htmlEditor')
               }}</span>
             </div>
 
             <div class="button-bar">
               <div class="update-cover-switch">
-                <span class="switch-label">更新封面</span>
+                <span class="switch-label">{{ t('htmlWallpaper.updateCover') }}</span>
                 <el-switch v-model="updateCover" />
               </div>
               <el-button @click="previewHTML" :loading="previewing">
-                预览
+                {{ t('htmlWallpaper.preview') }}
               </el-button>
 
-              <el-button @click="saveHTML" type="primary">保存</el-button>
+              <el-button @click="saveHTML" type="primary">{{ t('htmlWallpaper.save') }}</el-button>
             </div>
           </div>
           <div class="detail">
@@ -89,7 +89,7 @@
                   sandbox="allow-scripts allow-same-origin"
                 ></iframe>
                 <div v-else class="preview-placeholder">
-                  <p>点击"预览"查看效果</p>
+                  <p>{{ t('htmlWallpaper.clickPreviewToView') }}</p>
                 </div>
               </div>
             </div>
@@ -112,6 +112,7 @@ import {
   onBeforeUnmount,
   onActivated,
 } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   ElButton,
   ElDivider,
@@ -127,6 +128,8 @@ import { sleep } from "@/utils/util";
 import html2canvas from "html2canvas";
 
 import { HTML, CodemirrorHTMLEditor } from "@/service/html";
+
+const { t } = useI18n();
 
 const htmlWallpapers = ref([]);
 const loading = ref(true);
@@ -319,8 +322,8 @@ const saveHTML = async () => {
     goBack();
   } catch (e) {
     console.error("Failed to save HTML:", e);
-    ElMessageBox.alert("保存失败：" + e, "错误", {
-      confirmButtonText: "确定",
+    ElMessageBox.alert(t('htmlWallpaper.saveFailed') + e, "错误", {
+      confirmButtonText: t('common.confirm'),
       type: "error",
     });
   }
@@ -335,11 +338,11 @@ const generateThumbnail = async (folderPath) => {
 // 移除 HTML 壁纸
 const removeHTMLBackground = async (item) => {
   ElMessageBox.confirm(
-    `确定要移除 "${item.title}" 这个 HTML 壁纸吗？`,
-    "确认移除",
+    t('htmlWallpaper.confirmRemoveHtml', { title: item.title }),
+    t('htmlWallpaper.confirmRemove'),
     {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: "warning",
     },
   )

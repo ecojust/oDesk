@@ -2,6 +2,10 @@
   "app": {
     "title": "oDesk"
   },
+  "common": {
+    "confirm": "确认",
+    "cancel": "取消"
+  },
   "stage": {
     "tabs": {
       "skillapps": "SKILL-APPS",
@@ -36,5 +40,83 @@
   "skillapps": {
     "title": "技能应用",
     "description": "安装和管理技能应用"
+  },
+  "staticWallpaper": {
+    "enableLoop": "开启循环",
+    "loopSource": "循环来源",
+    "local": "本地",
+    "cloud": "云端",
+    "clickNextToGetCloud": "点击\"下一张\"获取云端壁纸",
+    "downloadToLocal": "下载到本地",
+    "next": "下一张",
+    "loading": "加载中...",
+    "noWallpapers": "暂无壁纸，请添加壁纸到资源文件夹",
+    "getFromCloudNow": "立即从云端获取壁纸",
+    "applying": "正在应用...",
+    "cloudCurrentWallpaper": "云端当前壁纸",
+    "savedToLocal": "壁纸已保存到本地",
+    "downloadFailed": "下载失败，请重试",
+    "deleted": "壁纸已删除",
+    "deleteFailed": "删除失败，请重试",
+    "getWallpaperFailed": "获取壁纸失败，请重试"
+  },
+  "shaderWallpaper": {
+    "loading": "加载中...",
+    "newShader": "新建着色器",
+    "remove": "移除",
+    "edit": "编辑",
+    "shaderEditor": "Shader 编辑",
+    "recompile": "重新编译",
+    "save": "保存",
+    "confirmRemove": "确认移除",
+    "confirmRemoveShader": "确定要移除 \"{title}\" 这个 Shader 吗？"
+  },
+  "htmlWallpaper": {
+    "loading": "加载中...",
+    "newHtml": "新建 HTML",
+    "remove": "移除",
+    "edit": "编辑",
+    "htmlEditor": "HTML 编辑",
+    "updateCover": "更新封面",
+    "preview": "预览",
+    "save": "保存",
+    "clickPreviewToView": "点击\"预览\"查看效果",
+    "confirmRemove": "确认移除",
+    "confirmRemoveHtml": "确定要移除 \"{title}\" 这个 HTML 壁纸吗？",
+    "saveFailed": "保存失败："
+  },
+  "scheduleManager": {
+    "workspaceStatus": "工作区状态",
+    "connectionStatus": "连接状态",
+    "connected": "已连接",
+    "disconnected": "未连接",
+    "sessionId": "会话ID",
+    "none": "无",
+    "availableSkills": "可用技能",
+    "export": "导出",
+    "close": "关闭",
+    "schedulePreview": "排班表预览",
+    "connecting": "正在连接...",
+    "retryConnection": "重试连接",
+    "promptEditor": "提示词编辑区",
+    "promptDescription": "请输入排班需求，系统将为您生成最优排班表",
+    "collapseSchedule": "收起排班表",
+    "generateSchedule": "生成排班表",
+    "generating": "生成中...",
+    "scheduleResult": "排班结果",
+    "resultsCount": "个结果",
+    "generated": "已生成",
+    "scheduleTable": "排班表",
+    "viewDetail": "查看详情",
+    "exportExcel": "导出Excel",
+    "generatingSchedule": "正在生成排班表...",
+    "generatingDescription": "系统正在分析您的需求并生成最优排班方案",
+    "noResults": "暂无排班结果",
+    "waitForConnection": "请先等候连接服务",
+    "adjustInput": "请调整您的排班需求或检查输入格式",
+    "waitingForService": "系统正在等待服务连接，请稍候...",
+    "viewExample": "查看示例",
+    "scheduleGenerationFailed": "排班表生成失败",
+    "checkInputFormat": "请检查输入格式"
   }
 }

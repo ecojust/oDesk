@@ -2,14 +2,14 @@
   <div class="static-wallpaper">
     <div class="wallpaper-settings">
       <div class="setting-item">
-        <span class="setting-label">开启循环</span>
+        <span class="setting-label">{{ t('staticWallpaper.enableLoop') }}</span>
         <el-switch v-model="loopEnabled" @change="handleLoopChange" />
       </div>
       <div v-if="loopEnabled" class="setting-item">
-        <span class="setting-label">循环来源</span>
+        <span class="setting-label">{{ t('staticWallpaper.loopSource') }}</span>
         <el-radio-group v-model="loopMode" @change="handleLoopModeChange">
-          <el-radio value="local">本地</el-radio>
-          <el-radio value="cloud">云端</el-radio>
+          <el-radio value="local">{{ t('staticWallpaper.local') }}</el-radio>
+          <el-radio value="cloud">{{ t('staticWallpaper.cloud') }}</el-radio>
         </el-radio-group>
       </div>
     </div>
@@ -20,7 +20,7 @@
         <div class="cloud-preview">
           <img v-if="temp" :src="temp.imageUrl" alt="云端当前壁纸" />
           <div v-else class="cloud-placeholder">
-            <p>点击"下一张"获取云端壁纸</p>
+            <p>{{ t('staticWallpaper.clickNextToGetCloud') }}</p>
           </div>
         </div>
         <div class="cloud-actions">
@@ -30,14 +30,14 @@
             :loading="downloading"
             :disabled="!temp"
           >
-            下载到本地
+            {{ t('staticWallpaper.downloadToLocal') }}
           </el-button>
           <el-button
             type="success"
             @click="fetchRandomImage"
             :loading="isFecthingRandom"
           >
-            下一张
+            {{ t('staticWallpaper.next') }}
           </el-button>
         </div>
       </div>
@@ -45,20 +45,20 @@
 
     <!-- 本地壁纸列表 -->
     <div v-else class="wallpaper-list">
-      <div v-if="loading" class="loading">加载中...</div>
+      <div v-if="loading" class="loading">{{ t('staticWallpaper.loading') }}</div>
 
       <div v-else-if="error" class="error">{{ error }}</div>
 
       <div v-else-if="wallpapers.length === 0" class="empty">
         <div class="empty-content">
-          <p>暂无壁纸，请添加壁纸到资源文件夹</p>
+          <p>{{ t('staticWallpaper.noWallpapers') }}</p>
           <el-button
             type="primary"
             size="large"
             @click="fetchFromCloud"
             :loading="fetchingFromCloud"
           >
-            立即从云端获取壁纸
+            {{ t('staticWallpaper.getFromCloudNow') }}
           </el-button>
         </div>
       </div>
@@ -78,7 +78,7 @@
           </div>
           <div v-if="downloadingId === wallpaper.id" class="download-overlay">
             <div class="spinner"></div>
-            <p>正在应用...</p>
+            <p>{{ t('staticWallpaper.applying') }}</p>
           </div>
           <div
             class="delete-overlay"
@@ -104,10 +104,13 @@ import {
   computed,
   nextTick,
 } from "vue";
+import { useI18n } from "vue-i18n";
 import Panel from "@/service/panel";
 import { IntervalCorn } from "@/service/corn";
 import { ElMessage } from "element-plus";
 import { Delete } from "@element-plus/icons-vue";
+
+const { t } = useI18n();
 
 const wallpapers = ref([]);
 const config = ref({});
@@ -141,7 +144,7 @@ const displayWallpapers = computed(() => {
   if (loopEnabled.value && loopMode.value === "cloud" && temp.value.imageUrl) {
     list.unshift({
       id: "temp-cloud",
-      title: "云端当前壁纸",
+      title: t('staticWallpaper.cloudCurrentWallpaper'),
       thumbnail: temp.value.imageUrl,
       url: temp.value.pathUrl,
       isTemp: true,
@@ -199,11 +202,11 @@ const handleDownloadCurrent = async () => {
   downloading.value = false;
 
   if (success) {
-    ElMessage.success("壁纸已保存到本地");
+    ElMessage.success(t('staticWallpaper.savedToLocal'));
     // Refresh local wallpapers
     await readLocalStaticWallpapers();
   } else {
-    ElMessage.error("下载失败，请重试");
+    ElMessage.error(t('staticWallpaper.downloadFailed'));
   }
 };
 
@@ -274,7 +277,7 @@ const fetchFromCloud = async () => {
     await handleDownloadCurrent();
   } catch (e) {
     console.error("fetchFromCloud:", e);
-    ElMessage.error("获取壁纸失败，请重试");
+    ElMessage.error(t('staticWallpaper.getWallpaperFailed'));
   } finally {
     fetchingFromCloud.value = false;
   }
@@ -285,15 +288,15 @@ const handleDeleteWallpaper = async (wallpaper) => {
   try {
     const success = await Panel.deleteWallpaper(wallpaper.url);
     if (success) {
-      ElMessage.success("壁纸已删除");
+      ElMessage.success(t('staticWallpaper.deleted'));
       // Refresh local wallpapers
       await readLocalStaticWallpapers();
     } else {
-      ElMessage.error("删除失败，请重试");
+      ElMessage.error(t('staticWallpaper.deleteFailed'));
     }
   } catch (e) {
     console.error("delete_wallpaper:", e);
-    ElMessage.error("删除失败，请重试");
+    ElMessage.error(t('staticWallpaper.deleteFailed'));
   }
 };
 

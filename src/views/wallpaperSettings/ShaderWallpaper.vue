@@ -4,7 +4,7 @@
       <transition name="fade-slide" mode="out-in">
         <div v-if="view === 'list'" key="list" class="wallpaper-list">
           <el-scrollbar>
-            <div v-if="loading" class="loading">加载中...</div>
+            <div v-if="loading" class="loading">{{ t('shaderWallpaper.loading') }}</div>
             <div v-else class="grid">
               <!-- 新增 Shader 按钮 -->
               <div class="shader-item add-new" @click="createNewShader">
@@ -12,7 +12,7 @@
                   <el-icon size="48"><Plus /></el-icon>
                 </div>
                 <div class="meta">
-                  <h3>新建着色器</h3>
+                  <h3>{{ t('shaderWallpaper.newShader') }}</h3>
                 </div>
               </div>
               <!-- 现有 Shader 列表 -->
@@ -30,10 +30,10 @@
                       size="small"
                       type="danger"
                       @click="removeShaderBackground(item)"
-                      >移除</el-button
+                      >{{ t('shaderWallpaper.remove') }}</el-button
                     >
                     <el-button size="small" @click="openDetail(item)"
-                      >编辑</el-button
+                      >{{ t('shaderWallpaper.edit') }}</el-button
                     >
                   </div>
                 </div>
@@ -51,15 +51,15 @@
                 <el-icon><ArrowLeft /></el-icon>
               </el-button>
               <span class="detail-title">{{
-                currentShader?.title || "Shader 编辑"
+                currentShader?.title || t('shaderWallpaper.shaderEditor')
               }}</span>
             </div>
 
             <div class="button-bar">
               <el-button @click="recompileShader" :loading="recompiling">
-                重新编译
+                {{ t('shaderWallpaper.recompile') }}
               </el-button>
-              <el-button @click="saveShader" type="primary">保存</el-button>
+              <el-button @click="saveShader" type="primary">{{ t('shaderWallpaper.save') }}</el-button>
             </div>
           </div>
           <div class="detail">
@@ -81,6 +81,7 @@
 
 <script setup>
 import { ref, onMounted, nextTick, onBeforeUnmount, onActivated } from "vue";
+import { useI18n } from "vue-i18n";
 import {
   ElButton,
   ElDivider,
@@ -93,6 +94,8 @@ import { ArrowLeft, Plus } from "@element-plus/icons-vue";
 import { initBabylon, CodemirrorShaderEditor, Shader } from "@/service/shader";
 import { ElMessageBox } from "element-plus";
 import { sleep } from "@/utils/util";
+
+const { t } = useI18n();
 
 const shaders = ref([]);
 const loading = ref(true);
@@ -208,11 +211,11 @@ const saveShader = async () => {
 
 const removeShaderBackground = async (item) => {
   ElMessageBox.confirm(
-    `确定要移除 "${item.title}" 这个 Shader 吗？`,
-    "确认移除",
+    t('shaderWallpaper.confirmRemoveShader', { title: item.title }),
+    t('shaderWallpaper.confirmRemove'),
     {
-      confirmButtonText: "确认",
-      cancelButtonText: "取消",
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: "warning",
     },
   )

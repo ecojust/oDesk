@@ -2,6 +2,10 @@
   "app": {
     "title": "oDesk"
   },
+  "common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
+  },
   "stage": {
     "tabs": {
       "skillapps": "SKILL-APPS",
@@ -36,5 +40,83 @@
   "skillapps": {
     "title": "Skill Apps",
     "description": "Install and manage skill apps"
+  },
+  "staticWallpaper": {
+    "enableLoop": "Enable Loop",
+    "loopSource": "Loop Source",
+    "local": "Local",
+    "cloud": "Cloud",
+    "clickNextToGetCloud": "Click \"Next\" to get cloud wallpaper",
+    "downloadToLocal": "Download to Local",
+    "next": "Next",
+    "loading": "Loading...",
+    "noWallpapers": "No wallpapers, please add wallpapers to resource folder",
+    "getFromCloudNow": "Get from Cloud Now",
+    "applying": "Applying...",
+    "cloudCurrentWallpaper": "Cloud Current Wallpaper",
+    "savedToLocal": "Wallpaper saved to local",
+    "downloadFailed": "Download failed, please retry",
+    "deleted": "Wallpaper deleted",
+    "deleteFailed": "Delete failed, please retry",
+    "getWallpaperFailed": "Failed to get wallpaper, please retry"
+  },
+  "shaderWallpaper": {
+    "loading": "Loading...",
+    "newShader": "New Shader",
+    "remove": "Remove",
+    "edit": "Edit",
+    "shaderEditor": "Shader Editor",
+    "recompile": "Recompile",
+    "save": "Save",
+    "confirmRemove": "Confirm Remove",
+    "confirmRemoveShader": "Are you sure you want to remove \"{title}\" this Shader?"
+  },
+  "htmlWallpaper": {
+    "loading": "Loading...",
+    "newHtml": "New HTML",
+    "remove": "Remove",
+    "edit": "Edit",
+    "htmlEditor": "HTML Editor",
+    "updateCover": "Update Cover",
+    "preview": "Preview",
+    "save": "Save",
+    "clickPreviewToView": "Click \"Preview\" to see effect",
+    "confirmRemove": "Confirm Remove",
+    "confirmRemoveHtml": "Are you sure you want to remove \"{title}\" this HTML wallpaper?",
+    "saveFailed": "Save failed:"
+  },
+  "scheduleManager": {
+    "workspaceStatus": "Workspace Status",
+    "connectionStatus": "Connection Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "sessionId": "Session ID",
+    "none": "None",
+    "availableSkills": "Available Skills",
+    "export": "Export",
+    "close": "Close",
+    "schedulePreview": "Schedule Preview",
+    "connecting": "Connecting...",
+    "retryConnection": "Retry Connection",
+    "promptEditor": "Prompt Editor",
+    "promptDescription": "Enter your scheduling requirements, and the system will generate the optimal schedule for you",
+    "collapseSchedule": "Collapse Schedule",
+    "generateSchedule": "Generate Schedule",
+    "generating": "Generating...",
+    "scheduleResult": "Schedule Result",
+    "resultsCount": "results",
+    "generated": "Generated",
+    "scheduleTable": "Schedule",
+    "viewDetail": "View Detail",
+    "exportExcel": "Export Excel",
+    "generatingSchedule": "Generating Schedule...",
+    "generatingDescription": "The system is analyzing your requirements and generating the optimal schedule",
+    "noResults": "No Schedule Results",
+    "waitForConnection": "Please wait for service connection",
+    "adjustInput": "Please adjust your scheduling requirements or check input format",
+    "waitingForService": "The system is waiting for service connection, please wait...",
+    "viewExample": "View Example",
+    "scheduleGenerationFailed": "Schedule Generation Failed",
+    "checkInputFormat": "Please check input format"
   }
 }
