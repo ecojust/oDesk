@@ -100,6 +100,7 @@
     "retryConnection": "重试连接",
     "promptEditor": "提示词编辑区",
     "promptDescription": "请输入排班需求，系统将为您生成最优排班表",
+    "defaultDate": "2024年4月",
     "collapseSchedule": "收起排班表",
     "generateSchedule": "生成排班表",
     "generating": "生成中...",

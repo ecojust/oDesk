@@ -3,7 +3,7 @@
     <!-- 技能信息弹窗 -->
     <el-dialog
       v-model="skillsDialogVisible"
-      title="工作区状态"
+      :title="t('scheduleManager.workspaceStatus')"
       width="600px"
       :before-close="handleSkillsDialogClose"
       class="skills-dialog"
@@ -13,23 +13,31 @@
       <div class="skill-info-content">
         <div class="info-details">
           <div class="detail-item">
-            <label>连接状态:</label>
+            <label>{{ t("scheduleManager.connectionStatus") }}:</label>
             <span
               class="status-badge"
               :class="isConnected ? 'status-connected' : 'status-disconnected'"
             >
-              {{ isConnected ? "已连接" : "未连接" }}
+              {{
+                isConnected
+                  ? t("scheduleManager.connected")
+                  : t("scheduleManager.disconnected")
+              }}
             </span>
           </div>
 
           <div class="detail-item">
-            <label>会话ID:</label>
-            <span class="session-id">{{ sessionId || "无" }}</span>
+            <label>{{ t("scheduleManager.sessionId") }}:</label>
+            <span class="session-id">{{
+              sessionId || t("scheduleManager.none")
+            }}</span>
           </div>
         </div>
 
         <div class="skills-list" v-if="skills.length > 0">
-          <div class="skills-list-header">可用技能</div>
+          <div class="skills-list-header">
+            {{ t("scheduleManager.availableSkills") }}
+          </div>
           <div class="skill-cards">
             <div
               v-for="skill in skills"
@@ -43,7 +51,7 @@
                 <div class="skill-actions">
                   <button class="export-btn">
                     <i class="icon">📤</i>
-                    导出
+                    {{ t("scheduleManager.export") }}
                   </button>
                 </div>
               </div>
@@ -54,7 +62,9 @@
 
       <template #footer>
         <div class="dialog-footer">
-          <el-button @click="handleSkillsDialogClose">关闭</el-button>
+          <el-button @click="handleSkillsDialogClose">{{
+            t("scheduleManager.close")
+          }}</el-button>
         </div>
       </template>
     </el-dialog>
@@ -62,7 +72,7 @@
     <!-- 原有的排班表预览弹窗 -->
     <el-dialog
       v-model="dialogVisible"
-      title="排班表预览"
+      :title="t('scheduleManager.schedulePreview')"
       width="90%"
       :before-close="handleClose"
       fullscreen
@@ -86,7 +96,9 @@
       <div class="connection-indicator" v-if="isConnected">
         <div class="indicator-content">
           <div class="indicator-icon">✅</div>
-          <span class="indicator-text">已连接</span>
+          <span class="indicator-text">{{
+            t("scheduleManager.connected")
+          }}</span>
           <button class="skills-manage-btn" @click="openSkillsDialog">
             💻
           </button>
@@ -99,14 +111,18 @@
             <span v-else>⚠️</span>
           </div>
           <span class="indicator-text">
-            {{ isConnectting ? "正在连接..." : "未连接" }}
+            {{
+              isConnectting
+                ? t("scheduleManager.connecting")
+                : t("scheduleManager.disconnected")
+            }}
           </span>
           <button
             v-if="!isConnectting"
             class="reconnect-btn"
             @click="activeWorkspace"
           >
-            重试连接
+            {{ t("scheduleManager.retryConnection") }}
           </button>
         </div>
       </div>
@@ -121,8 +137,8 @@
           <div class="panel-header">
             <div class="header-content">
               <div class="title-section">
-                <h3>提示词编辑区</h3>
-                <p>请输入排班需求，系统将为您生成最优排班表</p>
+                <h3>{{ t("scheduleManager.promptEditor") }}</h3>
+                <p>{{ t("scheduleManager.promptDescription") }}</p>
                 <button
                   @click="handleQuestion"
                   :disabled="isLoading"
@@ -131,11 +147,15 @@
                 >
                   <span v-if="!isLoading">
                     <i class="icon">📊</i>
-                    {{ showGeneratePanel ? "收起排班表" : "生成排班表" }}
+                    {{
+                      showGeneratePanel
+                        ? t("scheduleManager.collapseSchedule")
+                        : t("scheduleManager.generateSchedule")
+                    }}
                   </span>
                   <span v-else>
                     <i class="icon">⏳</i>
-                    生成中...
+                    {{ t("scheduleManager.generating") }}
                   </span>
                 </button>
               </div>
@@ -155,12 +175,15 @@
             <div class="results-section" v-if="searchResults.length > 0">
               <div class="results-card">
                 <div class="results-header">
-                  <h3>排班结果</h3>
+                  <h3>{{ t("scheduleManager.scheduleResult") }}</h3>
                   <div class="results-meta">
                     <span class="result-count"
-                      >{{ searchResults.length }} 个结果</span
+                      >{{ searchResults.length }}
+                      {{ t("scheduleManager.resultsCount") }}</span
                     >
-                    <span class="result-status">已生成</span>
+                    <span class="result-status">{{
+                      t("scheduleManager.generated")
+                    }}</span>
                   </div>
                 </div>
 
@@ -172,9 +195,13 @@
                       class="schedule-item"
                     >
                       <div class="schedule-header">
-                        <h4>{{ result.title || "排班表" }}</h4>
+                        <h4>
+                          {{
+                            result.title || t("scheduleManager.scheduleTable")
+                          }}
+                        </h4>
                         <span class="schedule-date">{{
-                          result.time || "2024年4月"
+                          result.time || t("scheduleManager.defaultDate")
                         }}</span>
                       </div>
 
@@ -188,19 +215,15 @@
                           class="action-btn view-btn"
                         >
                           <i class="icon">👁️</i>
-                          查看详情
+                          {{ t("scheduleManager.viewDetail") }}
                         </button>
                         <button
                           @click="exportExcel(result)"
                           class="action-btn export-btn"
                         >
                           <i class="icon">📤</i>
-                          导出Excel
+                          {{ t("scheduleManager.exportExcel") }}
                         </button>
-                        <!-- <button class="action-btn print-btn">
-                          <i class="icon">🖨️</i>
-                          打印
-                        </button> -->
                       </div>
                     </div>
                   </div>
@@ -212,8 +235,8 @@
               <div class="loading-overlay"></div>
               <div class="loading-card">
                 <div class="loading-icon">⏳</div>
-                <h3>正在生成排班表...</h3>
-                <p>系统正在分析您的需求并生成最优排班方案</p>
+                <h3>{{ t("scheduleManager.generatingSchedule") }}</h3>
+                <p>{{ t("scheduleManager.generatingDescription") }}</p>
                 <div class="progress-bar">
                   <div class="progress-fill"></div>
                 </div>
@@ -226,18 +249,24 @@
             >
               <div class="empty-card">
                 <div class="empty-icon">📋</div>
-                <h3>{{ isConnected ? "暂无排班结果" : "请先等候连接服务" }}</h3>
+                <h3>
+                  {{
+                    isConnected
+                      ? t("scheduleManager.noResults")
+                      : t("scheduleManager.waitForConnection")
+                  }}
+                </h3>
                 <p>
                   {{
                     isConnected
-                      ? "请调整您的排班需求或检查输入格式"
-                      : "系统正在等待服务连接，请稍候..."
+                      ? t("scheduleManager.adjustInput")
+                      : t("scheduleManager.waitingForService")
                   }}
                 </p>
                 <div class="empty-actions" v-if="isConnected">
                   <button @click="showExamples" class="example-btn">
                     <i class="icon">💡</i>
-                    查看示例
+                    {{ t("scheduleManager.viewExample") }}
                   </button>
                 </div>
               </div>
@@ -259,11 +288,13 @@ import {
   onBeforeUnmount,
   computed,
 } from "vue";
+import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
 import { Open } from "@element-plus/icons-vue";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 
+const { t } = useI18n();
 const APPID = "oDesk-schedule-manager";
 
 // 响应式数据
@@ -364,8 +395,8 @@ const handleQuestion = async () => {
     // 即使出错也显示一些示例数据
     searchResults.value = [
       {
-        title: "排班表生成失败",
-        date: "请检查输入格式",
+        title: t("scheduleManager.scheduleGenerationFailed"),
+        date: t("scheduleManager.checkInputFormat"),
         employeeCount: "25",
         shifts: "7点班, 10点班, 14点班, 16点班",
         generatedAt: new Date().toLocaleString(),
@@ -424,7 +455,7 @@ const activeWorkspace = async () => {
       currentSkill.value = skillsList[0];
     }
 
-    await Opencode.open_workspace(APPID);
+    // await Opencode.open_workspace(APPID);
 
     // 连接成功
     isConnected.value = true;
