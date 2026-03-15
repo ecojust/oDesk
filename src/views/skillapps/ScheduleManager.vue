@@ -226,9 +226,15 @@
             >
               <div class="empty-card">
                 <div class="empty-icon">📋</div>
-                <h3>暂无排班结果</h3>
-                <p>请调整您的排班需求或检查输入格式</p>
-                <div class="empty-actions">
+                <h3>{{ isConnected ? "暂无排班结果" : "请先等候连接服务" }}</h3>
+                <p>
+                  {{
+                    isConnected
+                      ? "请调整您的排班需求或检查输入格式"
+                      : "系统正在等待服务连接，请稍候..."
+                  }}
+                </p>
+                <div class="empty-actions" v-if="isConnected">
                   <button @click="showExamples" class="example-btn">
                     <i class="icon">💡</i>
                     查看示例
@@ -1173,7 +1179,7 @@ onBeforeUnmount(async () => {
               border-radius: 16px;
               padding: 16px;
               text-align: center;
-              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+              // box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
               border: 1px solid rgba(255, 255, 255, 0.3);
               height: 100%;
               display: flex;

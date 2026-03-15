@@ -214,6 +214,7 @@ onUnmounted(() => {
               text-transform: uppercase;
               letter-spacing: 0.5px;
               font-weight: 500;
+              background: rgb(56, 162, 197);
             }
           }
         }
@@ -346,13 +347,14 @@ onUnmounted(() => {
   .app-category {
     display: inline-block;
     background: #e9ecef;
-    color: #495057;
+    color: #212529;
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 12px;
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    border: 1px solid #dee2e6;
   }
 
   .app-actions {
