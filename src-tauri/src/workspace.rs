@@ -46,7 +46,7 @@ pub async fn kill_existing_opencode_processes() -> Result<(), String> {
 /// 打开指定的工作区文件夹
 #[tauri::command]
 pub fn open_workspace(workspace: String) -> Result<String, String> {
-    let target_folder = format!("workspaces/{}", workspace);
+    let target_folder = format!("workspaces{}{}", std::path::MAIN_SEPARATOR, workspace);
     open_folder(target_folder)
 }
 
