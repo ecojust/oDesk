@@ -1,7 +1,7 @@
 use crate::{
     fs_helper::{
-        compress_export_folder, export_file, get_appdata_dir, open_folder, read_folder_files,
-        read_folder_files_with_message, read_folder_folders, unzip_file_to_path,
+        compress_export_folder, export_file, get_appdata_dir, get_resources_dir, open_folder,
+        read_folder_files, read_folder_files_with_message, read_folder_folders, unzip_file_to_path,
     },
     tool::log,
 };
@@ -13,16 +13,17 @@ use tauri_plugin_shell::ShellExt;
 
 // 解压zip文件到指定目录
 #[tauri::command]
-pub async fn unzip_skill_to_workspace(
-    zip_path: String,
-    workspace: String,
-) -> Result<String, String> {
+pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Result<String, String> {
     log(format!(
         "unzip_skill_to_workspace: {} to {}",
-        zip_path, workspace
+        skill, workspace
     ))
     .await
     .unwrap();
+
+    let resources_dir = get_resources_dir().unwrap();
+    let skill_dir = resources_dir.join("skills");
+    let skill_zip = skill_dir.join(format!("{}.zip", skill));
 
     let base_dir = get_appdata_dir()?;
     let target_path = base_dir
@@ -31,7 +32,10 @@ pub async fn unzip_skill_to_workspace(
         .join(".opencode")
         .join("skill");
 
-    unzip_file_to_path(zip_path.clone(), target_path.to_string_lossy().to_string());
+    unzip_file_to_path(
+        skill_zip.to_string_lossy().to_string(),
+        target_path.to_string_lossy().to_string(),
+    );
 
     Ok(format!(
         "Successfully unzipped {} to {}",
