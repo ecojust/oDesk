@@ -1,7 +1,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import RequestService from "@/utils/request";
-import { sleep } from "@/utils/util";
+import { sleep, getFileName } from "@/utils/util";
 
 export default class Opencode {
   static worksapce: string = "";
@@ -133,7 +133,7 @@ export default class Opencode {
           const filePath = item[0];
           console.log(filePath);
           const fileUrl = convertFileSrc(filePath);
-          const title = filePath.split("/").pop() || `本地图片 ${index + 1}`;
+          const title = getFileName(filePath) || `本地图片 ${index + 1}`;
           return {
             title: title,
             url: fileUrl,
@@ -170,7 +170,7 @@ export default class Opencode {
 
       if (result instanceof Array) {
         result = result.map((folderPath) => {
-          return folderPath.split("/").pop();
+          return getFileName(folderPath);
         });
       }
       return result;

@@ -1,6 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
-import { sleep } from "@/utils/util";
+import { sleep, getFileName } from "@/utils/util";
 import Config from "@/service/config";
 
 interface IWallpaper {
@@ -28,7 +28,7 @@ export default class Panel {
           const fileUrl = convertFileSrc(imagePath);
           return {
             id: `local-${imagePath}`,
-            title: imagePath.split("/").pop() || `本地图片 ${index + 1}`,
+            title: getFileName(imagePath) || `本地图片 ${index + 1}`,
             thumbnail: fileUrl,
             url: imagePath,
             author: "本地图片",

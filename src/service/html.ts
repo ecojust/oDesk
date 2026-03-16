@@ -1,5 +1,6 @@
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import Config from "@/service/config";
+import { getFileName } from "@/utils/util";
 
 import { EditorState } from "@codemirror/state";
 import {
@@ -211,7 +212,7 @@ export class HTML {
       const cacheBuster = Date.now();
       return folders.map((folderPath: any, index: number) => ({
         id: `${folderPath}`,
-        title: folderPath.split("/").pop() || `本地图片 ${index + 1}`,
+        title: getFileName(folderPath) || `本地图片 ${index + 1}`,
 
         thumbnail:
           convertFileSrc(`${folderPath}/thumbnail.png`) + `?t=${cacheBuster}`,

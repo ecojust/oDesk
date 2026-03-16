@@ -1,5 +1,6 @@
 import { invoke, convertFileSrc } from "@tauri-apps/api/core";
 import Config from "@/service/config";
+import { getFileName } from "@/utils/util";
 
 import * as BABYLON from "@babylonjs/core";
 import { EditorState } from "@codemirror/state";
@@ -523,7 +524,7 @@ export class Shader {
       const cacheBuster = Date.now();
       return folders.map((folderPath: any, index: number) => ({
         id: `${folderPath}`,
-        title: folderPath.split("/").pop() || `本地图片 ${index + 1}`,
+        title: getFileName(folderPath) || `本地图片 ${index + 1}`,
         thumbnail:
           convertFileSrc(`${folderPath}/thumbnail.png`) + `?t=${cacheBuster}`,
         // url: convertFileSrc(`${folderPath}/shader.glsl`),
