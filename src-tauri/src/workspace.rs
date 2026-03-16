@@ -1,16 +1,44 @@
 use crate::{
     fs_helper::{
         compress_export_folder, export_file, get_appdata_dir, open_folder, read_folder_files,
-        read_folder_files_with_message, read_folder_folders,
+        read_folder_files_with_message, read_folder_folders, unzip_file_to_path,
     },
     tool::log,
 };
 
-use std::{fs, path::PathBuf, process::Command};
+use std::{fs, io::Read, path::PathBuf, process::Command};
 
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 
+// 解压zip文件到指定目录
+#[tauri::command]
+pub async fn unzip_skill_to_workspace(
+    zip_path: String,
+    workspace: String,
+) -> Result<String, String> {
+    log(format!(
+        "unzip_skill_to_workspace: {} to {}",
+        zip_path, workspace
+    ))
+    .await
+    .unwrap();
+
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir
+        .join("workspaces")
+        .join(workspace)
+        .join(".opencode")
+        .join("skill");
+
+    unzip_file_to_path(zip_path.clone(), target_path.to_string_lossy().to_string());
+
+    Ok(format!(
+        "Successfully unzipped {} to {}",
+        base_dir.display(),
+        target_path.display()
+    ))
+}
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
 pub async fn kill_existing_opencode_processes() -> Result<(), String> {

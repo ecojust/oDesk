@@ -202,6 +202,51 @@ pub fn create_directory(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn unzip_file_to_path(
+    zip_file_path: String,
+    target_folder_path: String,
+) -> Result<String, String> {
+    let zip_file = std::path::Path::new(&zip_file_path);
+    let target_path = std::path::Path::new(&target_folder_path);
+
+    // 确保目标目录存在
+    fs::create_dir_all(&target_path)
+        .map_err(|e| format!("Failed to create target directory: {}", e))?;
+
+    // 打开zip文件
+    let file = fs::File::open(&zip_file).map_err(|e| format!("Failed to open zip file: {}", e))?;
+    let mut zip =
+        zip::ZipArchive::new(file).map_err(|e| format!("Failed to read zip file: {}", e))?;
+
+    // 解压所有文件
+    for i in 0..zip.len() {
+        let mut file = zip
+            .by_index(i)
+            .map_err(|e| format!("Failed to get file from zip: {}", e))?;
+        let outpath = target_path.join(file.name());
+
+        // 创建目录（如果文件在子目录中）
+        if let Some(p) = outpath.parent() {
+            if !p.exists() {
+                fs::create_dir_all(&p).map_err(|e| format!("Failed to create directory: {}", e))?;
+            }
+        }
+
+        // 写入文件
+        let mut outfile =
+            fs::File::create(&outpath).map_err(|e| format!("Failed to create file: {}", e))?;
+        std::io::copy(&mut file, &mut outfile)
+            .map_err(|e| format!("Failed to write file: {}", e))?;
+    }
+
+    Ok(format!(
+        "Successfully unzipped {} to {}",
+        zip_file.display(),
+        target_path.display()
+    ))
+}
+
+#[tauri::command]
 pub fn compress_export_folder(source_path: String, target_path: String) -> Result<String, String> {
     let source = std::path::Path::new(&source_path);
 
