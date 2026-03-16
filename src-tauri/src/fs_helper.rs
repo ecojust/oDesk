@@ -1,14 +1,20 @@
+use crate::tool::log;
 use chrono::{DateTime, Local, Utc};
 use std::fs;
 use std::path::Path;
+use std::path::PathBuf;
 use std::process::Command;
-use tauri_api::path::BaseDirectory;
+use tauri::path::BaseDirectory;
+use tauri::{AppHandle, Manager};
 
-// 获取软件报哪的resources目录
-pub fn get_resources_dir() -> Result<std::path::PathBuf, String> {
-    let resource_path = app.path().resolve("addin", BaseDirectory::Resource)?;
+/// 获取应用内置的 resources/addin 目录
+pub fn get_resources_dir(app_handle: &AppHandle) -> Result<PathBuf, String> {
+    let resources_dir = app_handle
+        .path()
+        .resolve("addin", BaseDirectory::Resource)
+        .map_err(|e| format!("解析 addin 资源路径失败: {}", e))?;
 
-    Ok(resource_path)
+    Ok(resources_dir)
 }
 // 获取 appdata 目录下的 oDesk 路径
 pub fn get_appdata_dir() -> Result<std::path::PathBuf, String> {
@@ -209,10 +215,17 @@ pub fn create_directory(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub fn unzip_file_to_path(
+pub async fn unzip_file_to_path(
     zip_file_path: String,
     target_folder_path: String,
 ) -> Result<String, String> {
+    log(format!(
+        "unzip_file_to_path: {} to {}",
+        zip_file_path, &target_folder_path
+    ))
+    .await
+    .unwrap();
+
     let zip_file = std::path::Path::new(&zip_file_path);
     let target_path = std::path::Path::new(&target_folder_path);
 
@@ -230,7 +243,15 @@ pub fn unzip_file_to_path(
         let mut file = zip
             .by_index(i)
             .map_err(|e| format!("Failed to get file from zip: {}", e))?;
+
         let outpath = target_path.join(file.name());
+
+        log(format!(
+            "write target: {} ",
+            outpath.to_string_lossy().to_string(),
+        ))
+        .await
+        .unwrap();
 
         // 创建目录（如果文件在子目录中）
         if let Some(p) = outpath.parent() {

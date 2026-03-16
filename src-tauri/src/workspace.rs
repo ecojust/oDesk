@@ -5,6 +5,7 @@ use crate::{
     },
     tool::log,
 };
+use tauri::{AppHandle, Manager};
 
 use std::{fs, io::Read, path::PathBuf, process::Command};
 
@@ -13,8 +14,12 @@ use tauri_plugin_shell::ShellExt;
 
 // 解压zip文件到指定目录
 #[tauri::command]
-pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Result<String, String> {
-    let resources_dir = get_resources_dir().unwrap();
+pub async fn unzip_skill_to_workspace(
+    app: AppHandle,
+    skill: String,
+    workspace: String,
+) -> Result<String, String> {
+    let resources_dir = get_resources_dir(&app).unwrap();
     let skill_dir = resources_dir.join("skills");
     let skill_zip = skill_dir.join(format!("{}.zip", skill));
 
@@ -32,7 +37,7 @@ pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Resul
     let base_dir = get_appdata_dir()?;
     let target_path = base_dir
         .join("workspaces")
-        .join(workspace)
+        .join(workspace.clone())
         .join(".opencode")
         .join("skill");
 

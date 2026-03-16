@@ -452,7 +452,7 @@ const activeWorkspace = async () => {
       currentSkill.value = skillsList[0];
     }
 
-    // await Opencode.unzip_skill_to_workspace(APPID);
+    await Opencode.unzip_skill_to_workspace("schedule-manager", APPID);
 
     // await Opencode.open_workspace(APPID);
 
