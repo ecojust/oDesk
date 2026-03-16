@@ -1,0 +1,23 @@
+@font-face {
+  font-family: "oDesk"; /* Project id 5140489 */
+  src: url('iconfont.woff2?t=1773666832059') format('woff2'),
+       url('iconfont.woff?t=1773666832059') format('woff'),
+       url('iconfont.ttf?t=1773666832059') format('truetype');
+}
+
+.oDesk {
+  font-family: "oDesk" !important;
+  font-size: 16px;
+  font-style: normal;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.oDesk-windows:before {
+  content: "\e638";
+}
+
+.oDesk-mac:before {
+  content: "\e60e";
+}
+

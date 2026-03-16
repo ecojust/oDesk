@@ -60,13 +60,13 @@
         </div>
       </div>
 
-      <template #footer>
+      <!-- <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleSkillsDialogClose">{{
             t("scheduleManager.close")
           }}</el-button>
         </div>
-      </template>
+      </template> -->
     </el-dialog>
 
     <!-- 原有的排班表预览弹窗 -->
@@ -203,10 +203,6 @@
                         <span class="schedule-date">{{
                           result.time || t("scheduleManager.defaultDate")
                         }}</span>
-                      </div>
-
-                      <div class="schedule-details">
-                        <iframe :src="result.url" frameborder="0"></iframe>
                       </div>
 
                       <div class="schedule-actions">

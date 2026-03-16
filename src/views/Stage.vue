@@ -7,8 +7,8 @@
             <span class="custom-tabs-label">
               <span>{{ $t("stage.tabs.skillapps") }}</span>
               <span class="platform-icons">
-                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
-                <el-icon class="mac-icon"><Apple /></el-icon>
+                <i class="oDesk oDesk-windows"></i>
+                <i class="oDesk oDesk-mac"></i>
               </span>
             </span>
           </template>
@@ -18,8 +18,8 @@
             <span class="custom-tabs-label">
               <span>{{ $t("stage.tabs.static") }}</span>
               <span class="platform-icons">
-                <el-icon class="windows-icon"><Monitor /></el-icon>
-                <el-icon class="mac-icon"><Apple /></el-icon>
+                <i class="oDesk oDesk-windows"></i>
+                <i class="oDesk oDesk-mac"></i>
               </span>
             </span>
           </template>
@@ -29,8 +29,7 @@
             <span class="custom-tabs-label">
               <span>{{ $t("stage.tabs.shader") }}</span>
               <span class="platform-icons">
-                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
-                <el-icon class="mac-icon"><Apple /></el-icon>
+                <i class="oDesk oDesk-mac"></i>
               </span>
             </span>
           </template>
@@ -40,8 +39,7 @@
             <span class="custom-tabs-label">
               <span>{{ $t("stage.tabs.html") }}</span>
               <span class="platform-icons">
-                <!-- <el-icon class="windows-icon"><Monitor /></el-icon> -->
-                <el-icon class="mac-icon"><Apple /></el-icon>
+                <i class="oDesk oDesk-mac"></i>
               </span>
             </span>
           </template>

@@ -6,6 +6,7 @@ import "element-plus/dist/index.css";
 import "./reset.less";
 import "./codemirror.less";
 import i18n from "./i18n";
+import "./assets/iconfont/iconfont.css";
 
 import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 
