@@ -433,8 +433,9 @@ const activeWorkspace = async () => {
   isConnectting.value = true;
   try {
     await Opencode.initialize_workspace_serve(APPID);
-    sessionId.value = Opencode.sessionId;
+    isConnected.value = true;
 
+    sessionId.value = Opencode.sessionId;
     const htmls = await Opencode.scan_worksapce_file(APPID, {
       path: "",
       postfix: "html",
@@ -451,10 +452,11 @@ const activeWorkspace = async () => {
       currentSkill.value = skillsList[0];
     }
 
+    // await Opencode.unzip_skill_to_workspace(APPID);
+
     // await Opencode.open_workspace(APPID);
 
     // 连接成功
-    isConnected.value = true;
   } catch (error) {
     console.error("Workspace activation failed:", error);
     // 连接失败，保持未连接状态

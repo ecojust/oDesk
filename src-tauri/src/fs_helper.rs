@@ -2,19 +2,13 @@ use chrono::{DateTime, Local, Utc};
 use std::fs;
 use std::path::Path;
 use std::process::Command;
-use tauri_plugin_resource;
+use tauri_api::path::BaseDirectory;
 
 // 获取软件报哪的resources目录
 pub fn get_resources_dir() -> Result<std::path::PathBuf, String> {
-    // 使用 tauri-plugin-resource 插件获取 resources 目录
-    let resources_dir = tauri_plugin_resource::get_resources_dir()
-        .map_err(|e| format!("Failed to get resources directory: {}", e))?;
+    let resource_path = app.path().resolve("addin", BaseDirectory::Resource)?;
 
-    // 确保目录存在
-    fs::create_dir_all(&resources_dir)
-        .map_err(|e| format!("Failed to create resources directory: {}", e))?;
-
-    Ok(resources_dir)
+    Ok(resource_path)
 }
 // 获取 appdata 目录下的 oDesk 路径
 pub fn get_appdata_dir() -> Result<std::path::PathBuf, String> {

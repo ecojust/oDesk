@@ -80,6 +80,20 @@ export default class Opencode {
     }
   }
 
+  static async unzip_skill_to_workspace(skill: string, workspace: string) {
+    try {
+      const result = await invoke("unzip_skill_to_workspace", {
+        skill,
+        workspace,
+      });
+      console.log(result);
+      return result;
+    } catch (e) {
+      alert("Failed to unzip skill to workspace: " + e);
+      throw e;
+    }
+  }
+
   static async create_workspace(workspace: string) {
     try {
       const result = await invoke("create_workspace", { workspace });

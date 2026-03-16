@@ -14,16 +14,20 @@ use tauri_plugin_shell::ShellExt;
 // 解压zip文件到指定目录
 #[tauri::command]
 pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Result<String, String> {
-    log(format!(
-        "unzip_skill_to_workspace: {} to {}",
-        skill, workspace
-    ))
-    .await
-    .unwrap();
-
     let resources_dir = get_resources_dir().unwrap();
     let skill_dir = resources_dir.join("skills");
     let skill_zip = skill_dir.join(format!("{}.zip", skill));
+
+    // 检查 skill_zip 文件是否存在
+    if !skill_zip.exists() {
+        log(format!("can not found skill: {}", skill))
+            .await
+            .unwrap();
+        return Err(format!(
+            "Skill zip file does not exist: {}",
+            skill_zip.display()
+        ));
+    }
 
     let base_dir = get_appdata_dir()?;
     let target_path = base_dir
@@ -32,10 +36,33 @@ pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Resul
         .join(".opencode")
         .join("skill");
 
+    // 检查目标 workspace 中是否已存在该 skill
+    let skill_target_path = target_path.join(skill.clone());
+    if skill_target_path.exists() {
+        log(format!(
+            "skill: {} alreadly exists in worksapce: {}",
+            skill, workspace
+        ))
+        .await
+        .unwrap();
+
+        return Err(format!(
+            "Skill already exists in workspace: {}",
+            skill_target_path.display()
+        ));
+    }
+
     unzip_file_to_path(
         skill_zip.to_string_lossy().to_string(),
         target_path.to_string_lossy().to_string(),
     );
+
+    log(format!(
+        "unzip_skill_to_workspace: {} to {}",
+        skill, workspace
+    ))
+    .await
+    .unwrap();
 
     Ok(format!(
         "Successfully unzipped {} to {}",
@@ -43,6 +70,7 @@ pub async fn unzip_skill_to_workspace(skill: String, workspace: String) -> Resul
         target_path.display()
     ))
 }
+
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
 pub async fn kill_existing_opencode_processes() -> Result<(), String> {
