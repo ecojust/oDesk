@@ -59,8 +59,9 @@ pub async fn unzip_skill_to_workspace(
 
     unzip_file_to_path(
         skill_zip.to_string_lossy().to_string(),
-        target_path.to_string_lossy().to_string(),
-    );
+        skill_target_path.to_string_lossy().to_string(),
+    )
+    .unwrap();
 
     log(format!(
         "unzip_skill_to_workspace: {} to {}",
@@ -140,7 +141,7 @@ pub fn export_workspace_file(
     };
 
     let target_folder = std::path::Path::new(&target);
-    let message = export_file(
+    let _message = export_file(
         source_path.to_string_lossy().to_string(),
         target_folder
             .join(filepath.to_string())
@@ -148,7 +149,7 @@ pub fn export_workspace_file(
             .to_string(),
     )?;
 
-    let result = open_folder(target_folder.to_string_lossy().to_string().clone());
+    let _result = open_folder(target_folder.to_string_lossy().to_string().clone());
     Ok(format!("{}", target))
     // Ok(format!("skill exported successfully: {} ", message))
 }
@@ -176,9 +177,10 @@ pub fn export_workspace_skill(
         downloads_dir.to_string_lossy().to_string()
     };
 
-    let message = compress_export_folder(skill_path.to_string_lossy().to_string(), target.clone())?;
+    let _message =
+        compress_export_folder(skill_path.to_string_lossy().to_string(), target.clone())?;
 
-    let result = open_folder(target.clone());
+    let _result = open_folder(target.clone());
     Ok(format!("{}", target))
     // Ok(format!("skill exported successfully: {} ", message))
 }

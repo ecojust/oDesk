@@ -215,17 +215,10 @@ pub fn create_directory(path: String) -> Result<String, String> {
 }
 
 #[tauri::command]
-pub async fn unzip_file_to_path(
+pub fn unzip_file_to_path(
     zip_file_path: String,
     target_folder_path: String,
 ) -> Result<String, String> {
-    log(format!(
-        "unzip_file_to_path: {} to {}",
-        zip_file_path, &target_folder_path
-    ))
-    .await
-    .unwrap();
-
     let zip_file = std::path::Path::new(&zip_file_path);
     let target_path = std::path::Path::new(&target_folder_path);
 
@@ -244,14 +237,10 @@ pub async fn unzip_file_to_path(
             .by_index(i)
             .map_err(|e| format!("Failed to get file from zip: {}", e))?;
 
-        let outpath = target_path.join(file.name());
-
-        log(format!(
-            "write target: {} ",
-            outpath.to_string_lossy().to_string(),
-        ))
-        .await
-        .unwrap();
+        let outpath = match file.enclosed_name() {
+            Some(path) => target_path.join(path),
+            None => continue,
+        };
 
         // 创建目录（如果文件在子目录中）
         if let Some(p) = outpath.parent() {
@@ -370,7 +359,7 @@ fn add_dir_to_zip(
     {
         let entry = entry.map_err(|e| format!("Failed to read directory entry: {}", e))?;
         let path = entry.path();
-        let file_name = entry.file_name();
+        let _file_name = entry.file_name();
 
         let relative_path = path
             .strip_prefix(source_dir)
