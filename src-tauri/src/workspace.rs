@@ -35,14 +35,14 @@ pub async fn unzip_skill_to_workspace(
     }
 
     let base_dir = get_appdata_dir()?;
-    let target_path = base_dir
+    let skill_folder = base_dir
         .join("workspaces")
         .join(workspace.clone())
         .join(".opencode")
         .join("skill");
 
     // 检查目标 workspace 中是否已存在该 skill
-    let skill_target_path = target_path.join(skill.clone());
+    let skill_target_path = skill_folder.join(skill.clone());
     if skill_target_path.exists() {
         log(format!(
             "skill: {} alreadly exists in worksapce: {}",
@@ -57,9 +57,11 @@ pub async fn unzip_skill_to_workspace(
         ));
     }
 
+    println!("start to unzip_file_to_path-----");
+
     unzip_file_to_path(
         skill_zip.to_string_lossy().to_string(),
-        skill_target_path.to_string_lossy().to_string(),
+        skill_folder.to_string_lossy().to_string(),
     )
     .unwrap();
 
@@ -73,7 +75,7 @@ pub async fn unzip_skill_to_workspace(
     Ok(format!(
         "Successfully unzipped {} to {}",
         base_dir.display(),
-        target_path.display()
+        skill_folder.display()
     ))
 }
 

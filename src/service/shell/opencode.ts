@@ -82,6 +82,7 @@ export default class Opencode {
 
   static async unzip_skill_to_workspace(skill: string, workspace: string) {
     try {
+      console.log("unzip_skill_to_workspace-----ewb");
       const result = await invoke("unzip_skill_to_workspace", {
         skill,
         workspace,
