@@ -1,0 +1,23 @@
+{
+  "id": "5140489",
+  "name": "oDesk",
+  "font_family": "oDesk",
+  "css_prefix_text": "oDesk-",
+  "description": "oDesk",
+  "glyphs": [
+    {
+      "icon_id": "1111359",
+      "name": "windows",
+      "font_class": "windows",
+      "unicode": "e638",
+      "unicode_decimal": 58936
+    },
+    {
+      "icon_id": "1120947",
+      "name": "mac",
+      "font_class": "mac",
+      "unicode": "e60e",
+      "unicode_decimal": 58894
+    }
+  ]
+}

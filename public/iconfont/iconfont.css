@@ -1,8 +1,8 @@
 @font-face {
   font-family: "oDesk"; /* Project id 5140489 */
-  src: url('/iconfont/iconfont.woff2?t=1773666832059') format('woff2'),
-       url('/iconfont/iconfont.woff?t=1773666832059') format('woff'),
-       url('/iconfont/iconfont.ttf?t=1773666832059') format('truetype');
+  src: url('./iconfont.woff2?t=1773666832059') format('woff2'),
+       url('./iconfont.woff?t=1773666832059') format('woff'),
+       url('./iconfont.ttf?t=1773666832059') format('truetype');
 }
 
 .oDesk {
