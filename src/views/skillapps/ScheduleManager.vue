@@ -404,6 +404,11 @@ const handleQuestion = async () => {
 };
 
 const preview = (url) => {
+  const isWindows = navigator.userAgent.includes('Windows');
+  if (isWindows) {
+    window.open(url, '_blank');
+    return;
+  }
   dialogUrl.value = url;
   dialogVisible.value = true;
 };
