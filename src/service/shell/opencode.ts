@@ -187,6 +187,10 @@ export default class Opencode {
         result = result.map((folderPath) => {
           return getFileName(folderPath);
         });
+        //@ts-ignore
+        result = result.filter((name: string) => {
+          return !name.toUpperCase().includes("MACOSX");
+        });
       }
       return result;
     } catch (e) {
