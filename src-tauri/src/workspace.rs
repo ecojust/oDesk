@@ -51,7 +51,7 @@ pub async fn unzip_skill_to_workspace(
         .await
         .unwrap();
 
-        return Err(format!(
+        return Ok(format!(
             "Skill already exists in workspace: {}",
             skill_target_path.display()
         ));
@@ -286,6 +286,7 @@ pub async fn execute_opencode_serve(
         #[cfg(target_os = "windows")]
         let output = Command::new("cmd")
             .args(["/C", "opencode serve"])
+            .creation_flags(0x08000000) // CREATE_NO_WINDOW
             .current_dir(&target_workspace)
             .output()
             .await;

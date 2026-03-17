@@ -64,7 +64,7 @@ export default class Opencode {
       console.log(result);
       return result;
     } catch (e) {
-      alert("Failed to workspace_file_insert_text: " + e);
+      // alert("Failed to workspace_file_insert_text: " + e);
       throw e;
     }
   }
@@ -75,7 +75,7 @@ export default class Opencode {
       console.log(result);
       return result;
     } catch (e) {
-      alert("Failed to open workspace: " + e);
+      // alert("Failed to open workspace: " + e);
       throw e;
     }
   }
@@ -90,7 +90,7 @@ export default class Opencode {
       console.log(result);
       return result;
     } catch (e) {
-      alert("Failed to unzip skill to workspace: " + e);
+      // alert("Failed to unzip skill to workspace: " + e);
       throw e;
     }
   }
@@ -101,7 +101,7 @@ export default class Opencode {
       console.log(result);
       return result;
     } catch (e) {
-      alert("Failed to create workspace: " + e);
+      // alert("Failed to create workspace: " + e);
       throw e;
     }
   }
