@@ -113,8 +113,7 @@
           type="text"
           placeholder="请输入搜索内容..."
           class="search-input"
-          v-model="searchQuery"
-          @input="handleSearch"
+          v-model="question"
         />
         <button class="search-btn" @click="handleSearch">
           <i class="icon">🔍</i>
@@ -153,24 +152,13 @@ console.log(example);</code></pre>
       <div class="html-panel">
         <div class="panel-header">
           <h3>HTML预览</h3>
+          <button class="publish-btn" @click="handlePublish">
+            <i class="icon">🚀</i>
+            发布
+          </button>
         </div>
         <div class="panel-content">
-          <div class="html-content">
-            <h1>HTML预览示例</h1>
-            <p>
-              这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。
-            </p>
-            <p>这是一个列表：</p>
-            <ul>
-              <li>项目1</li>
-              <li>项目2</li>
-              <li>项目3</li>
-            </ul>
-            <p>这是一个代码块：</p>
-            <pre><code>const example = "Hello World";
-console.log(example);</code></pre>
-            <p>这是一个<a href="#">链接</a>。</p>
-          </div>
+          <div class="html-content" v-html="htmlPreview"></div>
         </div>
       </div>
     </div>
@@ -191,20 +179,13 @@ import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
 import { Open } from "@element-plus/icons-vue";
-import MarkdownEditor from "@/components/MarkdownEditor.vue";
+import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
 const APPID = "oDesk-wechat-publisher";
 
 // 响应式数据
-const question = ref(`
-# 现在用户的输入数据为：
-- 员工数量：25；
-- 月份：4月；
-- 班次：7点班，10点班，14点班，16点班
-
-请生成排班表
-`);
+const question = ref("");
 const isLoading = ref(false);
 const searchResults = ref([]);
 const downloadQueue = ref([]);
@@ -250,34 +231,16 @@ const exportSkill = async (skill) => {
     skill: skill,
   });
 };
-// 方法定义
-const handleQuestion = async () => {
+
+const handleSearch = async () => {
   if (!question.value.trim()) return;
   isLoading.value = true;
-  searchResults.value = [];
-
   try {
     const answer = await Opencode.send_message(question.value);
     console.log("AI Response:", answer);
-
-    const htmls = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-    });
-
-    console.log("htmls", htmls);
-    searchResults.value = htmls;
+    await searchFiles();
   } catch (error) {
     console.error("Error generating schedule:", error);
-    // 即使出错也显示一些示例数据
-    searchResults.value = [
-      {
-        title: t("scheduleManager.scheduleGenerationFailed"),
-        date: t("scheduleManager.checkInputFormat"),
-        employeeCount: "25",
-        shifts: "7点班, 10点班, 14点班, 16点班",
-        generatedAt: new Date().toLocaleString(),
-      },
-    ];
   } finally {
     isLoading.value = false;
   }
@@ -300,15 +263,6 @@ const handleClose = () => {
 
 const clearInput = () => {
   question.value = "";
-};
-
-const showExamples = () => {
-  question.value = `
-员工数量：20
-月份：5月
-班次：早班(8:00-16:00)，中班(16:00-00:00)，晚班(00:00-08:00)
-请生成排班表
-  `;
 };
 
 const activeWorkspace = async () => {
@@ -343,6 +297,8 @@ const activeWorkspace = async () => {
   }
 };
 
+const htmlPreview = ref("");
+
 const searchFiles = async () => {
   const searchs = await Opencode.scan_worksapce_file(APPID, {
     path: "",
@@ -357,9 +313,9 @@ const searchFiles = async () => {
   }
 
   if (html) {
-    const htmlContent = await Opencode.read_workspace_file_content(APPID, html);
+    htmlPreview.value = await Opencode.read_workspace_file_content(APPID, html);
 
-    document.querySelector(".html-content").innerHTML = htmlContent;
+    // document.querySelector(".html-content").innerHTML = htmlContent;
   }
 };
 
@@ -373,6 +329,20 @@ const selectSkill = async (skill) => {
   await Opencode.export_workspace_skill(APPID, {
     skill: skill,
   });
+};
+
+const handlePublish = async () => {
+  // const htmlContent = document.querySelector(".html-content");
+  // if (htmlContent) {
+  //   console.log("Publishing HTML content:", htmlContent.innerHTML);
+  //   ElMessage.success("发布功能开发中...");
+  // }
+  try {
+    const answer = await Opencode.send_message("发布文章search.md");
+    console.log("AI Response:", answer);
+  } catch (error) {
+    console.log("AI error:", error);
+  }
 };
 
 // 初始化
@@ -671,12 +641,39 @@ onBeforeUnmount(async () => {
         background: #f8f9fa;
         padding: 16px 20px;
         border-bottom: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
         h3 {
           margin: 0;
           font-size: 18px;
           font-weight: 700;
           color: #333;
+        }
+
+        .publish-btn {
+          background: linear-gradient(135deg, #07c160, #06ad56);
+          color: white;
+          border: none;
+          padding: 8px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
+          }
+
+          .icon {
+            font-size: 16px;
+          }
         }
       }
 
