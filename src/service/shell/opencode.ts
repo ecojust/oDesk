@@ -130,11 +130,27 @@ export default class Opencode {
     }
   }
 
+  static async read_workspace_file_content(
+    workspace: string,
+    filename: string,
+  ) {
+    try {
+      let content = await invoke("read_workspace_file_content", {
+        workspace,
+        filename,
+      });
+      return content;
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
+      throw e;
+    }
+  }
+
   static async scan_worksapce_file(
     workspace: string,
     payload: {
       path: string;
-      postfix: string;
+      postfix: string | Array<string>;
     },
   ) {
     try {
@@ -146,18 +162,24 @@ export default class Opencode {
       if (result instanceof Array) {
         result = result.map((item, index) => {
           const filePath = item[0];
-          console.log(filePath);
           const fileUrl = convertFileSrc(filePath);
           const title = getFileName(filePath) || `本地图片 ${index + 1}`;
           return {
             title: title,
+            path: filePath,
             url: fileUrl,
             time: item[1],
             type: title.split(".").pop(),
           };
         });
 
-        result = result.filter((r: any) => r.type == "html");
+        if (payload.postfix instanceof Array) {
+          result = result.filter((r: any) => payload.postfix.includes(r.type));
+        } else {
+          result = result.filter(
+            (r: any) => r.type == (payload.postfix || "html"),
+          );
+        }
       }
       return result;
     } catch (e) {

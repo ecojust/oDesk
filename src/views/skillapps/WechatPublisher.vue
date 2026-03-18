@@ -69,8 +69,6 @@
       </template> -->
     </el-dialog>
 
-  
-
     <div class="server-status">
       <!-- 连接状态指示器 -->
       <div class="connection-indicator" v-if="isConnected">
@@ -108,7 +106,7 @@
       </div>
     </div>
 
-       <!-- 顶部输入框 -->
+    <!-- 顶部输入框 -->
     <div class="input-section">
       <div class="input-container">
         <input
@@ -134,7 +132,9 @@
         <div class="panel-content">
           <div class="markdown-content">
             <h1>Markdown示例</h1>
-            <p>这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。</p>
+            <p>
+              这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。
+            </p>
             <p>这是一个列表：</p>
             <ul>
               <li>项目1</li>
@@ -157,7 +157,9 @@ console.log(example);</code></pre>
         <div class="panel-content">
           <div class="html-content">
             <h1>HTML预览示例</h1>
-            <p>这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。</p>
+            <p>
+              这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。
+            </p>
             <p>这是一个列表：</p>
             <ul>
               <li>项目1</li>
@@ -264,29 +266,6 @@ const handleQuestion = async () => {
 
     console.log("htmls", htmls);
     searchResults.value = htmls;
-
-    // // 模拟生成排班结果
-    // const mockResults = [
-    //   {
-    //     title: "4月第一周排班表",
-    //     date: "2024年4月1日 - 4月7日",
-    //     employeeCount: "25",
-    //     shifts: "7点班, 10点班, 14点班, 16点班",
-    //     generatedAt: new Date().toLocaleString(),
-    //   },
-    //   {
-    //     title: "4月第二周排班表",
-    //     date: "2024年4月8日 - 4月14日",
-    //     employeeCount: "25",
-    //     shifts: "7点班, 10点班, 14点班, 16点班",
-    //     generatedAt: new Date().toLocaleString(),
-    //   },
-    // ];
-
-    // // 模拟延迟
-    // await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // searchResults.value = mockResults;
   } catch (error) {
     console.error("Error generating schedule:", error);
     // 即使出错也显示一些示例数据
@@ -342,20 +321,18 @@ const activeWorkspace = async () => {
     isConnected.value = true;
 
     sessionId.value = Opencode.sessionId;
-   
 
-
-
-     await Opencode.unzip_skill_to_workspace("topic-searcher", APPID);
-     await Opencode.unzip_skill_to_workspace("wechat-publisher", APPID);
-
+    await Opencode.unzip_skill_to_workspace("topic-searcher", APPID);
+    await Opencode.unzip_skill_to_workspace("wechat-publisher", APPID);
 
     const skillsList = await Opencode.scan_worksapce_skills(APPID, {
       path: ".opencode/skill/",
     });
     skills.value = skillsList;
 
-    await Opencode.open_workspace(APPID);
+    await searchFiles();
+
+    // await Opencode.open_workspace(APPID);
 
     // 连接成功
   } catch (error) {
@@ -363,6 +340,26 @@ const activeWorkspace = async () => {
     // 连接失败，保持未连接状态
   } finally {
     isConnectting.value = false;
+  }
+};
+
+const searchFiles = async () => {
+  const searchs = await Opencode.scan_worksapce_file(APPID, {
+    path: "",
+    postfix: ["md", "html"],
+  });
+
+  const md = searchs.find((s) => s.title == "search.md").title;
+  const html = searchs.find((s) => s.title == "search.html").title;
+
+  if (md) {
+    const mdContent = await Opencode.read_workspace_file_content(APPID, md);
+  }
+
+  if (html) {
+    const htmlContent = await Opencode.read_workspace_file_content(APPID, html);
+
+    document.querySelector(".html-content").innerHTML = htmlContent;
   }
 };
 
@@ -502,10 +499,12 @@ onBeforeUnmount(async () => {
 
   // 顶部输入框样式
   .input-section {
-    background: white;
-    padding: 12px 16px;
-    border-bottom: 1px solid #e0e0e0;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    // background: white;
+    // padding: 20px 24px;
+    // border-bottom: 1px solid #e0e0e0;
+    // box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+    max-width: 1200px;
+    margin: 0 auto;
 
     .input-container {
       display: flex;
@@ -515,119 +514,131 @@ onBeforeUnmount(async () => {
 
       .search-input {
         flex: 1;
-        padding: 10px 15px;
-        border: 1px solid #ddd;
-        border-radius: 20px 0 0 20px;
+        padding: 12px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 28px 0 0 28px;
         outline: none;
-        font-size: 14px;
+        font-size: 16px;
         transition: all 0.3s ease;
 
         &:focus {
           border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+          box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
         }
       }
 
       .search-btn {
-        padding: 10px 15px;
-        background: #667eea;
+        padding: 12px 20px;
+        background: linear-gradient(135deg, #667eea, #5a6fd8);
         color: white;
         border: none;
-        border-radius: 0 20px 20px 0;
+        border-radius: 0 28px 28px 0;
         cursor: pointer;
-        font-size: 16px;
+        font-size: 18px;
+        font-weight: 600;
         transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 
         &:hover {
-          background: #5a6fd8;
-          transform: translateY(-1px);
+          background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+          transform: translateY(-2px);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
       }
     }
   }
-
   // 内容区域样式
   .content-section {
     flex: 1;
     display: flex;
-    padding: 16px;
+    max-width: 1200px;
+    margin: 16px auto 16px;
+    height: calc(100% - 60px);
+    box-sizing: border-box;
 
     // 左侧markdown面板
     .markdown-panel {
+      display: none;
       flex: 1;
+      box-sizing: border-box;
       background: white;
-      border-radius: 12px;
-      margin-right: 8px;
+      border-radius: 16px;
+      margin-right: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-width: 0; // 防止弹性布局问题
 
       .panel-header {
         background: #f8f9fa;
-        padding: 12px 16px;
-        border-bottom: 1px solid #e9ecef;
+        padding: 16px 20px;
+        border-bottom: 2px solid #e9ecef;
 
         h3 {
           margin: 0;
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 18px;
+          font-weight: 700;
           color: #333;
         }
       }
 
       .panel-content {
-        padding: 16px;
-        height: calc(100% - 48px);
+        padding: 20px;
+        height: calc(100% - 64px);
         overflow-y: auto;
 
         .markdown-content {
-          line-height: 1.6;
+          line-height: 1.7;
           color: #333;
 
           h1 {
-            font-size: 24px;
-            margin-bottom: 16px;
+            font-size: 28px;
+            margin-bottom: 20px;
             color: #667eea;
           }
 
           h2 {
-            font-size: 20px;
-            margin-bottom: 12px;
+            font-size: 22px;
+            margin-bottom: 16px;
             color: #333;
           }
 
           p {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            font-size: 15px;
           }
 
           strong {
             color: #333;
+            font-weight: 600;
           }
 
           em {
             color: #666;
+            font-style: italic;
           }
 
           ul {
-            margin-bottom: 16px;
-            padding-left: 20px;
+            margin-bottom: 20px;
+            padding-left: 24px;
 
             li {
-              margin-bottom: 8px;
+              margin-bottom: 10px;
               color: #666;
+              font-size: 15px;
             }
           }
 
           pre {
             background: #f8f9f9;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
             overflow-x: auto;
 
             code {
               font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-              font-size: 13px;
+              font-size: 14px;
               color: #333;
             }
           }
@@ -635,9 +646,11 @@ onBeforeUnmount(async () => {
           a {
             color: #667eea;
             text-decoration: none;
+            font-weight: 500;
 
             &:hover {
               text-decoration: underline;
+              color: #5a6fd8;
             }
           }
         }
@@ -648,78 +661,83 @@ onBeforeUnmount(async () => {
     .html-panel {
       flex: 1;
       background: white;
-      border-radius: 12px;
-      margin-left: 8px;
+      border-radius: 16px;
+      margin-left: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      min-width: 0; // 防止弹性布局问题
 
       .panel-header {
         background: #f8f9fa;
-        padding: 12px 16px;
-        border-bottom: 1px solid #e9ecef;
+        padding: 16px 20px;
+        border-bottom: 2px solid #e9ecef;
 
         h3 {
           margin: 0;
-          font-size: 16px;
-          font-weight: 600;
+          font-size: 18px;
+          font-weight: 700;
           color: #333;
         }
       }
 
       .panel-content {
-        padding: 16px;
-        height: calc(100% - 48px);
+        padding: 20px;
+        height: calc(100% - 64px);
         overflow-y: auto;
 
         .html-content {
-          line-height: 1.6;
+          line-height: 1.7;
           color: #333;
 
           h1 {
-            font-size: 24px;
-            margin-bottom: 16px;
+            font-size: 28px;
+            margin-bottom: 20px;
             color: #667eea;
           }
 
           h2 {
-            font-size: 20px;
-            margin-bottom: 12px;
+            font-size: 22px;
+            margin-bottom: 16px;
             color: #333;
           }
 
           p {
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            font-size: 15px;
           }
 
           strong {
             color: #333;
+            font-weight: 600;
           }
 
           em {
             color: #666;
+            font-style: italic;
           }
 
           ul {
-            margin-bottom: 16px;
-            padding-left: 20px;
+            margin-bottom: 20px;
+            padding-left: 24px;
 
             li {
-              margin-bottom: 8px;
+              margin-bottom: 10px;
               color: #666;
+              font-size: 15px;
             }
           }
 
           pre {
             background: #f8f9f9;
-            border: 1px solid #e9ecef;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
             overflow-x: auto;
 
             code {
               font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-              font-size: 13px;
+              font-size: 14px;
               color: #333;
             }
           }
@@ -727,16 +745,17 @@ onBeforeUnmount(async () => {
           a {
             color: #667eea;
             text-decoration: none;
+            font-weight: 500;
 
             &:hover {
               text-decoration: underline;
+              color: #5a6fd8;
             }
           }
         }
       }
     }
   }
-
   // Skills Dialog 样式
   :deep(.skills-dialog) {
     margin: auto;

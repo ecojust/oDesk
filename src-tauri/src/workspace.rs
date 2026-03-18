@@ -225,6 +225,16 @@ pub fn workspace_file_insert_text(
 }
 
 #[tauri::command]
+pub fn read_workspace_file_content(workspace: String, filename: String) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir.join("workspaces").join(workspace).join(filename);
+
+    let content =
+        std::fs::read_to_string(&target_path).map_err(|e| format!("Failed to read file: {}", e))?;
+    Ok(content)
+}
+
+#[tauri::command]
 pub async fn scan_worksapce_file(
     workspace: String,
     path: String,
