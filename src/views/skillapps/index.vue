@@ -60,10 +60,12 @@ import list from "./list";
 
 import MusicDownload from "./MusicDownload.vue";
 import ScheduleManager from "./ScheduleManager.vue";
+import WechatPublisher from "./WechatPublisher.vue";
 
 const components = {
   MusicDownload: MusicDownload,
   ScheduleManager: ScheduleManager,
+  WechatPublisher: WechatPublisher,
 };
 
 const activeApp = ref("MusicDownload");

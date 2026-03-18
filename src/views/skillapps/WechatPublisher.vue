@@ -1,5 +1,5 @@
 <template>
-  <div class="schedule-manager">
+  <div class="wechat-publisher">
     <!-- 技能信息弹窗 -->
     <el-dialog
       v-model="skillsDialogVisible"
@@ -259,12 +259,6 @@
                       : t("scheduleManager.waitingForService")
                   }}
                 </p>
-                <div class="empty-actions" v-if="isConnected">
-                  <button @click="showExamples" class="example-btn">
-                    <i class="icon">💡</i>
-                    {{ t("scheduleManager.viewExample") }}
-                  </button>
-                </div>
               </div>
             </div>
           </el-scrollbar>
@@ -291,7 +285,7 @@ import { Open } from "@element-plus/icons-vue";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 
 const { t } = useI18n();
-const APPID = "oDesk-schedule-manager";
+const APPID = "oDesk-wechat-publisher";
 
 // 响应式数据
 const question = ref(`
@@ -441,23 +435,20 @@ const activeWorkspace = async () => {
     isConnected.value = true;
 
     sessionId.value = Opencode.sessionId;
-    const htmls = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-      postfix: "html",
-    });
-    searchResults.value = htmls;
+   
 
 
 
-    await Opencode.unzip_skill_to_workspace("schedule-manager", APPID);
+     await Opencode.unzip_skill_to_workspace("topic-searcher", APPID);
+     await Opencode.unzip_skill_to_workspace("wechat-publisher", APPID);
 
 
     const skillsList = await Opencode.scan_worksapce_skills(APPID, {
       path: ".opencode/skill/",
     });
     skills.value = skillsList;
-    
-    // await Opencode.open_workspace(APPID);
+
+    await Opencode.open_workspace(APPID);
 
     // 连接成功
   } catch (error) {
@@ -493,7 +484,7 @@ onBeforeUnmount(async () => {
 </script>
 
 <style lang="less" scoped>
-.schedule-manager {
+.wechat-publisher {
   position: relative;
   height: 100%;
   box-sizing: border-box;

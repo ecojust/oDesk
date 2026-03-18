@@ -7,14 +7,14 @@ const list = [
     category: "Productivity",
     color: "#98D8C8",
   },
-  // {
-  //   title: "Music Download",
-  //   key: "MusicDownload",
-  //   description: "Download music from various sources",
-  //   icon: "🎵",
-  //   category: "Media",
-  //   color: "#FF6B6B",
-  // },
+  {
+    title: "Wechat Publisher",
+    key: "WechatPublisher",
+    description: "Generate article and publish",
+    icon: "🎵",
+    category: "Media",
+    color: "#FF6B6B",
+  },
   // {
   //   title: "File Converter",
   //   key: "FileConverter",
