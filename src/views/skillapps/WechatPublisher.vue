@@ -69,27 +69,7 @@
       </template> -->
     </el-dialog>
 
-    <!-- 原有的排班表预览弹窗 -->
-    <el-dialog
-      v-model="dialogVisible"
-      :title="t('scheduleManager.schedulePreview')"
-      width="90%"
-      :before-close="handleClose"
-      fullscreen
-    >
-      <div class="dialog-content">
-        <div class="preview-container">
-          <div class="preview-frame">
-            <iframe
-              v-if="dialogUrl"
-              :src="dialogUrl"
-              frameborder="0"
-              class="preview-iframe"
-            ></iframe>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
+  
 
     <div class="server-status">
       <!-- 连接状态指示器 -->
@@ -128,140 +108,67 @@
       </div>
     </div>
 
-    <!-- 主界面 - 始终显示，但根据连接状态调整内容 -->
-    <div class="main-container">
-      <!-- 三栏布局 -->
-      <div class="layout-container">
-        <!-- 左侧：提示词编辑区 -->
-        <div class="layout-panel left-panel">
-          <div class="panel-header">
-            <div class="header-content">
-              <div class="title-section">
-                <h3>{{ t("scheduleManager.promptEditor") }}</h3>
-                <p>{{ t("scheduleManager.promptDescription") }}</p>
-                <button
-                  @click="handleQuestion"
-                  :disabled="isLoading"
-                  class="generate-toggle-btn"
-                  :class="{ 'is-loading': isLoading }"
-                >
-                  <span v-if="!isLoading">
-                    <i class="icon">📊</i>
-                    {{
-                      showGeneratePanel
-                        ? t("scheduleManager.collapseSchedule")
-                        : t("scheduleManager.generateSchedule")
-                    }}
-                  </span>
-                  <span v-else>
-                    <i class="icon">⏳</i>
-                    {{ t("scheduleManager.generating") }}
-                  </span>
-                </button>
-              </div>
-            </div>
-          </div>
+       <!-- 顶部输入框 -->
+    <div class="input-section">
+      <div class="input-container">
+        <input
+          type="text"
+          placeholder="请输入搜索内容..."
+          class="search-input"
+          v-model="searchQuery"
+          @input="handleSearch"
+        />
+        <button class="search-btn" @click="handleSearch">
+          <i class="icon">🔍</i>
+        </button>
+      </div>
+    </div>
 
-          <div class="editor-wrapper">
-            <MarkdownEditor v-model="question" class="markdown-editor" />
+    <!-- 中间内容区域 -->
+    <div class="content-section">
+      <!-- 左侧markdown显示 -->
+      <div class="markdown-panel">
+        <div class="panel-header">
+          <h3>Markdown内容</h3>
+        </div>
+        <div class="panel-content">
+          <div class="markdown-content">
+            <h1>Markdown示例</h1>
+            <p>这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。</p>
+            <p>这是一个列表：</p>
+            <ul>
+              <li>项目1</li>
+              <li>项目2</li>
+              <li>项目3</li>
+            </ul>
+            <p>这是一个代码块：</p>
+            <pre><code>const example = "Hello World";
+console.log(example);</code></pre>
+            <p>这是一个<a href="#">链接</a>。</p>
           </div>
         </div>
+      </div>
 
-        <!-- 右侧：结果列表 -->
-        <div class="layout-panel right-panel">
-          <el-scrollbar :wrap-style="{ maxHeight: '100%' }">
-            <!-- <div v-for="i in 100" :key="i">{{ i }}</div> -->
-
-            <div class="results-section" v-if="searchResults.length > 0">
-              <div class="results-card">
-                <div class="results-header">
-                  <h3>{{ t("scheduleManager.scheduleResult") }}</h3>
-                  <div class="results-meta">
-                    <span class="result-count"
-                      >{{ searchResults.length }}
-                      {{ t("scheduleManager.resultsCount") }}</span
-                    >
-                    <span class="result-status">{{
-                      t("scheduleManager.generated")
-                    }}</span>
-                  </div>
-                </div>
-
-                <div class="results-content">
-                  <div class="schedule-grid">
-                    <div
-                      v-for="(result, index) in searchResults"
-                      :key="index"
-                      class="schedule-item"
-                    >
-                      <div class="schedule-header">
-                        <h4>
-                          {{
-                            result.title || t("scheduleManager.scheduleTable")
-                          }}
-                        </h4>
-                        <span class="schedule-date">{{
-                          result.time || t("scheduleManager.defaultDate")
-                        }}</span>
-                      </div>
-
-                      <div class="schedule-actions">
-                        <button
-                          @click="preview(result.url)"
-                          class="action-btn view-btn"
-                        >
-                          <i class="icon">👁️</i>
-                          {{ t("scheduleManager.viewDetail") }}
-                        </button>
-                        <button
-                          @click="exportExcel(result)"
-                          class="action-btn export-btn"
-                        >
-                          <i class="icon">📤</i>
-                          {{ t("scheduleManager.exportExcel") }}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="loading-section" v-if="isLoading">
-              <div class="loading-overlay"></div>
-              <div class="loading-card">
-                <div class="loading-icon">⏳</div>
-                <h3>{{ t("scheduleManager.generatingSchedule") }}</h3>
-                <p>{{ t("scheduleManager.generatingDescription") }}</p>
-                <div class="progress-bar">
-                  <div class="progress-fill"></div>
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="empty-section"
-              v-if="!isLoading && searchResults.length === 0 && question.trim()"
-            >
-              <div class="empty-card">
-                <div class="empty-icon">📋</div>
-                <h3>
-                  {{
-                    isConnected
-                      ? t("scheduleManager.noResults")
-                      : t("scheduleManager.waitForConnection")
-                  }}
-                </h3>
-                <p>
-                  {{
-                    isConnected
-                      ? t("scheduleManager.adjustInput")
-                      : t("scheduleManager.waitingForService")
-                  }}
-                </p>
-              </div>
-            </div>
-          </el-scrollbar>
+      <!-- 右侧HTML预览 -->
+      <div class="html-panel">
+        <div class="panel-header">
+          <h3>HTML预览</h3>
+        </div>
+        <div class="panel-content">
+          <div class="html-content">
+            <h1>HTML预览示例</h1>
+            <p>这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。</p>
+            <p>这是一个列表：</p>
+            <ul>
+              <li>项目1</li>
+              <li>项目2</li>
+              <li>项目3</li>
+            </ul>
+            <p>这是一个代码块：</p>
+            <pre><code>const example = "Hello World";
+console.log(example);</code></pre>
+            <p>这是一个<a href="#">链接</a>。</p>
+          </div>
         </div>
       </div>
     </div>
@@ -593,667 +500,236 @@ onBeforeUnmount(async () => {
     }
   }
 
-  .main-container {
+  // 顶部输入框样式
+  .input-section {
+    background: white;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e0e0e0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .input-container {
+      display: flex;
+      align-items: center;
+      max-width: 600px;
+      margin: 0 auto;
+
+      .search-input {
+        flex: 1;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 20px 0 0 20px;
+        outline: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+
+        &:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      }
+
+      .search-btn {
+        padding: 10px 15px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 0 20px 20px 0;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+
+        &:hover {
+          background: #5a6fd8;
+          transform: translateY(-1px);
+        }
+      }
+    }
+  }
+
+  // 内容区域样式
+  .content-section {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    // grid-template-columns: 1fr;
-    gap: 16px;
-    box-sizing: border-box;
-    height: 100%;
-    position: relative;
-    padding-top: 50px;
+    padding: 16px;
 
-    .skills-header {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      border-radius: 16px;
-      padding: 12px 16px;
-      margin-bottom: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      // border: 1px solid rgba(255, 255, 255, 0.3);
-      // border: 1px solid blue;
-      // border: 1px solid red;
+    // 左侧markdown面板
+    .markdown-panel {
+      flex: 1;
+      background: white;
+      border-radius: 12px;
+      margin-right: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-      .skills-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
+      .panel-header {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e9ecef;
 
-        .skill-tag {
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
+        h3 {
+          margin: 0;
+          font-size: 16px;
           font-weight: 600;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-          transition: all 0.3s ease;
+          color: #333;
+        }
+      }
 
-          &:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      .panel-content {
+        padding: 16px;
+        height: calc(100% - 48px);
+        overflow-y: auto;
+
+        .markdown-content {
+          line-height: 1.6;
+          color: #333;
+
+          h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #667eea;
+          }
+
+          h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #333;
+          }
+
+          p {
+            margin-bottom: 12px;
+          }
+
+          strong {
+            color: #333;
+          }
+
+          em {
+            color: #666;
+          }
+
+          ul {
+            margin-bottom: 16px;
+            padding-left: 20px;
+
+            li {
+              margin-bottom: 8px;
+              color: #666;
+            }
+          }
+
+          pre {
+            background: #f8f9f9;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+
+            code {
+              font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+              font-size: 13px;
+              color: #333;
+            }
+          }
+
+          a {
+            color: #667eea;
+            text-decoration: none;
+
+            &:hover {
+              text-decoration: underline;
+            }
           }
         }
       }
     }
 
-    // 三栏布局样式
-    .layout-container {
-      display: flex;
-      flex-direction: row;
-      // grid-template-columns: 2fr 1fr 2fr;
-      gap: 16px;
-      box-sizing: border-box;
+    // 右侧HTML预览面板
+    .html-panel {
       flex: 1;
-      height: calc(100% - 140px);
-      // border: 1px solid red;
+      background: white;
+      border-radius: 12px;
+      margin-left: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
-      // @media (max-width: 1024px) {
-      //   grid-template-columns: 1fr;
-      //   height: calc(100vh - 100px);
-      //   gap: 16px;
-      // }
-
-      .title-section {
-        position: relative;
-        flex: 1;
+      .panel-header {
+        background: #f8f9fa;
+        padding: 12px 16px;
+        border-bottom: 1px solid #e9ecef;
 
         h3 {
-          margin: 0 0 4px 0;
-          font-size: 18px;
-          color: #333;
-          font-weight: 700;
-          padding-right: 160px;
-        }
-
-        p {
           margin: 0;
-          color: #666;
-          font-size: 12px;
-          padding-right: 160px;
-        }
-
-        .generate-toggle-btn {
-          position: absolute;
-          top: 0;
-          right: 0;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          color: white;
-          border: none;
-          padding: 10px 18px;
-          border-radius: 20px;
-          font-size: 13px;
-          font-weight: 700;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          gap: 6px;
-          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          white-space: nowrap;
-
-          &:hover:not(:disabled) {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
-          }
-
-          &:active:not(:disabled) {
-            transform: translateY(0) scale(1);
-          }
-
-          &:disabled {
-            background: linear-gradient(135deg, #a0a0a0, #808080);
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-            border-color: rgba(255, 255, 255, 0.1);
-          }
-
-          &.is-loading {
-            animation: pulse 1.5s infinite;
-          }
-
-          .icon {
-            font-size: 14px;
-          }
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
         }
       }
 
-      .layout-panel {
-        background: white;
-        border-radius: 16px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
-        height: 100%;
-        min-height: 0; // 允许flex子项收缩，防止溢出
+      .panel-content {
+        padding: 16px;
+        height: calc(100% - 48px);
+        overflow-y: auto;
 
-        &.left-panel {
-          width: 40%;
-          .panel-header {
-            padding: 16px;
-            border-bottom: 1px solid #e9ecef;
-            background: #f8f9fa;
+        .html-content {
+          line-height: 1.6;
+          color: #333;
 
-            h3 {
-              margin: 0 0 4px 0;
-              font-size: 18px;
+          h1 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #667eea;
+          }
+
+          h2 {
+            font-size: 20px;
+            margin-bottom: 12px;
+            color: #333;
+          }
+
+          p {
+            margin-bottom: 12px;
+          }
+
+          strong {
+            color: #333;
+          }
+
+          em {
+            color: #666;
+          }
+
+          ul {
+            margin-bottom: 16px;
+            padding-left: 20px;
+
+            li {
+              margin-bottom: 8px;
+              color: #666;
+            }
+          }
+
+          pre {
+            background: #f8f9f9;
+            border: 1px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+
+            code {
+              font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+              font-size: 13px;
               color: #333;
-              font-weight: 700;
-            }
-
-            p {
-              margin: 0;
-              color: #666;
-              font-size: 12px;
             }
           }
 
-          .editor-wrapper {
-            flex: 1;
-            padding: 16px;
-            overflow: auto;
+          a {
+            color: #667eea;
+            text-decoration: none;
 
-            .markdown-editor {
-              height: 100%;
-              border: 2px solid #e9ecef;
-              border-radius: 12px;
-              overflow: hidden;
-
-              &:focus-within {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-                transform: translateY(-1px);
-              }
-            }
-          }
-
-          .panel-actions {
-            padding: 12px 16px;
-            border-top: 1px solid #e9ecef;
-            background: #f8f9fa;
-
-            .clear-btn {
-              padding: 8px 16px;
-              background: #f8f9fa;
-              color: #666;
-              border: 2px solid #e9ecef;
-              border-radius: 12px;
-              font-size: 12px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.3s ease;
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-
-              &:hover {
-                background: #e9ecef;
-                border-color: #dee2e6;
-                color: #333;
-                transform: translateY(-1px);
-              }
-
-              &:active {
-                transform: translateY(0);
-              }
-
-              .icon {
-                font-size: 14px;
-              }
-            }
-          }
-        }
-
-        &.center-panel {
-          .generate-section {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-
-            .generate-card {
-              text-align: center;
-              padding: 24px;
-              border-radius: 16px;
-              background: linear-gradient(135deg, #667eea, #764ba2);
-              color: white;
-              box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              transition: all 0.3s ease;
-
-              &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
-              }
-
-              .generate-icon {
-                font-size: 48px;
-                margin-bottom: 12px;
-                animation: pulse 2s infinite;
-              }
-
-              h3 {
-                margin: 0 0 8px 0;
-                font-size: 20px;
-                font-weight: 800;
-                letter-spacing: -0.5px;
-              }
-
-              p {
-                margin: 0 0 20px 0;
-                font-size: 12px;
-                opacity: 0.9;
-                font-weight: 500;
-              }
-
-              .generate-actions {
-                .generate-btn {
-                  padding: 12px 24px;
-                  background: rgba(255, 255, 255, 0.2);
-                  color: white;
-                  border: 2px solid rgba(255, 255, 255, 0.4);
-                  border-radius: 12px;
-                  font-size: 14px;
-                  font-weight: 700;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  display: inline-flex;
-                  align-items: center;
-                  justify-content: center;
-                  gap: 8px;
-                  backdrop-filter: blur(10px);
-
-                  &:hover:not(:disabled) {
-                    background: rgba(255, 255, 255, 0.3);
-                    border-color: rgba(255, 255, 255, 0.6);
-                    transform: translateY(-1px);
-                    box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
-                  }
-
-                  &:active:not(:disabled) {
-                    transform: translateY(0);
-                  }
-
-                  &:disabled {
-                    background: rgba(255, 255, 255, 0.1);
-                    cursor: not-allowed;
-                    transform: none;
-                    box-shadow: none;
-                    border-color: rgba(255, 255, 255, 0.2);
-                  }
-
-                  .icon {
-                    font-size: 16px;
-                  }
-                }
-              }
-            }
-          }
-        }
-
-        &.right-panel {
-          height: 100%;
-          display: flex;
-          flex-direction: column;
-          min-height: 0;
-          flex: 1;
-          overflow: hidden;
-          position: relative;
-          .results-section {
-            flex: 1;
-            overflow-y: auto;
-            padding-right: 4px;
-
-            .results-card {
-              background: white;
-              border-radius: 16px;
-              padding: 16px;
-              box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              height: 100%;
-              display: flex;
-              flex-direction: column;
-
-              .results-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 12px;
-                padding-bottom: 12px;
-                border-bottom: 2px solid #f0f0f0;
-
-                h3 {
-                  margin: 0;
-                  font-size: 18px;
-                  color: #333;
-                  font-weight: 700;
-                }
-
-                .results-meta {
-                  display: flex;
-                  align-items: center;
-                  gap: 8px;
-
-                  .result-count {
-                    background: #e3f2fd;
-                    color: #1976d2;
-                    padding: 4px 8px;
-                    border-radius: 16px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    border: 1px solid #bbdefb;
-                  }
-
-                  .result-status {
-                    background: #e8f5e9;
-                    color: #2e7d32;
-                    padding: 4px 8px;
-                    border-radius: 16px;
-                    font-size: 11px;
-                    font-weight: 700;
-                    border: 1px solid #c8e6c9;
-                  }
-                }
-              }
-
-              .results-content {
-                flex: 1;
-                overflow-y: auto;
-                padding-right: 4px;
-
-                .schedule-grid {
-                  display: grid;
-                  grid-template-columns: 1fr;
-                  gap: 12px;
-
-                  .schedule-item {
-                    background: #f8f9fa;
-                    border: 1px solid #e9ecef;
-                    border-radius: 12px;
-                    padding: 16px;
-                    transition: all 0.3s ease;
-                    position: relative;
-                    overflow: hidden;
-
-                    &:hover {
-                      transform: translateY(-1px);
-                      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-                      border-color: #dee2e6;
-
-                      &::before {
-                        width: 100%;
-                      }
-                    }
-
-                    &::before {
-                      content: "";
-                      position: absolute;
-                      top: 0;
-                      left: 0;
-                      width: 0%;
-                      height: 3px;
-                      background: linear-gradient(135deg, #667eea, #764ba2);
-                      transition: width 0.3s ease;
-                    }
-
-                    .schedule-header {
-                      display: flex;
-                      justify-content: space-between;
-                      align-items: flex-start;
-                      margin-bottom: 12px;
-
-                      h4 {
-                        margin: 0 0 2px 0;
-                        font-size: 16px;
-                        color: #333;
-                        font-weight: 700;
-                      }
-
-                      .schedule-date {
-                        background: white;
-                        padding: 4px 8px;
-                        border-radius: 16px;
-                        font-size: 11px;
-                        color: #666;
-                        border: 1px solid #e9ecef;
-                        font-weight: 600;
-                      }
-                    }
-
-                    .schedule-details {
-                      iframe {
-                        width: 100%;
-                      }
-                      .detail-row {
-                        display: flex;
-                        justify-content: space-between;
-                        align-items: center;
-                        padding: 8px 0;
-                        border-bottom: 1px solid #e9ecef;
-
-                        &:last-child {
-                          border-bottom: none;
-                        }
-
-                        .label {
-                          font-size: 12px;
-                          color: #666;
-                          font-weight: 600;
-                        }
-
-                        .value {
-                          font-size: 12px;
-                          color: #333;
-                          font-weight: 600;
-                          background: white;
-                          padding: 4px 8px;
-                          border-radius: 6px;
-                          border: 1px solid #e9ecef;
-                        }
-                      }
-                    }
-
-                    .schedule-actions {
-                      display: flex;
-                      gap: 6px;
-                      margin-top: 12px;
-                      flex-wrap: wrap;
-
-                      .action-btn {
-                        flex: 1;
-                        min-width: 100px;
-                        padding: 8px 12px;
-                        border: none;
-                        border-radius: 8px;
-                        font-size: 12px;
-                        font-weight: 600;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        gap: 6px;
-
-                        &.view-btn {
-                          background: #e3f2fd;
-                          color: #1976d2;
-                          border: 1px solid #bbdefb;
-
-                          &:hover {
-                            background: #bbdefb;
-                            transform: translateY(-1px);
-                          }
-                        }
-
-                        &.export-btn {
-                          background: #fff3e0;
-                          color: #f57c00;
-                          border: 1px solid #ffcc02;
-
-                          &:hover {
-                            background: #ffcc02;
-                            color: white;
-                            transform: translateY(-1px);
-                          }
-                        }
-
-                        &.print-btn {
-                          background: #f3e5f5;
-                          color: #7b1fa2;
-                          border: 1px solid #e1bee7;
-
-                          &:hover {
-                            background: #e1bee7;
-                            transform: translateY(-1px);
-                          }
-                        }
-
-                        .icon {
-                          font-size: 14px;
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          .loading-section {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            z-index: 10;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-
-            .loading-overlay {
-              position: absolute;
-              top: 0;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              background: rgba(255, 255, 255, 0.85);
-              backdrop-filter: blur(4px);
-            }
-
-            .loading-card {
-              position: relative;
-              z-index: 1;
-              background: white;
-              border-radius: 16px;
-              padding: 24px 32px;
-              text-align: center;
-              box-shadow: 0 8px 32px rgba(102, 126, 234, 0.25);
-              border: 1px solid rgba(102, 126, 234, 0.2);
-              min-width: 280px;
-
-              .loading-icon {
-                font-size: 36px;
-                margin-bottom: 12px;
-                animation: pulse 1.5s infinite;
-              }
-
-              h3 {
-                margin: 0 0 6px 0;
-                font-size: 16px;
-                color: #333;
-                font-weight: 700;
-              }
-
-              p {
-                margin: 0 0 16px 0;
-                color: #666;
-                font-size: 12px;
-              }
-
-              .progress-bar {
-                height: 6px;
-                background: #e9ecef;
-                border-radius: 3px;
-                overflow: hidden;
-                width: 100%;
-                max-width: 300px;
-
-                .progress-fill {
-                  height: 100%;
-                  background: linear-gradient(90deg, #667eea, #764ba2);
-                  width: 0%;
-                  transition: width 0.5s ease;
-                  animation: shimmer 2s infinite;
-                }
-              }
-            }
-          }
-
-          .empty-section {
-            .empty-card {
-              background: white;
-              border-radius: 16px;
-              padding: 16px;
-              text-align: center;
-              // box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-              border: 1px solid rgba(255, 255, 255, 0.3);
-              height: 100%;
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-
-              .empty-icon {
-                font-size: 36px;
-                margin-bottom: 12px;
-                opacity: 0.6;
-              }
-
-              h3 {
-                margin: 0 0 6px 0;
-                font-size: 16px;
-                color: #333;
-                font-weight: 700;
-              }
-
-              p {
-                margin: 0 0 16px 0;
-                color: #666;
-                font-size: 12px;
-              }
-
-              .empty-actions {
-                .example-btn {
-                  background: linear-gradient(135deg, #667eea, #764ba2);
-                  color: white;
-                  border: none;
-                  padding: 8px 16px;
-                  border-radius: 12px;
-                  font-size: 12px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 6px;
-
-                  &:hover {
-                    transform: translateY(-1px);
-                    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
-                  }
-
-                  .icon {
-                    font-size: 14px;
-                  }
-                }
-              }
+            &:hover {
+              text-decoration: underline;
             }
           }
         }
