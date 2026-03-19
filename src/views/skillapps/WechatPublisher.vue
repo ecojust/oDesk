@@ -236,6 +236,7 @@ const handleSearch = async () => {
   if (!question.value.trim()) return;
   isLoading.value = true;
   try {
+    console.log("开始查找文章---");
     const answer = await Opencode.send_message(question.value);
     console.log("AI Response:", answer);
     await searchFiles();
@@ -338,6 +339,7 @@ const handlePublish = async () => {
   //   ElMessage.success("发布功能开发中...");
   // }
   try {
+    console.log("开始发布文章---");
     const answer = await Opencode.send_message("发布文章search.md");
     console.log("AI Response:", answer);
   } catch (error) {
