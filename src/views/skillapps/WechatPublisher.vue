@@ -58,6 +58,49 @@
             </div>
           </div>
         </div>
+
+        <div class="config-section">
+          <div class="config-header">
+            {{ t("scheduleManager.configSettings") || "配置设置" }}
+          </div>
+          <div class="config-form">
+            <div class="config-item">
+              <label>AppID:</label>
+              <input
+                type="text"
+                v-model="config.wechat.appid"
+                placeholder="请输入AppID"
+                class="config-input"
+              />
+            </div>
+            <div class="config-item">
+              <label>AppSecret:</label>
+              <input
+                v-model="config.wechat.appsecret"
+                placeholder="请输入AppSecret"
+                class="config-input"
+              />
+            </div>
+            <div class="config-item">
+              <label>排版主题:</label>
+              <select v-model="config.wenyanTheme" class="config-input">
+                <option value="default">default</option>
+                <option value="orangeheart">orangeheart</option>
+                <option value="rainbow">rainbow</option>
+                <option value="lapis">lapis</option>
+                <option value="pie">pie</option>
+                <option value="maize">maize</option>
+                <option value="purple">purple</option>
+                <option value="phycat">phycat</option>
+              </select>
+            </div>
+            <div class="config-actions">
+              <el-button type="primary" size="small" @click="saveConfig">
+                {{ t("scheduleManager.save") || "保存" }}
+              </el-button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- <template #footer>
@@ -83,7 +126,7 @@
         </div>
       </div>
       <div class="connection-indicator warning" v-else>
-        <div class="indicator-content">
+        <div class="indicator-content" @click="openSkillsDialog">
           <div class="indicator-icon" :class="{ connecting: isConnectting }">
             <span v-if="isConnectting" class="loading-spinner"></span>
             <span v-else>⚠️</span>
@@ -114,12 +157,25 @@
           placeholder="请输入搜索内容..."
           class="search-input"
           v-model="question"
+          @keyup.enter="handleSearch"
         />
-        <button class="search-btn" @click="handleSearch">
+        <button class="search-btn" @click="handleSearch" :disabled="isLoading">
           <i class="icon" :class="{ loading: isLoading }">🔍</i>
           <span v-if="isLoading" class="loading-text">搜索中...</span>
           <span v-else>搜索</span>
         </button>
+      </div>
+    </div>
+
+    <!-- 搜索Loading状态 -->
+    <div class="loading-overlay" v-if="isLoading">
+      <div class="loading-card">
+        <div class="loading-icon">⏳</div>
+        <h3>正在搜索文章...</h3>
+        <p>AI正在根据您的关键词生成文章内容</p>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
       </div>
     </div>
 
@@ -158,6 +214,7 @@ console.log(example);</code></pre>
             class="publish-btn"
             :class="{ loading: isPublishing }"
             @click="handlePublish"
+            :disabled="isPublishing"
           >
             <i class="icon" :class="{ loading: isPublishing }">🚀</i>
             <span v-if="isPublishing" class="loading-text">发布中...</span>
@@ -165,7 +222,20 @@ console.log(example);</code></pre>
           </button>
         </div>
         <div class="panel-content">
-          <div class="html-content" v-html="htmlPreview"></div>
+          <!-- 发布Loading状态 -->
+          <div class="publish-loading" v-if="isPublishing">
+            <div class="publish-loading-icon">🚀</div>
+            <h3>正在发布文章...</h3>
+            <p>正在将文章推送到微信公众号平台</p>
+          </div>
+          <div class="html-content" v-else-if="htmlPreview">
+            <div v-html="htmlPreview"></div>
+          </div>
+          <div class="empty-preview" v-else>
+            <div class="empty-icon">📝</div>
+            <h3>暂无文章内容</h3>
+            <p>请先通过查询生成文章后再进行预览和发布</p>
+          </div>
         </div>
       </div>
     </div>
@@ -183,7 +253,7 @@ import {
   computed,
 } from "vue";
 import { useI18n } from "vue-i18n";
-import Opencode from "@/service/shell/opencode";
+import Opencode, { wechat_config } from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
 import { Open } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
@@ -231,6 +301,22 @@ const openSkillsDialog = () => {
 // 关闭技能管理弹窗
 const handleSkillsDialogClose = () => {
   skillsDialogVisible.value = false;
+};
+
+const saveConfig = async () => {
+  try {
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(config.value, null, 2),
+    );
+    ElMessage.success("配置保存成功");
+  } catch (error) {
+    console.error("保存配置失败:", error);
+    // ElMessage.error("配置保存失败: " + error.message);
+  } finally {
+    skillsDialogVisible.value = false;
+  }
 };
 
 const exportSkill = async (skill) => {
@@ -281,6 +367,8 @@ const activeWorkspace = async () => {
   isConnected.value = false;
   isConnectting.value = true;
   try {
+    // await Opencode.open_workspace(APPID);
+
     await Opencode.initialize_workspace_serve(APPID);
     isConnected.value = true;
 
@@ -296,14 +384,43 @@ const activeWorkspace = async () => {
 
     await searchFiles();
 
-    // await Opencode.open_workspace(APPID);
-
     // 连接成功
   } catch (error) {
     console.error("Workspace activation failed:", error);
     // 连接失败，保持未连接状态
   } finally {
     isConnectting.value = false;
+  }
+};
+
+const config = ref({
+  wechat: {
+    appid: "",
+    appsecret: "",
+  },
+  wenyanTheme: "default",
+});
+
+const readConfig = async () => {
+  try {
+    const res = await Opencode.read_workspace_file_content(
+      APPID,
+      "config.json",
+    );
+
+    config.value = JSON.parse(res);
+
+    console.log("config", config);
+  } catch (error) {
+    config.value = wechat_config;
+
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(wechat_config),
+    );
+
+    console.log("config", error);
   }
 };
 
@@ -361,6 +478,7 @@ const handlePublish = async () => {
 onMounted(() => {
   console.log("ScheduleManager mounted");
   activeWorkspace();
+  readConfig();
 });
 
 onBeforeUnmount(async () => {
@@ -520,11 +638,77 @@ onBeforeUnmount(async () => {
         font-weight: 600;
         transition: all 0.3s ease;
         box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
 
-        &:hover {
+        &:hover:not(:disabled) {
           background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // 搜索Loading遮罩
+  .loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(8px);
+
+    .loading-card {
+      background: white;
+      border-radius: 20px;
+      padding: 32px 48px;
+      text-align: center;
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.25);
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      min-width: 320px;
+      max-width: 400px;
+
+      .loading-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        animation: pulse 1.5s infinite;
+      }
+
+      h3 {
+        margin: 0 0 8px 0;
+        font-size: 20px;
+        color: #333;
+        font-weight: 700;
+      }
+
+      p {
+        margin: 0 0 20px 0;
+        color: #666;
+        font-size: 14px;
+      }
+
+      .progress-bar {
+        height: 6px;
+        background: #e9ecef;
+        border-radius: 3px;
+        overflow: hidden;
+
+        .progress-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #667eea, #764ba2);
+          animation: shimmer 2s infinite;
         }
       }
     }
@@ -678,9 +862,15 @@ onBeforeUnmount(async () => {
           align-items: center;
           gap: 6px;
 
-          &:hover {
+          &:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(7, 193, 96, 0.4);
+          }
+
+          &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: #ccc;
           }
 
           .icon {
@@ -693,10 +883,63 @@ onBeforeUnmount(async () => {
         padding: 20px;
         height: calc(100% - 64px);
         overflow-y: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .publish-loading {
+          text-align: center;
+          padding: 40px;
+
+          .publish-loading-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            animation: float 1.5s ease-in-out infinite;
+          }
+
+          h3 {
+            margin: 0 0 8px 0;
+            font-size: 18px;
+            color: #07c160;
+            font-weight: 600;
+          }
+
+          p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+          }
+        }
+
+        .empty-preview {
+          text-align: center;
+          padding: 60px 40px;
+
+          .empty-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.8;
+          }
+
+          h3 {
+            margin: 0 0 12px 0;
+            font-size: 20px;
+            color: #333;
+            font-weight: 600;
+          }
+
+          p {
+            margin: 0;
+            color: #999;
+            font-size: 14px;
+            line-height: 1.6;
+          }
+        }
 
         .html-content {
           line-height: 1.7;
           color: #333;
+          width: 100%;
 
           h1 {
             font-size: 28px;
@@ -765,195 +1008,13 @@ onBeforeUnmount(async () => {
       }
     }
   }
+
   // Skills Dialog 样式
   :deep(.skills-dialog) {
     margin: auto;
 
     .el-dialog__body {
-      padding: 16px;
-    }
-
-    .skill-info-content {
-      .skill-header {
-        text-align: center;
-        padding: 16px 0;
-        border-bottom: 1px solid #e9ecef;
-        margin-bottom: 16px;
-
-        .skill-icon {
-          font-size: 32px;
-          margin-bottom: 8px;
-        }
-
-        .skill-name {
-          font-size: 18px;
-          font-weight: 700;
-          color: #333;
-        }
-      }
-
-      .info-details {
-        margin-bottom: 16px;
-
-        .detail-item {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 8px 0;
-          border-bottom: 1px solid #f0f0f0;
-
-          &:last-child {
-            border-bottom: none;
-          }
-
-          label {
-            font-size: 13px;
-            color: #666;
-            font-weight: 500;
-          }
-
-          span {
-            font-size: 13px;
-            color: #333;
-            font-weight: 600;
-          }
-
-          .status-badge {
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-
-            &.status-active {
-              background: #e8f5e9;
-              color: #2e7d32;
-            }
-
-            &.status-inactive {
-              background: #ffebee;
-              color: #c62828;
-            }
-
-            &.status-connected {
-              background: #e3f2fd;
-              color: #1976d2;
-            }
-
-            &.status-disconnected {
-              background: #fff3e0;
-              color: #f57c00;
-            }
-          }
-
-          .session-id {
-            font-family: monospace;
-            font-size: 11px;
-            background: #e9ecef;
-            padding: 2px 6px;
-            border-radius: 4px;
-          }
-        }
-      }
-
-      .skills-list {
-        .skills-list-header {
-          font-size: 13px;
-          color: #666;
-          margin-bottom: 8px;
-          font-weight: 500;
-        }
-
-        .skill-cards {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 12px;
-
-          .skill-card {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            border-radius: 12px;
-            padding: 12px;
-            transition: all 0.3s ease;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-
-            &:hover {
-              transform: translateY(-1px);
-              box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-              border-color: #dee2e6;
-            }
-
-            &.active {
-              background: linear-gradient(135deg, #667eea, #764ba2);
-              color: white;
-              border-color: rgba(255, 255, 255, 0.3);
-
-              .skill-name {
-                color: white;
-              }
-
-              .export-btn {
-                background: rgba(255, 255, 255, 0.2);
-                color: white;
-                border-color: rgba(255, 255, 255, 0.4);
-
-                &:hover {
-                  background: rgba(255, 255, 255, 0.3);
-                }
-              }
-            }
-
-            .skill-icon {
-              font-size: 20px;
-              flex-shrink: 0;
-            }
-
-            .skill-content {
-              flex: 1;
-              display: flex;
-              flex-direction: column;
-              gap: 6px;
-
-              .skill-name {
-                font-size: 13px;
-                font-weight: 600;
-                color: #333;
-                line-height: 1.2;
-              }
-
-              .skill-actions {
-                display: flex;
-                justify-content: flex-end;
-
-                .export-btn {
-                  background: #e3f2fd;
-                  color: #1976d2;
-                  border: 1px solid #bbdefb;
-                  padding: 4px 8px;
-                  border-radius: 6px;
-                  font-size: 11px;
-                  font-weight: 600;
-                  cursor: pointer;
-                  transition: all 0.3s ease;
-                  display: inline-flex;
-                  align-items: center;
-                  gap: 4px;
-
-                  &:hover {
-                    background: #bbdefb;
-                    transform: translateY(-1px);
-                  }
-
-                  .icon {
-                    font-size: 12px;
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
+      padding: 24px;
     }
   }
 
@@ -962,27 +1023,61 @@ onBeforeUnmount(async () => {
     border-radius: 16px;
     overflow: hidden;
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    border: none;
+
+    .el-dialog__header {
+      padding: 20px 24px 16px;
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      border-bottom: none;
+
+      .el-dialog__title {
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+      }
+
+      .el-dialog__headerbtn {
+        top: 20px;
+        right: 20px;
+
+        .el-dialog__close {
+          color: rgba(255, 255, 255, 0.8);
+          font-size: 20px;
+          transition: all 0.2s ease;
+
+          &:hover {
+            color: white;
+            transform: scale(1.1);
+          }
+        }
+      }
+    }
+
+    .el-dialog__body {
+      padding: 24px;
+      background: #fafbfc;
+    }
 
     &.is-fullscreen {
       border-radius: 0;
       margin: 0;
-      // height: 100vh;
       width: 100vw !important;
 
       .el-dialog__header {
         padding: 16px 20px;
         border-bottom: 1px solid #e9ecef;
-        // background: linear-gradient(135deg, #667eea, #764ba2);
+        background: linear-gradient(135deg, #667eea, #764ba2);
         color: white;
 
         .el-dialog__title {
           font-size: 16px;
           font-weight: 700;
+          color: white;
         }
 
         .el-dialog__headerbtn {
           .el-dialog__close {
-            color: #764ba2;
+            color: rgba(255, 255, 255, 0.8);
             font-size: 18px;
             opacity: 0.8;
 
@@ -1097,6 +1192,278 @@ onBeforeUnmount(async () => {
     }
   }
 
+  // Skills Dialog 内容样式
+  .skill-info-content {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+
+    .info-details {
+      background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      border-radius: 10px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      border: 1px solid #eaeaea;
+
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+
+        &:not(:last-child) {
+          border-bottom: 1px solid #f0f0f0;
+        }
+
+        label {
+          font-size: 14px;
+          color: #586069;
+          font-weight: 500;
+        }
+
+        span {
+          font-size: 14px;
+          color: #24292e;
+          font-weight: 600;
+        }
+
+        .status-badge {
+          padding: 4px 14px;
+          border-radius: 20px;
+          font-size: 13px;
+          font-weight: 600;
+
+          &.status-connected {
+            background: linear-gradient(135deg, #d4edda, #c3e6cb);
+            color: #155724;
+            border: 1px solid #b8da9e;
+          }
+
+          &.status-disconnected {
+            background: linear-gradient(135deg, #fff3cd, #ffeeba);
+            color: #856404;
+            border: 1px solid #ffeeba;
+          }
+        }
+
+        .session-id {
+          font-family: "SF Mono", Monaco, monospace;
+          font-size: 12px;
+          background: #f6f8fa;
+          padding: 4px 10px;
+          border-radius: 6px;
+          border: 1px solid #e1e4e8;
+          color: #24292e;
+        }
+      }
+    }
+
+    .skills-list {
+      margin-bottom: 24px;
+
+      .skills-list-header {
+        font-size: 14px;
+        color: #586069;
+        margin-bottom: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 4px;
+          height: 16px;
+          background: linear-gradient(180deg, #667eea, #764ba2);
+          border-radius: 2px;
+        }
+      }
+
+      .skill-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+
+        .skill-card {
+          background: white;
+          border: 1px solid #e1e4e8;
+          border-radius: 10px;
+          padding: 14px;
+          transition: all 0.25s ease;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            border-color: #667eea;
+          }
+
+          &.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: rgba(102, 126, 234, 0.5);
+
+            .skill-name {
+              color: white;
+            }
+
+            .export-btn {
+              background: rgba(255, 255, 255, 0.25);
+              color: white;
+              border-color: rgba(255, 255, 255, 0.4);
+
+              &:hover {
+                background: rgba(255, 255, 255, 0.35);
+              }
+            }
+          }
+
+          .skill-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+          }
+
+          .skill-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+            .skill-name {
+              font-size: 14px;
+              font-weight: 600;
+              color: #24292e;
+              line-height: 1.3;
+            }
+
+            .skill-actions {
+              display: flex;
+              justify-content: flex-end;
+
+              .export-btn {
+                background: #f0f6fc;
+                color: #0366d6;
+                border: 1px solid #d1e3f6;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-size: 12px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+
+                &:hover {
+                  background: #dbedff;
+                  transform: translateY(-1px);
+                }
+
+                .icon {
+                  font-size: 12px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+    .config-section {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px solid #eaeaea;
+
+      .config-header {
+        font-size: 14px;
+        color: #586069;
+        margin-bottom: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        &::before {
+          content: "";
+          display: inline-block;
+          width: 4px;
+          height: 16px;
+          background: linear-gradient(180deg, #667eea, #764ba2);
+          border-radius: 2px;
+        }
+      }
+
+      .config-form {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        .config-item {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+
+          label {
+            width: 90px;
+            font-size: 14px;
+            color: #24292e;
+            font-weight: 500;
+            flex-shrink: 0;
+          }
+
+          .config-input {
+            flex: 1;
+            padding: 10px 14px;
+            border: 1px solid #d0d7de;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f6f8fa;
+            outline: none;
+            transition: all 0.2s ease;
+
+            &:hover {
+              border-color: #8b949e;
+              background: #ffffff;
+            }
+
+            &:focus {
+              border-color: #0969da;
+              background: #ffffff;
+              box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+            }
+          }
+        }
+
+        .config-actions {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 8px;
+          padding-top: 12px;
+          border-top: 1px dashed #eaeaea;
+
+          :deep(.el-button--primary) {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 24px;
+            font-weight: 600;
+            transition: all 0.25s ease;
+
+            &:hover {
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
+            }
+          }
+        }
+      }
+    }
+  }
+
   @keyframes pulse {
     0% {
       transform: scale(1);
@@ -1109,6 +1476,25 @@ onBeforeUnmount(async () => {
     100% {
       transform: scale(1);
       opacity: 1;
+    }
+  }
+
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200px 0;
+    }
+    100% {
+      background-position: 200px 0;
     }
   }
 
@@ -1138,15 +1524,6 @@ onBeforeUnmount(async () => {
     font-size: 12px;
     margin-left: 4px;
     color: #666;
-  }
-
-  @keyframes shimmer {
-    0% {
-      background-position: -200px 0;
-    }
-    100% {
-      background-position: 200px 0;
-    }
   }
 
   @media (max-width: 768px) {

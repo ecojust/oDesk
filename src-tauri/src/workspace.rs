@@ -235,6 +235,18 @@ pub fn read_workspace_file_content(workspace: String, filename: String) -> Resul
 }
 
 #[tauri::command]
+pub fn write_workspace_file_content(
+    workspace: String,
+    filename: String,
+    content: String,
+) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir.join("workspaces").join(workspace).join(filename);
+    std::fs::write(&target_path, &content).map_err(|e| format!("Failed to write file: {}", e))?;
+    Ok("File written successfully".to_string())
+}
+
+#[tauri::command]
 pub async fn scan_worksapce_file(
     workspace: String,
     path: String,

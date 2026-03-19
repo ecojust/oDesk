@@ -147,6 +147,24 @@ export default class Opencode {
     }
   }
 
+  static async write_workspace_file_content(
+    workspace: string,
+    filename: string,
+    content: string,
+  ) {
+    try {
+      let ret = await invoke("write_workspace_file_content", {
+        workspace,
+        filename,
+        content,
+      });
+      return ret;
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
+      throw e;
+    }
+  }
+
   static async scan_worksapce_file(
     workspace: string,
     payload: {
@@ -265,3 +283,13 @@ export default class Opencode {
     }
   }
 }
+
+const wechat_config = {
+  wechat: {
+    appid: "",
+    appsecret: "",
+  },
+  wenyanTheme: "default",
+};
+
+export { wechat_config };
