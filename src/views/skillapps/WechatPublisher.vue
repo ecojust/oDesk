@@ -116,7 +116,9 @@
           v-model="question"
         />
         <button class="search-btn" @click="handleSearch">
-          <i class="icon">🔍</i>
+          <i class="icon" :class="{ loading: isLoading }">🔍</i>
+          <span v-if="isLoading" class="loading-text">搜索中...</span>
+          <span v-else>搜索</span>
         </button>
       </div>
     </div>
@@ -152,9 +154,14 @@ console.log(example);</code></pre>
       <div class="html-panel">
         <div class="panel-header">
           <h3>HTML预览</h3>
-          <button class="publish-btn" @click="handlePublish">
-            <i class="icon">🚀</i>
-            发布
+          <button
+            class="publish-btn"
+            :class="{ loading: isPublishing }"
+            @click="handlePublish"
+          >
+            <i class="icon" :class="{ loading: isPublishing }">🚀</i>
+            <span v-if="isPublishing" class="loading-text">发布中...</span>
+            <span v-else>发布</span>
           </button>
         </div>
         <div class="panel-content">
@@ -187,6 +194,7 @@ const APPID = "oDesk-wechat-publisher";
 // 响应式数据
 const question = ref("");
 const isLoading = ref(false);
+const isPublishing = ref(false);
 const searchResults = ref([]);
 const downloadQueue = ref([]);
 const isDownloading = ref(false);
@@ -242,6 +250,7 @@ const handleSearch = async () => {
     await searchFiles();
   } catch (error) {
     console.error("Error generating schedule:", error);
+    ElMessage.error("搜索失败: " + error.message);
   } finally {
     isLoading.value = false;
   }
@@ -333,17 +342,18 @@ const selectSkill = async (skill) => {
 };
 
 const handlePublish = async () => {
-  // const htmlContent = document.querySelector(".html-content");
-  // if (htmlContent) {
-  //   console.log("Publishing HTML content:", htmlContent.innerHTML);
-  //   ElMessage.success("发布功能开发中...");
-  // }
+  if (isPublishing.value) return;
+  isPublishing.value = true;
   try {
     console.log("开始发布文章---");
     const answer = await Opencode.send_message("发布文章search.md");
     console.log("AI Response:", answer);
+    ElMessage.success("发布成功!");
   } catch (error) {
-    console.log("AI error:", error);
+    console.error("发布失败:", error);
+    ElMessage.error("发布失败: " + error.message);
+  } finally {
+    isPublishing.value = false;
   }
 };
 
@@ -1109,6 +1119,25 @@ onBeforeUnmount(async () => {
     100% {
       transform: rotate(360deg);
     }
+  }
+
+  @keyframes loading-rotate {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+
+  .loading {
+    animation: loading-rotate 1s linear infinite;
+  }
+
+  .loading-text {
+    font-size: 12px;
+    margin-left: 4px;
+    color: #666;
   }
 
   @keyframes shimmer {

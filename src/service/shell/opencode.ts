@@ -37,6 +37,7 @@ export default class Opencode {
 
   static async new_session() {
     try {
+      console.log("new_session-------");
       const result = await RequestService.postBody({
         url: "http://127.0.0.1:4096/session",
       });
