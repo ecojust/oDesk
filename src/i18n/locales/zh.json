@@ -95,6 +95,8 @@
     "availableSkills": "可用技能",
     "export": "导出",
     "close": "关闭",
+    "configSettings": "配置设置",
+    "save": "保存",
     "schedulePreview": "排班表预览",
     "connecting": "正在连接...",
     "retryConnection": "重试连接",

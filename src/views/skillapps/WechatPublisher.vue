@@ -66,33 +66,60 @@
           <div class="config-form">
             <div class="config-item">
               <label>AppID:</label>
-              <input
-                type="text"
+              <el-input
+                :type="showAppId ? 'text' : 'password'"
                 v-model="config.wechat.appid"
                 placeholder="请输入AppID"
                 class="config-input"
-              />
+              >
+                <template #suffix>
+                  <el-icon
+                    class="password-eye-icon"
+                    @click="showAppId = !showAppId"
+                  >
+                    <View v-if="showAppId" />
+                    <Hide v-else />
+                  </el-icon>
+                </template>
+              </el-input>
             </div>
             <div class="config-item">
               <label>AppSecret:</label>
-              <input
+              <el-input
+                :type="showAppSecret ? 'text' : 'password'"
                 v-model="config.wechat.appsecret"
                 placeholder="请输入AppSecret"
                 class="config-input"
-              />
+              >
+                <template #suffix>
+                  <el-icon
+                    class="password-eye-icon"
+                    @click="showAppSecret = !showAppSecret"
+                  >
+                    <View v-if="showAppSecret" />
+                    <Hide v-else />
+                  </el-icon>
+                </template>
+              </el-input>
             </div>
             <div class="config-item">
               <label>排版主题:</label>
-              <select v-model="config.wenyanTheme" class="config-input">
-                <option value="default">default</option>
-                <option value="orangeheart">orangeheart</option>
-                <option value="rainbow">rainbow</option>
-                <option value="lapis">lapis</option>
-                <option value="pie">pie</option>
-                <option value="maize">maize</option>
-                <option value="purple">purple</option>
-                <option value="phycat">phycat</option>
-              </select>
+              <el-select
+                v-model="config.wenyanTheme"
+                class="config-input theme-select"
+              >
+                <el-option
+                  v-for="theme in themeOptions"
+                  :key="theme.value"
+                  :value="theme.value"
+                  :label="theme.label"
+                >
+                  <span class="theme-option">
+                    <span class="theme-icon">{{ theme.icon }}</span>
+                    <span class="theme-label">{{ theme.label }}</span>
+                  </span>
+                </el-option>
+              </el-select>
             </div>
             <div class="config-actions">
               <el-button type="primary" size="small" @click="saveConfig">
@@ -126,7 +153,7 @@
         </div>
       </div>
       <div class="connection-indicator warning" v-else>
-        <div class="indicator-content" @click="openSkillsDialog">
+        <div class="indicator-content">
           <div class="indicator-icon" :class="{ connecting: isConnectting }">
             <span v-if="isConnectting" class="loading-spinner"></span>
             <span v-else>⚠️</span>
@@ -209,12 +236,12 @@ console.log(example);</code></pre>
       <!-- 右侧HTML预览 -->
       <div class="html-panel">
         <div class="panel-header">
-          <h3>HTML预览</h3>
+          <h3>文章预览</h3>
           <button
             class="publish-btn"
             :class="{ loading: isPublishing }"
             @click="handlePublish"
-            :disabled="isPublishing"
+            :disabled="!htmlPreview || isPublishing"
           >
             <i class="icon" :class="{ loading: isPublishing }">🚀</i>
             <span v-if="isPublishing" class="loading-text">发布中...</span>
@@ -255,7 +282,7 @@ import {
 import { useI18n } from "vue-i18n";
 import Opencode, { wechat_config } from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
-import { Open } from "@element-plus/icons-vue";
+import { Open, View, Hide } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
@@ -285,6 +312,12 @@ const isConnected = ref(false);
 const dialogVisible = ref(false);
 const dialogUrl = ref("");
 const skillsDialogVisible = ref(false);
+
+// AppSecret 显示/隐藏状态
+const showAppSecret = ref(false);
+
+// AppID 显示/隐藏状态
+const showAppId = ref(false);
 
 const exportExcel = async (result) => {
   const excel = result.title.replace(".html", ".xlsx");
@@ -381,7 +414,6 @@ const activeWorkspace = async () => {
       path: ".opencode/skill/",
     });
     skills.value = skillsList;
-
     await searchFiles();
 
     // 连接成功
@@ -400,6 +432,18 @@ const config = ref({
   },
   wenyanTheme: "default",
 });
+
+// 排版主题选项
+const themeOptions = [
+  { value: "default", label: "默认主题", icon: "📄" },
+  { value: "orangeheart", label: "橙心", icon: "🧡" },
+  { value: "rainbow", label: "彩虹", icon: "🌈" },
+  { value: "lapis", label: "青金石", icon: "💎" },
+  { value: "pie", label: "派", icon: "🥧" },
+  { value: "maize", label: "玉米", icon: "🌽" },
+  { value: "purple", label: "紫罗兰", icon: "💜" },
+  { value: "phycat", label: "猫咪", icon: "🐱" },
+];
 
 const readConfig = async () => {
   try {
@@ -460,6 +504,14 @@ const selectSkill = async (skill) => {
 
 const handlePublish = async () => {
   if (isPublishing.value) return;
+
+  // 检查appid和appsecret是否已配置
+  if (!config.value.wechat.appid || !config.value.wechat.appsecret) {
+    ElMessage.warning("请先配置AppID和AppSecret后再发布文章");
+    skillsDialogVisible.value = true; // 打开配置弹窗
+    return;
+  }
+
   isPublishing.value = true;
   try {
     console.log("开始发布文章---");
@@ -883,9 +935,7 @@ onBeforeUnmount(async () => {
         padding: 20px;
         height: calc(100% - 64px);
         overflow-y: auto;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        display: block;
 
         .publish-loading {
           text-align: center;
@@ -1418,8 +1468,6 @@ onBeforeUnmount(async () => {
 
           .config-input {
             flex: 1;
-            padding: 10px 14px;
-            border: 1px solid #d0d7de;
             border-radius: 8px;
             font-size: 14px;
             background: #f6f8fa;
@@ -1435,6 +1483,89 @@ onBeforeUnmount(async () => {
               border-color: #0969da;
               background: #ffffff;
               box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.12);
+            }
+
+            // 密码眼睛图标样式
+            .password-eye-icon {
+              cursor: pointer;
+              color: #666;
+              transition: all 0.2s ease;
+              font-size: 16px;
+
+              &:hover {
+                color: #667eea;
+                transform: scale(1.1);
+              }
+            }
+
+            // Select 美化样式
+            &[type="select"],
+            select& {
+              appearance: none;
+              -webkit-appearance: none;
+              -moz-appearance: none;
+              background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23667eea' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+              background-repeat: no-repeat;
+              background-position: right 12px center;
+              padding-right: 36px;
+              cursor: pointer;
+              background-color: #ffffff;
+              border: 2px solid #e1e4e8;
+              font-weight: 500;
+              color: #24292e;
+
+              &:hover {
+                border-color: #667eea;
+                background-color: #ffffff;
+                box-shadow: 0 2px 8px rgba(102, 126, 234, 0.15);
+              }
+
+              &:focus {
+                border-color: #667eea;
+                background-color: #ffffff;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+                outline: none;
+              }
+
+              option {
+                padding: 10px;
+                font-weight: 500;
+                background: #ffffff;
+                color: #24292e;
+
+                &:hover,
+                &:checked {
+                  background: linear-gradient(135deg, #667eea, #764ba2);
+                  color: #ffffff;
+                }
+              }
+            }
+          }
+
+          // 主题选择器特殊样式
+          :deep(.theme-select) {
+            .el-input__wrapper {
+              background: linear-gradient(135deg, #f8f9fa, #ffffff);
+              border: 2px solid #e1e4e8;
+              border-radius: 10px;
+              box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+              transition: all 0.3s ease;
+
+              &:hover {
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+                transform: translateY(-1px);
+              }
+
+              &.is-focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+              }
+            }
+
+            .el-input__inner {
+              font-weight: 500;
+              color: #24292e;
             }
           }
         }
@@ -1459,6 +1590,50 @@ onBeforeUnmount(async () => {
               box-shadow: 0 4px 12px rgba(102, 126, 234, 0.35);
             }
           }
+        }
+      }
+    }
+
+    // 主题选项样式
+    :deep(.theme-option) {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 4px 0;
+
+      .theme-icon {
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+
+      .theme-label {
+        font-weight: 500;
+        color: #24292e;
+      }
+    }
+
+    // 下拉选项样式
+    :deep(.el-select-dropdown__item) {
+      padding: 8px 16px;
+      border-radius: 6px;
+      margin: 2px 8px;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: linear-gradient(
+          135deg,
+          rgba(102, 126, 234, 0.1),
+          rgba(118, 75, 162, 0.1)
+        );
+      }
+
+      &.selected {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        font-weight: 600;
+
+        .theme-label {
+          color: white;
         }
       }
     }
@@ -1516,8 +1691,23 @@ onBeforeUnmount(async () => {
     }
   }
 
+  @keyframes loading-pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.1);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
   .loading {
-    animation: loading-rotate 1s linear infinite;
+    animation: loading-pulse 1.5s ease-in-out infinite;
   }
 
   .loading-text {

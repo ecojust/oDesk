@@ -95,6 +95,8 @@
     "availableSkills": "Available Skills",
     "export": "Export",
     "close": "Close",
+    "configSettings": "Configuration Settings",
+    "save": "Save",
     "schedulePreview": "Schedule Preview",
     "connecting": "Connecting...",
     "retryConnection": "Retry Connection",

@@ -356,6 +356,7 @@ onUnmounted(() => {
     text-transform: uppercase;
     letter-spacing: 0.5px;
     border: 1px solid #dee2e6;
+    white-space: nowrap;
   }
 
   .app-actions {

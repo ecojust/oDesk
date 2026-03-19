@@ -11,8 +11,8 @@ const list = [
     title: "Wechat Publisher",
     key: "WechatPublisher",
     description: "Generate article and publish",
-    icon: "🎵",
-    category: "Media",
+    icon: "📱",
+    category: "Social Media",
     color: "#FF6B6B",
   },
   // {
