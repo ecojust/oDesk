@@ -1,9 +1,5 @@
 <p align="center">
-    <img width="200" alt="" src="./preview/pxArt.png" />
-</p>
-
-<p align="center">
-    A powerful dynamic desktop wallpaper management tool supporting multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web page wallpapers.
+    <img width="200" alt="" src="./preview/logo.png" />
 </p>
 
 <p align="center">

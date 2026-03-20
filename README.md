@@ -1,9 +1,5 @@
 <p align="center">
-    <img width="200" alt="" src="./preview/pxArt.png" />
-</p>
-
-<p align="center">
-    一款功能强大的动态桌面壁纸管理工具，支持多种壁纸类型，包括静态壁纸、Shader 着色器壁纸和 HTML 网页壁纸。
+    <img width="200" alt="" src="./preview/logo.png" />
 </p>
 
 <p align="center">
