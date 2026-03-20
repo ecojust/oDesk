@@ -42,7 +42,7 @@ if (savedLanguage) {
 
 <style scoped>
 .language-switcher {
-  padding: 10px;
+  padding: 10px 0;
   display: flex;
   justify-content: center;
   background: transparent;

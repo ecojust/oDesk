@@ -21,6 +21,20 @@
       "createWorkspace": "测试创建工作区",
       "executeServe": "测试执行服务",
       "killServe": "测试销毁服务"
+    },
+    "about": {
+      "button": "关于",
+      "title": "关于 oDesk",
+      "version": "版本",
+      "buildTime": "构建时间",
+      "description": "软件简介",
+      "descriptionText": "oDesk 是一款跨平台的桌面壁纸管理软件，支持静态壁纸、着色器壁纸和网页壁纸等多种类型，为用户提供个性化的桌面体验。",
+      "features": "主要功能",
+      "feature1": "支持多种壁纸类型（静态、着色器、网页）",
+      "feature2": "跨平台支持（Windows、Mac）",
+      "feature3": "技能应用扩展系统",
+      "feature4": "现代化的用户界面设计",
+      "techStack": "技术栈"
     }
   },
   "wallpaper": {

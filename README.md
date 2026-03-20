@@ -15,21 +15,11 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img alt="Discord" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
   <img alt="npm" src="https://img.shields.io/badge/platform-macOS-blue" />
-  <a href="./examples/">
-   <img alt="npm" src="https://img.shields.io/badge/examples-8A2BE2" />
-   </a>
+   <img alt="npm" src="https://img.shields.io/badge/platform-windows-blue" />
+  
 </p>
 
-![预览图](./preview/oDesk.png)
-
-## 📋 目录
-
-- [功能特性](#-功能特性)
-- [安装说明](#-安装说明)
-- [使用说明](#-使用说明)
-- [HTML壁纸API](#-html壁纸api)
-- [贡献指南](#-贡献指南)
-- [许可证](#-许可证)
+![预览图](./preview/oDesk2.png)
 
 ## 🎖︎ 功能特性
 

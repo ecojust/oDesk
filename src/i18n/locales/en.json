@@ -21,6 +21,20 @@
       "createWorkspace": "Test Create Workspace",
       "executeServe": "Test Execute Serve",
       "killServe": "Test Kill Serve"
+    },
+    "about": {
+      "button": "About",
+      "title": "About oDesk",
+      "version": "Version",
+      "buildTime": "Build Time",
+      "description": "Software Description",
+      "descriptionText": "oDesk is a cross-platform desktop wallpaper management software that supports various types including static wallpapers, shader wallpapers, and HTML wallpapers, providing users with a personalized desktop experience.",
+      "features": "Key Features",
+      "feature1": "Support for multiple wallpaper types (static, shader, HTML)",
+      "feature2": "Cross-platform support (Windows, Mac)",
+      "feature3": "Skill application extension system",
+      "feature4": "Modern user interface design",
+      "techStack": "Technology Stack"
     }
   },
   "wallpaper": {

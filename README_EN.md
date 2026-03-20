@@ -15,21 +15,11 @@
 <p align="center">
   <a href="https://opensource.org/licenses/MIT"><img alt="Discord" src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
   <img alt="npm" src="https://img.shields.io/badge/platform-macOS-blue" />
-  <a href="./examples/">
-   <img alt="npm" src="https://img.shields.io/badge/examples-8A2BE2" />
-   </a>
+  <img alt="npm" src="https://img.shields.io/badge/platform-windows-blue" />
+
 </p>
 
-![Preview](./preview/oDesk.png)
-
-## 📋 Table of Contents
-
-- [Features](#-features)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [HTML Wallpaper API](#-html-wallpaper-api)
-- [Contributing](#-contributing)
-- [License](#-license)
+![Preview](./preview/oDesk3.png)
 
 ## 🎖︎ Features
 
@@ -166,15 +156,15 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
 
 Then you can use the following **APIs** to get data/execute operations:
 
-| API Name                     | Description                        | Example                                                                                   | Return Value |
-| :--------------------------- | :--------------------------------- | :------------------------------------------------------------------------------------- | :----------- |
-| `get_system_stats`           | Get system status                  | `await invoke("get_system_stats");`                                                     | `Object`     |
-| `open_workspace`             | Open current workspace folder      | `await invoke("open_workspace");`                                                      | -            |
+| API Name                     | Description                           | Example                                                                                | Return Value |
+| :--------------------------- | :------------------------------------ | :------------------------------------------------------------------------------------- | :----------- |
+| `get_system_stats`           | Get system status                     | `await invoke("get_system_stats");`                                                    | `Object`     |
+| `open_workspace`             | Open current workspace folder         | `await invoke("open_workspace");`                                                      | -            |
 | `opencode`                   | Execute opencode command in workspace | `await invoke("opencode");`                                                            | -            |
-| `get`                        | Make GET request                   | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object`     |
-| `postBody`                   | Make POST request                  | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`             | `Object`     |
-| `workspace_file_insert_text` | Insert data into workspace text file | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});` | -            |
-| `open_executable`            | Open local program by absolute path | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -            |
+| `get`                        | Make GET request                      | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object`     |
+| `postBody`                   | Make POST request                     | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`            | `Object`     |
+| `workspace_file_insert_text` | Insert data into workspace text file  | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});` | -            |
+| `open_executable`            | Open local program by absolute path   | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`        | -            |
 
 > 💡 For practical examples, refer to the sample files in the `samples` folder
 
