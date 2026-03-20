@@ -13,8 +13,14 @@
           {{ item.icon }}
         </div>
         <div class="app-content">
-          <h3 class="app-title">{{ item.title }}</h3>
-          <p class="app-description">{{ item.description }}</p>
+          <h3 class="app-title" :title="item.title">{{ item.title }}</h3>
+
+          <el-tooltip :content="item.description">
+            <p class="app-description">
+              {{ item.description }}
+            </p>
+          </el-tooltip>
+
           <span class="app-category">{{ item.category }}</span>
         </div>
         <div class="app-actions">
@@ -39,7 +45,8 @@
             </div>
             <div class="app-details">
               <h2 class="app-title">{{ selectedApp?.title }}</h2>
-              <p class="app-category">{{ selectedApp?.category }}</p>
+              <p class="app-description-full">{{ selectedApp?.description }}</p>
+              <!-- <p class="app-category">{{ selectedApp?.category }}</p> -->
             </div>
           </div>
           <div class="header-actions">
@@ -63,7 +70,7 @@ import MusicDownload from "./MusicDownload.vue";
 import ScheduleManager from "./ScheduleManager.vue";
 import WechatPublisher from "./WechatPublisher.vue";
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const components = {
   MusicDownload: MusicDownload,
@@ -72,7 +79,7 @@ const components = {
 };
 
 const activeApp = ref("MusicDownload");
-const appList = ref(getList());
+const appList = computed(() => getList());
 const selectedApp = ref(null);
 const isDialogOpen = ref(false);
 
@@ -212,8 +219,15 @@ onUnmounted(() => {
               text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
             }
 
+            .app-description-full {
+              margin: 4px 0 0 0;
+              font-size: 14px;
+              color: rgba(255, 255, 255, 0.85);
+              line-height: 1.4;
+            }
+
             .app-category {
-              margin: 2px 0 0 0;
+              margin: 4px 0 0 0;
               font-size: 12px;
               color: rgba(255, 255, 255, 0.7);
               text-transform: uppercase;
@@ -339,6 +353,9 @@ onUnmounted(() => {
     font-weight: 600;
     color: #333;
     line-height: 1.2;
+    // white-space: nowrap;
+    overflow: hidden;
+    // text-overflow: ellipsis;
   }
 
   .app-description {
@@ -346,6 +363,12 @@ onUnmounted(() => {
     color: #666;
     font-size: 14px;
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-height: 2.8em;
   }
 
   .app-category {
