@@ -39,7 +39,20 @@
   },
   "skillapps": {
     "title": "Skill Apps",
-    "description": "Install and manage skill apps"
+    "description": "Install and manage skill apps",
+    "list": {
+      "scheduleManager": {
+        "title": "Schedule Manager",
+        "description": "Manage and organize your work schedule",
+        "category": "Productivity"
+      },
+      "wechatPublisher": {
+        "title": "Wechat Publisher",
+        "description": "Generate article and publish",
+        "category": "Social Media"
+      }
+    },
+    "launch": "Launch"
   },
   "staticWallpaper": {
     "enableLoop": "Enable Loop",
@@ -121,5 +134,52 @@
     "viewExample": "View Example",
     "scheduleGenerationFailed": "Schedule Generation Failed",
     "checkInputFormat": "Please check input format"
+  },
+  "wechatPublisher": {
+    "workspaceStatus": "Workspace Status",
+    "connectionStatus": "Connection Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "sessionId": "Session ID",
+    "none": "None",
+    "availableSkills": "Available Skills",
+    "export": "Export",
+    "close": "Close",
+    "configSettings": "Configuration Settings",
+    "save": "Save",
+    "connecting": "Connecting...",
+    "retryConnection": "Retry Connection",
+    "searchPlaceholder": "Enter search content...",
+    "search": "Search",
+    "searching": "Searching...",
+    "markdownContent": "Markdown Content",
+    "articlePreview": "Article Preview",
+    "publish": "Publish",
+    "publishing": "Publishing...",
+    "noArticleContent": "No Article Content",
+    "pleaseSearchFirst": "Please generate article through search before preview and publish",
+    "searchingArticles": "Searching Articles...",
+    "aiGenerating": "AI is generating article content based on your keywords",
+    "publishingArticle": "Publishing Article...",
+    "pushingToWechat": "Pushing article to WeChat Official Account platform",
+    "publishSuccess": "Publish Success!",
+    "searchFailed": "Search Failed: ",
+    "publishFailed": "Publish Failed: ",
+    "configSaveSuccess": "Configuration saved successfully",
+    "configSaveFailed": "Configuration save failed: ",
+    "pleaseConfigFirst": "Please configure AppID and AppSecret before publishing article",
+    "appid": "AppID",
+    "appsecret": "AppSecret",
+    "pleaseEnterAppid": "Please enter AppID",
+    "pleaseEnterAppsecret": "Please enter AppSecret",
+    "layoutTheme": "Layout Theme",
+    "defaultTheme": "Default",
+    "orangeHeart": "Orange Heart",
+    "rainbow": "Rainbow",
+    "lapis": "Lapis",
+    "pie": "Pie",
+    "maize": "Maize",
+    "purple": "Purple",
+    "phyCat": "PhyCat"
   }
 }

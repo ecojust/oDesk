@@ -19,7 +19,7 @@
         </div>
         <div class="app-actions">
           <button class="launch-btn" :style="{ backgroundColor: item.color }">
-            Launch
+            {{ t("skillapps.launch") }}
           </button>
         </div>
       </div>
@@ -56,11 +56,14 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
-import list from "./list";
+import { useI18n } from "vue-i18n";
+import getList from "./list";
 
 import MusicDownload from "./MusicDownload.vue";
 import ScheduleManager from "./ScheduleManager.vue";
 import WechatPublisher from "./WechatPublisher.vue";
+
+const { t } = useI18n();
 
 const components = {
   MusicDownload: MusicDownload,
@@ -69,7 +72,7 @@ const components = {
 };
 
 const activeApp = ref("MusicDownload");
-const appList = ref(list);
+const appList = ref(getList());
 const selectedApp = ref(null);
 const isDialogOpen = ref(false);
 

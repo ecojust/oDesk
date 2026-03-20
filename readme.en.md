@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-    A powerful dynamic desktop wallpaper management tool supporting multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web page wallpapers.
+    A powerful dynamic desktop wallpaper management tool that supports multiple wallpaper types, including static wallpapers, Shader wallpapers, and HTML web wallpapers.
 </p>
 
 <p align="center">
@@ -35,20 +35,20 @@
 
 ### 1. Skill Apps
 
-- **App Management Interface**: Visual skill app management platform with app card display and quick launch
+- **App Management Interface**: Visual skill app management platform with card display and quick launch
 - **Built-in Apps**:
-  - **Schedule Manager**: Intelligent scheduling tool with customizable employee count and shift settings, exportable to Excel
-  - **Wechat Publisher**: WeChat public account article publishing tool with AI content generation, multiple themes, and one-click publishing
+  - **Schedule Manager**: Smart scheduling tool with customizable employee count, shift settings, and Excel export
+  - **Wechat Publisher**: WeChat public account article publishing tool with AI-generated content, multiple formatting themes, and one-click publishing
   - **Music Download**: Music search and download tool with queue management and local playback
-- **Workspace Management**: Create and manage development workspaces with opencode service execution
-- **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
-- **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
+- **Workspace Management**: Create and manage development workspaces, support opencode service execution
+- **Skill Extension**: Extend app functionality through skill packages, import/export skill configurations
+- **Real-time Connection**: Real-time workspace status monitoring, session management, and file operations
 
 ### 2. Static Wallpapers
 
 - Browse local wallpaper list with thumbnail preview
 - Get random wallpapers from cloud
-- Wallpaper slideshow rotation (local/cloud modes)
+- Support wallpaper slideshow (local/cloud modes)
 - One-click download and set as system wallpaper
 - Wallpaper deletion management
 
@@ -61,7 +61,7 @@
 - Real-time rendering preview based on Babylon.js
 - Save and delete shader wallpapers
 
-### 4. HTML Web Page Wallpapers
+### 4. HTML Web Wallpapers
 
 - Set any webpage as desktop wallpaper
 - Built-in code editor (Monaco Editor)
@@ -72,19 +72,19 @@
 
 ## 📄 Usage
 
-1. **Skill Apps**: Access various skill apps in the "SKILL-APPS" tab
-   - **Schedule Manager**: Enter employee count, month, and shift requirements for AI to generate optimal schedules, exportable to Excel
-   - **Wechat Publisher**: Configure WeChat public account AppID and AppSecret, search articles by keywords, AI generates content for one-click publishing
-   - **Music Download**: Search music, manage download queue, local playback support
-2. **Static Wallpapers**: Browse local wallpapers, download cloud wallpapers, and set slideshow in the "Static Wallpapers" tab
-3. **Shader Wallpapers**: Create, edit, and preview GLSL shaders in the "Shader Wallpapers" tab
-4. **HTML Wallpapers**: Set any webpage as wallpaper with real-time editing preview in the "Web Wallpapers" tab
+1. **Skill Apps**: In the "SKILL-APPS" tab, access various skill apps
+   - **Schedule Manager**: Input employee count, month, and shift requirements, AI generates optimal schedule with Excel export
+   - **Wechat Publisher**: Configure WeChat public account AppID and AppSecret, search articles by keyword, AI generates content and publishes with one click
+   - **Music Download**: Search music, manage download queue, support local playback
+2. **Static Wallpapers**: In the "Static Wallpaper" tab, browse local wallpapers, download cloud wallpapers, set wallpaper slideshow
+3. **Shader Wallpapers**: In the "Shader Wallpaper" tab, create, edit, and preview GLSL shaders
+4. **HTML Wallpapers**: In the "Web Wallpaper" tab, set any webpage as wallpaper with real-time editing preview
 
 ## 🍟 HTML Wallpaper API
 
 ### 1. Import SDK
 
-First, please load the required **SDK** file code in your custom HTML wallpaper:
+First, load the required **SDK** code in your custom HTML wallpaper:
 
 ```javascript
 // This is for generating preview screenshots
@@ -101,7 +101,7 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
       if (data && data.id) {
         const callback = pendingCallbacks.get(data.id);
         if (callback) {
-          // Has callback, meaning wallpaper requests client to do something
+          // Has callback, means wallpaper requested client to do something
           if (data.code === 200) {
             callback.resolve(data);
           } else {
@@ -109,7 +109,7 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
           }
           pendingCallbacks.delete(data.id);
         } else {
-          // No callback, meaning client tells wallpaper to do something
+          // No callback, means client told wallpaper to do something
           switch (data.method) {
             case "screenshot":
               const canvas = await html2canvas(document.body, {
@@ -145,7 +145,7 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
       }
     });
 
-    // invoke function is used to make requests for the client to execute operations
+    // invoke function is used to request client to execute transactions
     async function invoke(data_type, payload) {
       return new Promise((resolve, reject) => {
         const id = generateId();
@@ -164,17 +164,17 @@ First, please load the required **SDK** file code in your custom HTML wallpaper:
 
 ### 2. Call APIs
 
-Then you can use the following **APIs** to get data/execute operations:
+Then you can get data/execute transactions through the following **APIs**:
 
-| API Name                     | Description                        | Example                                                                                   | Return Value |
-| :--------------------------- | :--------------------------------- | :------------------------------------------------------------------------------------- | :----------- |
-| `get_system_stats`           | Get system status                  | `await invoke("get_system_stats");`                                                     | `Object`     |
-| `open_workspace`             | Open current workspace folder      | `await invoke("open_workspace");`                                                      | -            |
-| `opencode`                   | Execute opencode command in workspace | `await invoke("opencode");`                                                            | -            |
-| `get`                        | Make GET request                   | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object`     |
-| `postBody`                   | Make POST request                  | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`             | `Object`     |
-| `workspace_file_insert_text` | Insert data into workspace text file | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});` | -            |
-| `open_executable`            | Open local program by absolute path | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`          | -            |
+| API Name                    | Usage                                         | Example                                                                                 | Return  |
+| :-------------------------- | :-------------------------------------------- | :-------------------------------------------------------------------------------------- | :------ |
+| `get_system_stats`          | Get system status                             | `await invoke("get_system_stats");`                                                    | `Object`|
+| `open_workspace`            | Open current workspace folder                | `await invoke("open_workspace");`                                                      | -       |
+| `opencode`                  | Execute opencode command in current workspace| `await invoke("opencode");`                                                            | -       |
+| `get`                       | Make GET request                             | `await invoke("get",{url: "http://127.0.0.1:4096/session"});`                          | `Object`|
+| `postBody`                  | Make POST request                            | `await invoke("postBody", {url: "http://127.0.0.1:4096/session",data:{}});`            | `Object`|
+| `workspace_file_insert_text`| Insert data into current workspace text file | `await invoke("workspace_file_insert_text", {fileName: "xxx.txt", newLine:"xxxxxx"});`| -       |
+| `open_executable`           | Open local program by absolute path          | `await invoke("open_executable", { path: "/Applications/Google Chrome.app" });`        | -       |
 
 > 💡 For practical examples, refer to the sample files in the `samples` folder
 
@@ -184,13 +184,13 @@ Then you can use the following **APIs** to get data/execute operations:
 # Clone the project
 git clone https://github.com/yourusername/oDesk.git
 
-# Navigate to directory
+# Enter directory
 cd oDesk
 
 # Install dependencies
 npm install
 
-# Start the app
+# Run the app
 npm run 4dev
 ```
 
@@ -200,19 +200,19 @@ Welcome to submit Issues and Pull Requests!
 
 ### Submitting Issues
 
-1. Search existing Issues to confirm if the problem already exists
-2. Provide clear problem description with reproduction steps
+1. Search existing Issues to confirm if the same problem already exists
+2. Use clear problem description with reproduction steps
 3. Attach relevant screenshots and logs
 
-### Submitting Pull Requests
+### Submitting Pull Request
 
 1. Fork this project
-2. Create a feature branch (`git checkout -b feature/xxx`)
-3. Commit your changes (`git commit -m 'Add xxx'`)
-4. Push the branch (`git push origin feature/xxx`)
-5. Create a Pull Request
+2. Create feature branch (`git checkout -b feature/xxx`)
+3. Commit changes (`git commit -m 'Add xxx'`)
+4. Push branch (`git push origin feature/xxx`)
+5. Create Pull Request
 
-## 📜 License
+## 📄 License
 
 MIT License - See [LICENSE](LICENSE) for details
 

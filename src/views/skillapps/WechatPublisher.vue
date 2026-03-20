@@ -3,7 +3,7 @@
     <!-- 技能信息弹窗 -->
     <el-dialog
       v-model="skillsDialogVisible"
-      :title="t('scheduleManager.workspaceStatus')"
+      :title="t('wechatPublisher.workspaceStatus')"
       width="600px"
       :before-close="handleSkillsDialogClose"
       class="skills-dialog"
@@ -13,30 +13,30 @@
       <div class="skill-info-content">
         <div class="info-details">
           <div class="detail-item">
-            <label>{{ t("scheduleManager.connectionStatus") }}:</label>
+            <label>{{ t("wechatPublisher.connectionStatus") }}:</label>
             <span
               class="status-badge"
               :class="isConnected ? 'status-connected' : 'status-disconnected'"
             >
               {{
                 isConnected
-                  ? t("scheduleManager.connected")
-                  : t("scheduleManager.disconnected")
+                  ? t("wechatPublisher.connected")
+                  : t("wechatPublisher.disconnected")
               }}
             </span>
           </div>
 
           <div class="detail-item">
-            <label>{{ t("scheduleManager.sessionId") }}:</label>
+            <label>{{ t("wechatPublisher.sessionId") }}:</label>
             <span class="session-id">{{
-              sessionId || t("scheduleManager.none")
+              sessionId || t("wechatPublisher.none")
             }}</span>
           </div>
         </div>
 
         <div class="skills-list" v-if="skills.length > 0">
           <div class="skills-list-header">
-            {{ t("scheduleManager.availableSkills") }}
+            {{ t("wechatPublisher.availableSkills") }}
           </div>
           <div class="skill-cards">
             <div
@@ -51,7 +51,7 @@
                 <div class="skill-actions">
                   <button class="export-btn">
                     <i class="icon">📤</i>
-                    {{ t("scheduleManager.export") }}
+                    {{ t("wechatPublisher.export") }}
                   </button>
                 </div>
               </div>
@@ -61,7 +61,7 @@
 
         <div class="config-section">
           <div class="config-header">
-            {{ t("scheduleManager.configSettings") || "配置设置" }}
+            {{ t("wechatPublisher.configSettings") || "配置设置" }}
           </div>
           <div class="config-form">
             <div class="config-item">
@@ -123,7 +123,7 @@
             </div>
             <div class="config-actions">
               <el-button type="primary" size="small" @click="saveConfig">
-                {{ t("scheduleManager.save") || "保存" }}
+                {{ t("wechatPublisher.save") || "保存" }}
               </el-button>
             </div>
           </div>
@@ -133,7 +133,7 @@
       <!-- <template #footer>
         <div class="dialog-footer">
           <el-button @click="handleSkillsDialogClose">{{
-            t("scheduleManager.close")
+            t("wechatPublisher.close")
           }}</el-button>
         </div>
       </template> -->
@@ -145,7 +145,7 @@
         <div class="indicator-content">
           <div class="indicator-icon">✅</div>
           <span class="indicator-text">{{
-            t("scheduleManager.connected")
+            t("wechatPublisher.connected")
           }}</span>
           <button class="skills-manage-btn" @click="openSkillsDialog">
             💻
@@ -161,8 +161,8 @@
           <span class="indicator-text">
             {{
               isConnectting
-                ? t("scheduleManager.connecting")
-                : t("scheduleManager.disconnected")
+                ? t("wechatPublisher.connecting")
+                : t("wechatPublisher.disconnected")
             }}
           </span>
           <button
@@ -170,7 +170,7 @@
             class="reconnect-btn"
             @click="activeWorkspace"
           >
-            {{ t("scheduleManager.retryConnection") }}
+            {{ t("wechatPublisher.retryConnection") }}
           </button>
         </div>
       </div>

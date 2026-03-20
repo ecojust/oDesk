@@ -1,60 +1,27 @@
-const list = [
-  {
-    title: "Schedule Manager",
-    key: "ScheduleManager",
-    description: "Manage and organize your work schedule",
-    icon: "📅",
-    category: "Productivity",
-    color: "#98D8C8",
-  },
-  {
-    title: "Wechat Publisher",
-    key: "WechatPublisher",
-    description: "Generate article and publish",
-    icon: "📱",
-    category: "Social Media",
-    color: "#FF6B6B",
-  },
-  // {
-  //   title: "File Converter",
-  //   key: "FileConverter",
-  //   description: "Convert files between different formats",
-  //   icon: "🔄",
-  //   category: "Utilities",
-  //   color: "#4ECDC4",
-  // },
-  // {
-  //   title: "Image Editor",
-  //   key: "ImageEditor",
-  //   description: "Edit and enhance your images",
-  //   icon: "🖼️",
-  //   category: "Graphics",
-  //   color: "#45B7D1",
-  // },
-  // {
-  //   title: "Code Formatter",
-  //   key: "CodeFormatter",
-  //   description: "Format and beautify your code",
-  //   icon: "💻",
-  //   category: "Development",
-  //   color: "#96CEB4",
-  // },
-  // {
-  //   title: "PDF Tools",
-  //   key: "PDFTools",
-  //   description: "Merge, split, and edit PDF files",
-  //   icon: "📄",
-  //   category: "Documents",
-  //   color: "#FFEAA7",
-  // },
-  // {
-  //   title: "Video Compressor",
-  //   key: "VideoCompressor",
-  //   description: "Compress videos to reduce file size",
-  //   icon: "🎥",
-  //   category: "Media",
-  //   color: "#DDA0DD",
-  // },
-];
+import i18n from "@/i18n";
 
-export default list;
+const getList = () => {
+  const { t } = i18n.global;
+  return [
+    {
+      title: t("skillapps.list.scheduleManager.title"),
+      key: "ScheduleManager",
+      description: t("skillapps.list.scheduleManager.description"),
+      icon: "📅",
+      category: t("skillapps.list.scheduleManager.category"),
+      color: "#98D8C8",
+    },
+    {
+      title: t("skillapps.list.wechatPublisher.title"),
+      key: "WechatPublisher",
+      description: t("skillapps.list.wechatPublisher.description"),
+      icon: "📱",
+      category: t("skillapps.list.wechatPublisher.category"),
+      color: "#FF6B6B",
+    },
+  ];
+};
+
+// const list = getList();
+
+export default getList;
