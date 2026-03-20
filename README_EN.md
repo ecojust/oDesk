@@ -15,7 +15,7 @@
 
 </p>
 
-![Preview](./preview/oDesk3.png)
+![Preview](./preview/app_en.png)
 
 ## 🎖︎ Features
 

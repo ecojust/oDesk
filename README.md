@@ -15,7 +15,7 @@
   
 </p>
 
-![预览图](./preview/oDesk2.png)
+![预览图](./preview/app_zh.png)
 
 ## 🎖︎ 功能特性
 
