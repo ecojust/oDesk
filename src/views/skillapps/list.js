@@ -21,7 +21,7 @@ const getList = () => {
     },
     {
       title: "newapp",
-      key: "newapp",
+      key: "TravelPlan",
       description: "newapp",
       icon: "📱",
       category: t("skillapps.list.wechatPublisher.category"),

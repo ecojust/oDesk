@@ -1,5 +1,5 @@
 <template>
-  <div class="app">
+  <div class="travel-plan">
     <!-- 技能信息弹窗 -->
     <el-dialog
       v-model="skillsDialogVisible"
@@ -169,7 +169,7 @@ onBeforeUnmount(async () => {
 </script>
 
 <style lang="less" scoped>
-.app {
+.travel-plan {
   position: relative;
   height: 100%;
   box-sizing: border-box;
