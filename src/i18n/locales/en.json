@@ -27,6 +27,7 @@
       "title": "About oDesk",
       "version": "Version",
       "buildTime": "Build Time",
+      "buildNumber": "Build Number",
       "description": "Software Description",
       "descriptionText": "oDesk is a cross-platform desktop wallpaper management software that supports various types including static wallpapers, shader wallpapers, and HTML wallpapers, providing users with a personalized desktop experience.",
       "features": "Key Features",
@@ -34,7 +35,11 @@
       "feature2": "Cross-platform support (Windows, Mac)",
       "feature3": "Skill application extension system",
       "feature4": "Modern user interface design",
-      "techStack": "Technology Stack"
+      "techStack": "Technology Stack",
+      "usage": "Usage Instructions",
+      "usageSubtitle1": "Skill App Installation",
+      "usageStep1_1": "1. Download node from https://www.nodejs.com.cn/download.html. For Windows, it's recommended to download the msi version to avoid manual environment variable configuration",
+      "usageStep1_2": "2. Run npm i -g opencode-ai in cmd"
     }
   },
   "wallpaper": {

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "build-info": "node scripts/update-build-info.js",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "tauri",
+    "tauri": "yarn run build-info && tauri",
     "logo": "cargo tauri icon ./logo.png",
-    "4dev": "yarn tauri dev"
+    "4dev": "yarn run build-info && yarn tauri dev"
   },
   "dependencies": {
     "@babylonjs/core": "^6.0.0",

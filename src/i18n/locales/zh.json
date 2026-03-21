@@ -27,6 +27,7 @@
       "title": "关于 oDesk",
       "version": "版本",
       "buildTime": "构建时间",
+      "buildNumber": "构建编号",
       "description": "软件简介",
       "descriptionText": "oDesk 是一款跨平台的桌面壁纸管理软件，支持静态壁纸、着色器壁纸和网页壁纸等多种类型，为用户提供个性化的桌面体验。",
       "features": "主要功能",
@@ -34,7 +35,11 @@
       "feature2": "跨平台支持（Windows、Mac）",
       "feature3": "技能应用扩展系统",
       "feature4": "现代化的用户界面设计",
-      "techStack": "技术栈"
+      "techStack": "技术栈",
+      "usage": "使用说明",
+      "usageSubtitle1": "Skill应用安装",
+      "usageStep1_1": "1. 请于 https://www.nodejs.com.cn/download.html 下载node，windows系统建议下载msi后缀版本，这样不需要手动配置环境变量",
+      "usageStep1_2": "2. cmd 执行 npm i -g opencode-ai"
     }
   },
   "wallpaper": {

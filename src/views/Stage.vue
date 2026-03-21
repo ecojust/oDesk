@@ -75,17 +75,35 @@
     <!-- 关于对话框 -->
     <el-dialog
       v-model="aboutDialogVisible"
-      width="380px"
+      width="460px"
       center
       :show-close="true"
     >
       <div class="about-content">
         <img src="/logo.png" alt="oDesk Logo" class="app-logo" />
-        <h2 class="app-name">oDesk</h2>
-        <p class="version">{{ $t("stage.about.version") }}: 1.0.0</p>
-        <p class="build-time">
-          {{ $t("stage.about.buildTime") }}: {{ buildTime }}
+        <!-- <h2 class="app-name">oDesk</h2> -->
+        <p class="version">
+          {{ $t("stage.about.version") }}: {{ build_info.version }}
         </p>
+        <p class="build-time">
+          {{ $t("stage.about.buildTime") }}: {{ build_info.buildTime }}
+        </p>
+
+        <p class="build-number">
+          {{ $t("stage.about.buildNumber") }}: {{ build_info.buildNumber }}
+        </p>
+        <div class="usage-section">
+          <h3 class="usage-title">{{ $t("stage.about.usage") }}</h3>
+          <div class="usage-subsection">
+            <h4 class="usage-subtitle">
+              {{ $t("stage.about.usageSubtitle1") }}
+            </h4>
+            <div class="usage-steps">
+              <p>{{ $t("stage.about.usageStep1_1") }}</p>
+              <p>{{ $t("stage.about.usageStep1_2") }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -104,6 +122,8 @@ import SKILL from "./skillapps/index.vue";
 import { InfoFilled } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
+
+import { BUILD_INFO } from "../build";
 
 const activeTab = ref("skillapps");
 
@@ -124,6 +144,7 @@ const components = {
 };
 
 const activeComponent = computed(() => components[activeTab.value] || null);
+const build_info = computed(() => BUILD_INFO);
 
 onMounted(async () => {
   // const res = await RequestService.postBody({
@@ -267,7 +288,7 @@ const testKillOpenServe = async () => {
     text-align: center;
     padding: 10px 0;
     .app-logo {
-      width: 64px;
+      // width: 64px;
       height: 64px;
       margin-bottom: 16px;
     }
@@ -286,6 +307,48 @@ const testKillOpenServe = async () => {
       color: #c0c4cc;
       margin: 0;
       font-size: 12px;
+    }
+    .build-number {
+      color: #c0c4cc;
+      margin: 0;
+      font-size: 12px;
+    }
+    .usage-section {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #ebeef5;
+      text-align: left;
+      .usage-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0 0 12px 0;
+      }
+      .usage-subsection {
+        margin-bottom: 16px;
+        &:last-child {
+          margin-bottom: 0;
+        }
+        .usage-subtitle {
+          font-size: 14px;
+          font-weight: 600;
+          color: #409eff;
+          margin: 0 0 8px 0;
+        }
+        .usage-steps {
+          margin: 0;
+          padding-left: 12px;
+          p {
+            color: #606266;
+            font-size: 13px;
+            line-height: 1.8;
+            margin-bottom: 6px;
+            &:last-child {
+              margin-bottom: 0;
+            }
+          }
+        }
+      }
     }
   }
 }
