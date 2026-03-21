@@ -19,6 +19,14 @@ const getList = () => {
       category: t("skillapps.list.wechatPublisher.category"),
       color: "#FF6B6B",
     },
+    {
+      title: "newapp",
+      key: "newapp",
+      description: "newapp",
+      icon: "📱",
+      category: t("skillapps.list.wechatPublisher.category"),
+      color: "#FF6B6B",
+    },
   ];
 };
 

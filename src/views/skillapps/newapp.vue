@@ -138,8 +138,19 @@ const activeWorkspace = async () => {
   isConnectting.value = true;
   try {
     await Opencode.open_workspace(APPID);
-    await Opencode.initialize_workspace_serve(APPID);
+
+    // await Opencode.initialize_workspace_serve(APPID);
+
+    await Opencode.unzip_skill_to_workspace("travel-map", APPID);
+    const pngs = await Opencode.scan_worksapce_file(APPID, {
+      path: "",
+      postfix: "png",
+    });
+
+    console.log("pngs", pngs);
+
     isConnected.value = true;
+    // travel-map
   } catch (error) {
     console.error("Workspace activation failed:", error);
   } finally {
