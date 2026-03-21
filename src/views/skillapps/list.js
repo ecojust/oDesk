@@ -20,12 +20,12 @@ const getList = () => {
       color: "#FF6B6B",
     },
     {
-      title: "newapp",
+      title: t("skillapps.list.travelPlan.title"),
       key: "TravelPlan",
-      description: "newapp",
-      icon: "📱",
-      category: t("skillapps.list.wechatPublisher.category"),
-      color: "#FF6B6B",
+      description: t("skillapps.list.travelPlan.description"),
+      icon: "✈️",
+      category: t("skillapps.list.travelPlan.category"),
+      color: "#4ECDC4",
     },
   ];
 };
