@@ -64,6 +64,30 @@
         <component :is="activeComponent" />
       </keep-alive>
     </div>
+
+    <div class="top-right-controls">
+      <LanguageSwitcher />
+      <el-icon class="about-button" @click="showAboutDialog"
+        ><InfoFilled
+      /></el-icon>
+    </div>
+
+    <!-- 关于对话框 -->
+    <el-dialog
+      v-model="aboutDialogVisible"
+      width="380px"
+      center
+      :show-close="true"
+    >
+      <div class="about-content">
+        <img src="/logo.png" alt="oDesk Logo" class="app-logo" />
+        <h2 class="app-name">oDesk</h2>
+        <p class="version">{{ $t("stage.about.version") }}: 1.0.0</p>
+        <p class="build-time">
+          {{ $t("stage.about.buildTime") }}: {{ buildTime }}
+        </p>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -74,12 +98,22 @@ import StaticWallpaper from "./wallpaperSettings/StaticWallpaper.vue";
 import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
-import SKILL from "./skillapps/index.vue";
+import LanguageSwitcher from "../components/LanguageSwitcher.vue";
 
+import SKILL from "./skillapps/index.vue";
+import { InfoFilled } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 
 const activeTab = ref("skillapps");
+
+const aboutDialogVisible = ref(false);
+
+const buildTime = ref("2026-03-20 21:21:00");
+
+const showAboutDialog = () => {
+  aboutDialogVisible.value = true;
+};
 
 const components = {
   static: StaticWallpaper,
@@ -207,6 +241,52 @@ const testKillOpenServe = async () => {
     background: white;
     border-radius: 0 0 8px 8px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .top-right-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    .about-button {
+      color: rgba(0, 0, 0, 0.6);
+      transition: all 0.3s ease;
+      margin: 0 4px;
+      cursor: pointer;
+    }
+    .about-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    }
+  }
+
+  .about-content {
+    text-align: center;
+    padding: 10px 0;
+    .app-logo {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+    }
+    .app-name {
+      margin: 0 0 8px 0;
+      font-size: 20px;
+      font-weight: 600;
+      color: #303133;
+    }
+    .version {
+      color: #909399;
+      margin: 0 0 4px 0;
+      font-size: 14px;
+    }
+    .build-time {
+      color: #c0c4cc;
+      margin: 0;
+      font-size: 12px;
+    }
   }
 }
 </style>
