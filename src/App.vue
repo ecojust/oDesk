@@ -7,8 +7,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-
 // 路由应用的主入口
 </script>
 
