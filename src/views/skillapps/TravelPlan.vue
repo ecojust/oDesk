@@ -72,12 +72,12 @@
       <div class="dialog-content">
         <div class="preview-container">
           <div class="preview-frame">
-            <iframe
+            <img
               v-if="dialogUrl"
               :src="dialogUrl"
-              frameborder="0"
-              class="preview-iframe"
-            ></iframe>
+              class="preview-image"
+              alt="Preview"
+            />
           </div>
         </div>
       </div>
@@ -176,7 +176,7 @@
               </el-form-item>
 
               <!-- 图片类型 -->
-              <el-form-item :label="t('travelPlan.imageType')" prop="imageType">
+              <!-- <el-form-item :label="t('travelPlan.imageType')" prop="imageType">
                 <el-select
                   v-model="formData.imageType"
                   :placeholder="t('travelPlan.imageTypePlaceholder')"
@@ -189,7 +189,7 @@
                     :value="type.value"
                   />
                 </el-select>
-              </el-form-item>
+              </el-form-item> -->
 
               <!-- 查询按钮 -->
               <el-form-item>
@@ -257,21 +257,6 @@
                             result.title || result.name || `Image ${index + 1}`
                           }}
                         </h4>
-                        <div class="image-url">
-                          <span class="url-label">URL:</span>
-                          <span class="url-value">{{
-                            result.url || "N/A"
-                          }}</span>
-                        </div>
-                      </div>
-                      <div class="image-actions">
-                        <button
-                          @click="preview(result.url)"
-                          class="action-btn view-btn"
-                        >
-                          <i class="icon">👁️</i>
-                          {{ t("travelPlan.viewDetail") }}
-                        </button>
                       </div>
                     </div>
                   </div>
@@ -444,7 +429,7 @@ const handleSearch = async () => {
 
     const pngs = await Opencode.scan_worksapce_file(APPID, {
       path: "",
-      postfix: "png",
+      postfix: "svg",
     });
 
     console.log("pngs", pngs);
@@ -548,7 +533,7 @@ const activeWorkspace = async () => {
     sessionId.value = Opencode.sessionId;
     const pngs = await Opencode.scan_worksapce_file(APPID, {
       path: "",
-      postfix: "png",
+      postfix: "svg",
     });
 
     console.log("pngs", pngs);
@@ -1325,14 +1310,20 @@ onBeforeUnmount(async () => {
               display: flex;
               align-items: center;
               justify-content: center;
+              overflow: hidden;
 
-              .preview-iframe {
-                width: 100%;
-                height: 100%;
-                border: none;
+              .preview-image {
+                max-width: 100%;
+                max-height: 100%;
+                object-fit: contain;
                 border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
                 background: white;
+                transition: transform 0.3s ease;
+
+                &:hover {
+                  transform: scale(1.02);
+                }
               }
             }
           }
