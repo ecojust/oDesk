@@ -12,13 +12,13 @@ mod workspace;
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{export_file, open_folder, read_file};
-use tool::{get_system_stats, log, open_executable};
+use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
 
 use workspace::{
-    create_workspace, execute_opencode_serve, export_workspace_file, export_workspace_skill,
-    kill_existing_opencode_processes, open_workspace, read_workspace_file_content,
-    scan_worksapce_file, scan_worksapce_folder, unzip_skill_to_workspace,
-    workspace_file_insert_text, write_workspace_file_content,
+    create_workspace, delete_workspace_skill, execute_opencode_serve, export_workspace_file,
+    export_workspace_skill, kill_existing_opencode_processes, open_workspace,
+    read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
+    unzip_skill_to_workspace, workspace_file_insert_text, write_workspace_file_content,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -81,6 +81,8 @@ pub fn run() {
             get_system_stats,
             open_executable,
             log,
+            read_logs,
+            get_log_dates,
             //workspace
             create_workspace,
             open_workspace,
@@ -93,7 +95,8 @@ pub fn run() {
             export_workspace_file,
             unzip_skill_to_workspace,
             read_workspace_file_content,
-            write_workspace_file_content
+            write_workspace_file_content,
+            delete_workspace_skill
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

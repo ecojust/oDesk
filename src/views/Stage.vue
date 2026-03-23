@@ -104,6 +104,46 @@
             </div>
           </div>
         </div>
+        <div class="log-section">
+          <el-button type="primary" @click="showLogDialog">
+            <el-icon><Document /></el-icon>
+            查看日志
+          </el-button>
+        </div>
+      </div>
+    </el-dialog>
+
+    <!-- 日志查看对话框 -->
+    <el-dialog
+      v-model="logDialogVisible"
+      width="800px"
+      center
+      :show-close="true"
+      title="系统日志"
+    >
+      <div class="log-content">
+        <div class="log-header">
+          <el-select
+            v-model="selectedDate"
+            placeholder="选择日期"
+            @change="loadLogs"
+            style="width: 200px"
+          >
+            <el-option
+              v-for="date in logDates"
+              :key="date"
+              :label="date"
+              :value="date"
+            />
+          </el-select>
+          <el-button @click="refreshLogs" type="primary" size="small">
+            <el-icon><Refresh /></el-icon>
+            刷新
+          </el-button>
+        </div>
+        <div class="log-viewer">
+          <pre class="log-text">{{ logContent }}</pre>
+        </div>
       </div>
     </el-dialog>
   </div>
@@ -119,20 +159,58 @@ import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
 import LanguageSwitcher from "../components/LanguageSwitcher.vue";
 
 import SKILL from "./skillapps/index.vue";
-import { InfoFilled } from "@element-plus/icons-vue";
+import { InfoFilled, Document, Refresh } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
+import System from "@/service/shell/system";
 
 import { BUILD_INFO } from "../build";
 
 const activeTab = ref("skillapps");
 
 const aboutDialogVisible = ref(false);
+const logDialogVisible = ref(false);
+const logContent = ref("");
+const logDates = ref([]);
+const selectedDate = ref("");
 
 const buildTime = ref("2026-03-20 21:21:00");
 
 const showAboutDialog = () => {
   aboutDialogVisible.value = true;
+};
+
+const showLogDialog = async () => {
+  aboutDialogVisible.value = false;
+  logDialogVisible.value = true;
+  await loadLogDates();
+  await loadLogs();
+};
+
+const loadLogDates = async () => {
+  try {
+    const dates = await System.get_log_dates();
+    logDates.value = dates;
+    if (dates.length > 0 && !selectedDate.value) {
+      selectedDate.value = dates[0]; // 选择最新的日期
+    }
+  } catch (e) {
+    console.error("加载日志日期失败:", e);
+  }
+};
+
+const loadLogs = async () => {
+  try {
+    const logs = await System.read_logs(selectedDate.value);
+    logContent.value = logs;
+  } catch (e) {
+    logContent.value = "读取日志失败: " + e;
+  }
+};
+
+const refreshLogs = async () => {
+  await loadLogDates();
+  await loadLogs();
 };
 
 const components = {
@@ -349,6 +427,41 @@ const testKillOpenServe = async () => {
           }
         }
       }
+    }
+    .log-section {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #ebeef5;
+      text-align: center;
+    }
+  }
+}
+
+.log-content {
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  .log-viewer {
+    height: 400px;
+    overflow-y: auto;
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 16px;
+
+    .log-text {
+      font-family: "Consolas", "Monaco", "Courier New", monospace;
+      font-size: 12px;
+      line-height: 1.6;
+      color: #333;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      margin: 0;
     }
   }
 }

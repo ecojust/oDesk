@@ -282,6 +282,20 @@ export default class Opencode {
       throw e;
     }
   }
+
+  static async delete_workspace_skill(workspace: string, skill: string) {
+    try {
+      const result = await invoke("delete_workspace_skill", {
+        workspace,
+        skill,
+      });
+      console.log(result);
+      return result;
+    } catch (e) {
+      console.log("Failed to delete workspace skill: ", e);
+      throw e;
+    }
+  }
 }
 
 const wechat_config = {

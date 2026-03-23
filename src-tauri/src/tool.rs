@@ -117,3 +117,59 @@ pub fn open_executable(path: String) -> Result<String, String> {
 
     Ok(format!("Successfully opened: {}", path))
 }
+
+#[tauri::command]
+pub async fn read_logs(date: Option<String>) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+
+    let log_filename = if let Some(date_str) = date {
+        format!("{}.log", date_str)
+    } else {
+        let now = Local::now();
+        format!("{:04}-{:02}-{:02}.log", now.year(), now.month(), now.day())
+    };
+
+    let log_file = base_dir.join(log_filename);
+
+    match fs::read_to_string(&log_file).await {
+        Ok(content) => Ok(content),
+        Err(e) => {
+            if e.kind() == std::io::ErrorKind::NotFound {
+                Ok("暂无日志记录".to_string())
+            } else {
+                Err(format!("读取日志文件失败: {}", e))
+            }
+        }
+    }
+}
+
+#[tauri::command]
+pub async fn get_log_dates() -> Result<Vec<String>, String> {
+    let base_dir = get_appdata_dir()?;
+    let mut dates = Vec::new();
+
+    let mut entries = fs::read_dir(&base_dir)
+        .await
+        .map_err(|e| format!("读取目录失败: {}", e))?;
+
+    while let Some(entry) = entries
+        .next_entry()
+        .await
+        .map_err(|e| format!("读取目录条目失败: {}", e))?
+    {
+        let path = entry.path();
+        if let Some(extension) = path.extension() {
+            if extension == "log" {
+                if let Some(file_name) = path.file_stem() {
+                    if let Some(date_str) = file_name.to_str() {
+                        dates.push(date_str.to_string());
+                    }
+                }
+            }
+        }
+    }
+
+    dates.sort();
+    dates.reverse(); // 最新的日期在前
+    Ok(dates)
+}

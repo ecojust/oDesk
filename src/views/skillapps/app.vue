@@ -37,6 +37,13 @@
         <div class="skills-list" v-if="skills.length > 0">
           <div class="skills-list-header">
             {{ t("wechatPublisher.availableSkills") }}
+            <button
+              class="reset-skills-btn"
+              @click="resetSkills"
+              :title="t('wechatPublisher.resetSkills') || '重置技能'"
+            >
+              🔄
+            </button>
           </div>
           <div class="skill-cards">
             <div
@@ -123,6 +130,43 @@ const openSkillsDialog = () => {
 // 关闭技能管理弹窗
 const handleSkillsDialogClose = () => {
   skillsDialogVisible.value = false;
+};
+
+// 重置技能
+const resetSkills = async () => {
+  try {
+    ElMessage.info("正在重置技能...");
+
+    // 先删除已存在的技能，然后再unzip
+    const skillsToReset = ["wechat-publisher"];
+
+    for (const skill of skillsToReset) {
+      try {
+        // 先尝试删除已存在的skill
+        await Opencode.delete_workspace_skill(APPID, skill);
+        console.log(`已删除技能: ${skill}`);
+      } catch (e) {
+        // skill不存在时会报错，忽略这个错误
+        console.log(`技能 ${skill} 不存在，跳过删除`);
+      }
+
+      // 然后重新unzip
+      await Opencode.unzip_skill_to_workspace(skill, APPID);
+      console.log(`已安装技能: ${skill}`);
+    }
+
+    // 重新扫描技能列表
+    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
+      path: ".opencode/skill/",
+    });
+    skills.value = skillsList;
+
+    ElMessage.success("技能重置成功!");
+    ElMessage.info("请重启skill应用以使更改生效");
+  } catch (error) {
+    console.error("重置技能失败:", error);
+    ElMessage.error("重置技能失败: " + error.message);
+  }
 };
 
 const selectSkill = async (skill) => {
@@ -394,6 +438,32 @@ onBeforeUnmount(async () => {
           height: 16px;
           background: linear-gradient(180deg, #667eea, #764ba2);
           border-radius: 2px;
+        }
+
+        .reset-skills-btn {
+          margin-left: auto;
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          border: none;
+          color: white;
+          width: 28px;
+          height: 28px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-size: 14px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+          &:hover {
+            transform: translateY(-1px) rotate(180deg);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          }
+
+          &:active {
+            transform: scale(0.95) rotate(180deg);
+          }
         }
       }
 

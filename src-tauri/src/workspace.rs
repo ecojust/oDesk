@@ -286,6 +286,31 @@ pub async fn scan_worksapce_folder(workspace: String, path: String) -> Result<Ve
     Ok(all_folders)
 }
 
+/// 删除workspace下的skill
+#[tauri::command]
+pub fn delete_workspace_skill(workspace: String, skill: String) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let skill_path = base_dir
+        .join("workspaces")
+        .join(workspace)
+        .join(".opencode/skill")
+        .join(skill.to_string());
+
+    // 检查skill是否存在
+    if !skill_path.exists() {
+        return Err(format!("Skill '{}' does not exist in workspace", skill));
+    }
+
+    // 删除skill目录
+    fs::remove_dir_all(&skill_path)
+        .map_err(|e| format!("Failed to delete skill '{}': {}", skill, e))?;
+
+    Ok(format!(
+        "Successfully deleted skill '{}' from workspace",
+        skill
+    ))
+}
+
 #[tauri::command]
 pub async fn execute_opencode_serve(
     app: tauri::AppHandle,

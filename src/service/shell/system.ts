@@ -20,6 +20,26 @@ export default class System {
     }
   }
 
+  static async read_logs(date?: string): Promise<string> {
+    try {
+      const result = await invoke("read_logs", { date });
+      return result as string;
+    } catch (e) {
+      console.error("读取日志失败: " + e);
+      return "读取日志失败: " + e;
+    }
+  }
+
+  static async get_log_dates(): Promise<string[]> {
+    try {
+      const result = await invoke("get_log_dates");
+      return result as string[];
+    } catch (e) {
+      console.error("获取日志日期列表失败: " + e);
+      return [];
+    }
+  }
+
   // static async open_executable(path: string) {
   //   try {
   //     const result = await invoke("open_executable", { path });
