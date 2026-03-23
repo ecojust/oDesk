@@ -325,7 +325,7 @@ import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import { Search, Location } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
-
+import { ElMessage } from "element-plus";
 const { t } = useI18n();
 const APPID = "oDesk-travel-plan";
 
@@ -400,7 +400,7 @@ const handleSkillsDialogClose = () => {
 // 重置技能
 const resetSkills = async () => {
   try {
-    ElMessage.info("正在重置技能...");
+    // ElMessage.info("正在重置技能...");
 
     // 先删除已存在的技能，然后再unzip
     const skillsToReset = ["travel-map"];
@@ -426,8 +426,8 @@ const resetSkills = async () => {
     });
     skills.value = skillsList;
 
-    ElMessage.success("技能重置成功!");
-    ElMessage.info("请重启skill应用以使更改生效");
+    // ElMessage.success("技能重置成功!");
+    ElMessage.info(t("skillapps.restartSkillApp"));
   } catch (error) {
     console.error("重置技能失败:", error);
     ElMessage.error("重置技能失败: " + error.message);

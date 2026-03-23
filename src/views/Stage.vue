@@ -107,7 +107,7 @@
         <div class="log-section">
           <el-button type="primary" @click="showLogDialog">
             <el-icon><Document /></el-icon>
-            查看日志
+            {{ t("stage.viewLogs") }}
           </el-button>
         </div>
       </div>
@@ -119,13 +119,13 @@
       width="800px"
       center
       :show-close="true"
-      title="系统日志"
+      :title="t('stage.systemLogs')"
     >
       <div class="log-content">
         <div class="log-header">
           <el-select
             v-model="selectedDate"
-            placeholder="选择日期"
+            :placeholder="t('stage.selectDate')"
             @change="loadLogs"
             style="width: 200px"
           >
@@ -138,7 +138,7 @@
           </el-select>
           <el-button @click="refreshLogs" type="primary" size="small">
             <el-icon><Refresh /></el-icon>
-            刷新
+            {{ t("stage.refresh") }}
           </el-button>
         </div>
         <div class="log-viewer">
@@ -151,6 +151,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
+import { useI18n } from "vue-i18n";
 import { Calendar, Apple, Monitor } from "@element-plus/icons-vue";
 import StaticWallpaper from "./wallpaperSettings/StaticWallpaper.vue";
 import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
@@ -165,6 +166,8 @@ import RequestService from "@/utils/request";
 import System from "@/service/shell/system";
 
 import { BUILD_INFO } from "../build";
+
+const { t } = useI18n();
 
 const activeTab = ref("skillapps");
 
@@ -204,7 +207,7 @@ const loadLogs = async () => {
     const logs = await System.read_logs(selectedDate.value);
     logContent.value = logs;
   } catch (e) {
-    logContent.value = "读取日志失败: " + e;
+    logContent.value = t("stage.loadLogsFailed") + e;
   }
 };
 
@@ -234,27 +237,27 @@ onMounted(async () => {
 const testCreateWorkspace = async () => {
   try {
     await Opencode.create_workspace("test-workspace");
-    alert("创建工作区成功");
+    alert(t("skillapps.createWorkspaceSuccess"));
   } catch (e) {
-    alert("创建工作区失败: " + e);
+    alert(t("skillapps.createWorkspaceFailed") + e);
   }
 };
 
 const testExecuteOpenServe = async () => {
   try {
     await Opencode.execute_opencode_serve("test-workspace");
-    alert("执行服务成功");
+    alert(t("skillapps.executeServeSuccess"));
   } catch (e) {
-    alert("执行服务失败: " + e);
+    alert(t("skillapps.executeServeFailed") + e);
   }
 };
 
 const testKillOpenServe = async () => {
   try {
     await Opencode.kill_existing_opencode_processes();
-    alert("kill服务成功");
+    alert(t("skillapps.killServeSuccess"));
   } catch (e) {
-    alert("执行服务失败: " + e);
+    alert(t("skillapps.killServeFailed") + e);
   }
 };
 </script>

@@ -135,7 +135,7 @@ const handleSkillsDialogClose = () => {
 // 重置技能
 const resetSkills = async () => {
   try {
-    ElMessage.info("正在重置技能...");
+    ElMessage.info(t("skillapps.resettingSkills"));
 
     // 先删除已存在的技能，然后再unzip
     const skillsToReset = ["wechat-publisher"];
@@ -161,11 +161,11 @@ const resetSkills = async () => {
     });
     skills.value = skillsList;
 
-    ElMessage.success("技能重置成功!");
-    ElMessage.info("请重启skill应用以使更改生效");
+    ElMessage.success(t("skillapps.resetSkillsSuccess"));
+    ElMessage.info(t("skillapps.restartSkillApp"));
   } catch (error) {
     console.error("重置技能失败:", error);
-    ElMessage.error("重置技能失败: " + error.message);
+    ElMessage.error(t("skillapps.resetSkillsFailed") + error.message);
   }
 };
 

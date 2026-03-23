@@ -296,7 +296,7 @@ import Opencode from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
 import { Open } from "@element-plus/icons-vue";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
-
+import { ElMessage } from "element-plus";
 const { t } = useI18n();
 const APPID = "oDesk-schedule-manager";
 
@@ -351,7 +351,7 @@ const handleSkillsDialogClose = () => {
 // 重置技能
 const resetSkills = async () => {
   try {
-    ElMessage.info("正在重置技能...");
+    // ElMessage.info("正在重置技能...");
 
     // 先删除已存在的技能，然后再unzip
     const skillsToReset = ["schedule-manager"];
@@ -377,8 +377,8 @@ const resetSkills = async () => {
     });
     skills.value = skillsList;
 
-    ElMessage.success("技能重置成功!");
-    ElMessage.info("请重启skill应用以使更改生效");
+    // ElMessage.success("技能重置成功!");
+    ElMessage.info(t("skillapps.restartSkillApp"));
   } catch (error) {
     console.error("重置技能失败:", error);
     ElMessage.error("重置技能失败: " + error.message);
@@ -481,6 +481,8 @@ const activeWorkspace = async () => {
   isConnected.value = false;
   isConnectting.value = true;
   try {
+    // await Opencode.open_workspace(APPID);
+
     await Opencode.initialize_workspace_serve(APPID);
     isConnected.value = true;
 
@@ -497,8 +499,6 @@ const activeWorkspace = async () => {
       path: ".opencode/skill/",
     });
     skills.value = skillsList;
-
-    // await Opencode.open_workspace(APPID);
 
     // 连接成功
   } catch (error) {

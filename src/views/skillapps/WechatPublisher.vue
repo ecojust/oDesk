@@ -40,7 +40,7 @@
             <button
               class="reset-skills-btn"
               @click="resetSkills"
-              :title="t('wechatPublisher.resetSkills') || '重置技能'"
+              :title="t('skillapps.resetSkills')"
             >
               🔄
             </button>
@@ -68,15 +68,15 @@
 
         <div class="config-section">
           <div class="config-header">
-            {{ t("wechatPublisher.configSettings") || "配置设置" }}
+            {{ t("skillapps.configSettings") }}
           </div>
           <div class="config-form">
             <div class="config-item">
-              <label>AppID:</label>
+              <label>{{ t("wechatPublisher.appid") }}:</label>
               <el-input
                 :type="showAppId ? 'text' : 'password'"
                 v-model="config.wechat.appid"
-                placeholder="请输入AppID"
+                :placeholder="t('wechatPublisher.pleaseEnterAppid')"
                 class="config-input"
               >
                 <template #suffix>
@@ -91,11 +91,11 @@
               </el-input>
             </div>
             <div class="config-item">
-              <label>AppSecret:</label>
+              <label>{{ t("wechatPublisher.appsecret") }}:</label>
               <el-input
                 :type="showAppSecret ? 'text' : 'password'"
                 v-model="config.wechat.appsecret"
-                placeholder="请输入AppSecret"
+                :placeholder="t('wechatPublisher.pleaseEnterAppsecret')"
                 class="config-input"
               >
                 <template #suffix>
@@ -110,7 +110,7 @@
               </el-input>
             </div>
             <div class="config-item">
-              <label>排版主题:</label>
+              <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
               <el-select
                 v-model="config.wenyanTheme"
                 class="config-input theme-select"
@@ -130,7 +130,7 @@
             </div>
             <div class="config-actions">
               <el-button type="primary" size="small" @click="saveConfig">
-                {{ t("wechatPublisher.save") || "保存" }}
+                {{ t("skillapps.save") }}
               </el-button>
             </div>
           </div>
@@ -187,12 +187,18 @@
     <div class="loading-overlay" v-if="isLoading">
       <div class="loading-card">
         <div class="loading-icon">⏳</div>
-        <h3>{{ isPolishMode ? "正在润色文章..." : "正在搜索文章..." }}</h3>
+        <h3>
+          {{
+            isPolishMode
+              ? t("skillapps.polishingArticles")
+              : t("skillapps.searchingArticles")
+          }}
+        </h3>
         <p>
           {{
             isPolishMode
-              ? "AI正在根据您的概括生成优质文章"
-              : "AI正在根据您的关键词生成文章内容"
+              ? t("skillapps.aiGeneratingPolish")
+              : t("skillapps.aiGeneratingSearch")
           }}
         </p>
         <div class="progress-bar">
@@ -206,12 +212,12 @@
       <!-- 左侧内容编辑面板 -->
       <div class="editor-panel">
         <div class="panel-header">
-          <h3>内容编辑</h3>
+          <h3>{{ t("skillapps.contentEditor") }}</h3>
           <!-- 模式切换开关 -->
           <div class="mode-switch">
-            <span class="mode-label" :class="{ active: !isPolishMode }"
-              >搜索模式</span
-            >
+            <span class="mode-label" :class="{ active: !isPolishMode }">{{
+              t("skillapps.searchMode")
+            }}</span>
             <el-switch
               v-model="isPolishMode"
               active-color="#764ba2"
@@ -219,9 +225,9 @@
               :active-action-icon="Edit"
               :inactive-action-icon="Search"
             />
-            <span class="mode-label" :class="{ active: isPolishMode }"
-              >润色模式</span
-            >
+            <span class="mode-label" :class="{ active: isPolishMode }">{{
+              t("skillapps.polishMode")
+            }}</span>
           </div>
         </div>
         <div class="panel-content">
@@ -230,7 +236,7 @@
             <div class="input-group">
               <input
                 type="text"
-                placeholder="请输入搜索内容..."
+                :placeholder="t('skillapps.enterSearchContent')"
                 class="search-input"
                 v-model="question"
                 @keyup.enter="handleSearch"
@@ -241,8 +247,10 @@
                 :disabled="isLoading"
               >
                 <i class="icon" :class="{ loading: isLoading }">🔍</i>
-                <span v-if="isLoading" class="loading-text">搜索中...</span>
-                <span v-else>搜索</span>
+                <span v-if="isLoading" class="loading-text">{{
+                  t("skillapps.searching")
+                }}</span>
+                <span v-else>{{ t("skillapps.search") }}</span>
               </button>
             </div>
           </div>
@@ -252,7 +260,7 @@
             <textarea
               class="polish-textarea"
               v-model="polishContent"
-              placeholder="请输入文章内容的概括或草稿，AI将帮您润色生成更优质的文章..."
+              :placeholder="t('skillapps.enterPolishContent')"
             ></textarea>
             <button
               class="polish-btn"
@@ -260,8 +268,10 @@
               :disabled="isLoading || !polishContent.trim()"
             >
               <i class="icon" :class="{ loading: isLoading }">✨</i>
-              <span v-if="isLoading" class="loading-text">润色中...</span>
-              <span v-else>开始润色</span>
+              <span v-if="isLoading" class="loading-text">{{
+                t("skillapps.polishing")
+              }}</span>
+              <span v-else>{{ t("skillapps.startPolish") }}</span>
             </button>
           </div>
         </div>
@@ -270,7 +280,7 @@
       <!-- 右侧HTML预览 -->
       <div class="html-panel">
         <div class="panel-header">
-          <h3>文章预览</h3>
+          <h3>{{ t("skillapps.articlePreview") }}</h3>
           <button
             class="publish-btn"
             :class="{ loading: isPublishing }"
@@ -278,24 +288,26 @@
             :disabled="!htmlPreview || isPublishing"
           >
             <i class="icon" :class="{ loading: isPublishing }">🚀</i>
-            <span v-if="isPublishing" class="loading-text">发布中...</span>
-            <span v-else>发布</span>
+            <span v-if="isPublishing" class="loading-text">{{
+              t("skillapps.publishing")
+            }}</span>
+            <span v-else>{{ t("skillapps.publish") }}</span>
           </button>
         </div>
         <div class="panel-content">
           <!-- 发布Loading状态 -->
           <div class="publish-loading" v-if="isPublishing">
             <div class="publish-loading-icon">🚀</div>
-            <h3>正在发布文章...</h3>
-            <p>正在将文章推送到微信公众号平台</p>
+            <h3>{{ t("skillapps.publishingArticle") }}</h3>
+            <p>{{ t("skillapps.pushingToWechat") }}</p>
           </div>
           <div class="html-content" v-else-if="htmlPreview">
             <div v-html="htmlPreview"></div>
           </div>
           <div class="empty-preview" v-else>
             <div class="empty-icon">📝</div>
-            <h3>暂无文章内容</h3>
-            <p>请先通过查询生成文章后再进行预览和发布</p>
+            <h3>{{ t("skillapps.noArticleContent") }}</h3>
+            <p>{{ t("skillapps.pleaseSearchFirst") }}</p>
           </div>
         </div>
       </div>
@@ -376,7 +388,7 @@ const handleSkillsDialogClose = () => {
 
 const resetSkills = async () => {
   try {
-    ElMessage.info("正在重置技能...");
+    // ElMessage.info(t("skillapps.resettingSkills"));
 
     // 先删除已存在的技能，然后再unzip
     const skillsToReset = [
@@ -406,11 +418,11 @@ const resetSkills = async () => {
     });
     skills.value = skillsList;
 
-    ElMessage.success("技能重置成功!");
-    ElMessage.info("请重启skill应用以使更改生效");
+    // ElMessage.success(t("skillapps.resetSkillsSuccess"));
+    ElMessage.info(t("skillapps.restartSkillApp"));
   } catch (error) {
     console.error("重置技能失败:", error);
-    ElMessage.error("重置技能失败: " + error.message);
+    ElMessage.error(t("skillapps.resetSkillsFailed") + error.message);
   }
 };
 
@@ -421,7 +433,7 @@ const saveConfig = async () => {
       "config.json",
       JSON.stringify(config.value, null, 2),
     );
-    ElMessage.success("配置保存成功");
+    ElMessage.success(t("skillapps.configSaveSuccess"));
   } catch (error) {
     console.error("保存配置失败:", error);
     // ElMessage.error("配置保存失败: " + error.message);
@@ -441,20 +453,20 @@ const handleSearch = async () => {
   if (!question.value.trim()) return;
   isLoading.value = true;
   try {
-    console.log("开始查找文章---");
+    console.log("Starting article search...");
 
     const searchContent = `
     
   ${question.value}
 
-  请根据上述需求，帮我搜索相关内容，不要发布
+  Please search for relevant content based on the above requirements, do not publish
     `;
     const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
     await searchFiles();
   } catch (error) {
     console.error("Error generating schedule:", error);
-    ElMessage.error("搜索失败: " + error.message);
+    ElMessage.error(t("skillapps.searchFailed") + error.message);
   } finally {
     isLoading.value = false;
   }
@@ -466,25 +478,25 @@ const handlePolish = async () => {
   // 检查字数是否小于60
   const contentLength = polishContent.value.trim().length;
   if (contentLength < 60) {
-    ElMessage.warning(`请输入更多描述（当前${contentLength}字，至少需要60字）`);
+    ElMessage.warning(t("skillapps.polishMinLength", { count: contentLength }));
     return;
   }
 
   isLoading.value = true;
   try {
-    console.log("开始润色文章---");
+    console.log("Starting article polishing...");
     const polishPrompt = `
     ${polishContent.value}
-    上述是用户要发表的文章内容，使用article-writer写一篇公众号文章，不要发布
+    The above is the article content the user wants to publish, use article-writer to write a WeChat official account article, do not publish
     
     `;
     const answer = await Opencode.send_message(polishPrompt);
     console.log("AI Response:", answer);
     await searchFiles();
-    ElMessage.success("文章润色完成!");
+    ElMessage.success(t("skillapps.polishSuccess"));
   } catch (error) {
     console.error("润色失败:", error);
-    ElMessage.error("润色失败: " + error.message);
+    ElMessage.error(t("skillapps.polishFailed") + error.message);
   } finally {
     isLoading.value = false;
   }
@@ -550,16 +562,16 @@ const config = ref({
 });
 
 // 排版主题选项
-const themeOptions = [
-  { value: "default", label: "默认主题", icon: "📄" },
-  { value: "orangeheart", label: "橙心", icon: "🧡" },
-  { value: "rainbow", label: "彩虹", icon: "🌈" },
-  { value: "lapis", label: "青金石", icon: "💎" },
-  { value: "pie", label: "派", icon: "🥧" },
-  { value: "maize", label: "玉米", icon: "🌽" },
-  { value: "purple", label: "紫罗兰", icon: "💜" },
-  { value: "phycat", label: "猫咪", icon: "🐱" },
-];
+const themeOptions = computed(() => [
+  { value: "default", label: t("wechatPublisher.defaultTheme"), icon: "📄" },
+  { value: "orangeheart", label: t("wechatPublisher.orangeHeart"), icon: "🧡" },
+  { value: "rainbow", label: t("wechatPublisher.rainbow"), icon: "🌈" },
+  { value: "lapis", label: t("wechatPublisher.lapis"), icon: "💎" },
+  { value: "pie", label: t("wechatPublisher.pie"), icon: "🥧" },
+  { value: "maize", label: t("wechatPublisher.maize"), icon: "🌽" },
+  { value: "purple", label: t("wechatPublisher.purple"), icon: "💜" },
+  { value: "phycat", label: t("wechatPublisher.phyCat"), icon: "🐱" },
+]);
 
 const readConfig = async () => {
   try {
@@ -623,20 +635,20 @@ const handlePublish = async () => {
 
   // 检查appid和appsecret是否已配置
   if (!config.value.wechat.appid || !config.value.wechat.appsecret) {
-    ElMessage.warning("请先配置AppID和AppSecret后再发布文章");
+    ElMessage.warning(t("skillapps.pleaseConfigFirst"));
     skillsDialogVisible.value = true; // 打开配置弹窗
     return;
   }
 
   isPublishing.value = true;
   try {
-    console.log("开始发布文章---");
-    const answer = await Opencode.send_message("发布draft.md");
+    console.log("Starting article publishing...");
+    const answer = await Opencode.send_message("Publish draft.md");
     console.log("AI Response:", answer);
-    ElMessage.success("发布成功!");
+    ElMessage.success(t("skillapps.publishSuccess"));
   } catch (error) {
     console.error("发布失败:", error);
-    ElMessage.error("发布失败: " + error.message);
+    ElMessage.error(t("skillapps.publishFailed") + error.message);
   } finally {
     isPublishing.value = false;
   }
