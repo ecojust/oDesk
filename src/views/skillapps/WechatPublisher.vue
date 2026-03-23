@@ -176,30 +176,18 @@
       </div>
     </div>
 
-    <!-- 顶部输入框 -->
-    <div class="input-section">
-      <div class="input-container">
-        <input
-          type="text"
-          placeholder="请输入搜索内容..."
-          class="search-input"
-          v-model="question"
-          @keyup.enter="handleSearch"
-        />
-        <button class="search-btn" @click="handleSearch" :disabled="isLoading">
-          <i class="icon" :class="{ loading: isLoading }">🔍</i>
-          <span v-if="isLoading" class="loading-text">搜索中...</span>
-          <span v-else>搜索</span>
-        </button>
-      </div>
-    </div>
-
     <!-- 搜索Loading状态 -->
     <div class="loading-overlay" v-if="isLoading">
       <div class="loading-card">
         <div class="loading-icon">⏳</div>
-        <h3>正在搜索文章...</h3>
-        <p>AI正在根据您的关键词生成文章内容</p>
+        <h3>{{ isPolishMode ? "正在润色文章..." : "正在搜索文章..." }}</h3>
+        <p>
+          {{
+            isPolishMode
+              ? "AI正在根据您的概括生成优质文章"
+              : "AI正在根据您的关键词生成文章内容"
+          }}
+        </p>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -208,27 +196,66 @@
 
     <!-- 中间内容区域 -->
     <div class="content-section">
-      <!-- 左侧markdown显示 -->
-      <div class="markdown-panel">
+      <!-- 左侧内容编辑面板 -->
+      <div class="editor-panel">
         <div class="panel-header">
-          <h3>Markdown内容</h3>
+          <h3>内容编辑</h3>
+          <!-- 模式切换开关 -->
+          <div class="mode-switch">
+            <span class="mode-label" :class="{ active: !isPolishMode }"
+              >搜索模式</span
+            >
+            <el-switch
+              v-model="isPolishMode"
+              active-color="#764ba2"
+              inactive-color="#667eea"
+              :active-action-icon="Edit"
+              :inactive-action-icon="Search"
+            />
+            <span class="mode-label" :class="{ active: isPolishMode }"
+              >润色模式</span
+            >
+          </div>
         </div>
         <div class="panel-content">
-          <div class="markdown-content">
-            <h1>Markdown示例</h1>
-            <p>
-              这是一段<strong>加粗</strong>的文本，这是一段<em>斜体</em>的文本。
-            </p>
-            <p>这是一个列表：</p>
-            <ul>
-              <li>项目1</li>
-              <li>项目2</li>
-              <li>项目3</li>
-            </ul>
-            <p>这是一个代码块：</p>
-            <pre><code>const example = "Hello World";
-console.log(example);</code></pre>
-            <p>这是一个<a href="#">链接</a>。</p>
+          <!-- 搜索模式输入 -->
+          <div class="search-container" v-if="!isPolishMode">
+            <div class="input-group">
+              <input
+                type="text"
+                placeholder="请输入搜索内容..."
+                class="search-input"
+                v-model="question"
+                @keyup.enter="handleSearch"
+              />
+              <button
+                class="search-btn"
+                @click="handleSearch"
+                :disabled="isLoading"
+              >
+                <i class="icon" :class="{ loading: isLoading }">🔍</i>
+                <span v-if="isLoading" class="loading-text">搜索中...</span>
+                <span v-else>搜索</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- 润色模式输入 -->
+          <div class="polish-container" v-else>
+            <textarea
+              class="polish-textarea"
+              v-model="polishContent"
+              placeholder="请输入文章内容的概括或草稿，AI将帮您润色生成更优质的文章..."
+            ></textarea>
+            <button
+              class="polish-btn"
+              @click="handlePolish"
+              :disabled="isLoading || !polishContent.trim()"
+            >
+              <i class="icon" :class="{ loading: isLoading }">✨</i>
+              <span v-if="isLoading" class="loading-text">润色中...</span>
+              <span v-else>开始润色</span>
+            </button>
           </div>
         </div>
       </div>
@@ -282,7 +309,7 @@ import {
 import { useI18n } from "vue-i18n";
 import Opencode, { wechat_config } from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
-import { Open, View, Hide } from "@element-plus/icons-vue";
+import { Open, View, Hide, Search, Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 
 const { t } = useI18n();
@@ -299,6 +326,10 @@ const musicFolders = ref([]);
 const currentPlaying = ref(null);
 
 const isConnectting = ref(false);
+
+// 润色模式相关
+const isPolishMode = ref(false);
+const polishContent = ref("");
 
 const skills = ref([]);
 const showGeneratePanel = ref(false);
@@ -364,12 +395,49 @@ const handleSearch = async () => {
   isLoading.value = true;
   try {
     console.log("开始查找文章---");
-    const answer = await Opencode.send_message(question.value);
+
+    const searchContent = `
+    
+  ${question.value}
+
+  请根据上述需求，帮我搜索相关内容，不要发布
+    `;
+    const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
     await searchFiles();
   } catch (error) {
     console.error("Error generating schedule:", error);
     ElMessage.error("搜索失败: " + error.message);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handlePolish = async () => {
+  if (!polishContent.value.trim()) return;
+
+  // 检查字数是否小于60
+  const contentLength = polishContent.value.trim().length;
+  if (contentLength < 60) {
+    ElMessage.warning(`请输入更多描述（当前${contentLength}字，至少需要60字）`);
+    return;
+  }
+
+  isLoading.value = true;
+  try {
+    console.log("开始润色文章---");
+    const polishPrompt = `
+    ${polishContent.value}
+    上述是用户要发表的文章内容，使用article-writer写一篇公众号文章，不要发布
+    
+    `;
+    const answer = await Opencode.send_message(polishPrompt);
+    console.log("AI Response:", answer);
+    await searchFiles();
+    ElMessage.success("文章润色完成!");
+  } catch (error) {
+    console.error("润色失败:", error);
+    ElMessage.error("润色失败: " + error.message);
   } finally {
     isLoading.value = false;
   }
@@ -409,6 +477,7 @@ const activeWorkspace = async () => {
 
     await Opencode.unzip_skill_to_workspace("topic-searcher", APPID);
     await Opencode.unzip_skill_to_workspace("wechat-publisher", APPID);
+    await Opencode.unzip_skill_to_workspace("article-writer", APPID);
 
     const skillsList = await Opencode.scan_worksapce_skills(APPID, {
       path: ".opencode/skill/",
@@ -476,8 +545,8 @@ const searchFiles = async () => {
     postfix: ["md", "html"],
   });
 
-  const md = searchs.find((s) => s.title == "search.md").title;
-  const html = searchs.find((s) => s.title == "search.html").title;
+  const md = searchs.find((s) => s.title == "draft.md").title;
+  const html = searchs.find((s) => s.title == "draft.html").title;
 
   if (md) {
     const mdContent = await Opencode.read_workspace_file_content(APPID, md);
@@ -515,7 +584,7 @@ const handlePublish = async () => {
   isPublishing.value = true;
   try {
     console.log("开始发布文章---");
-    const answer = await Opencode.send_message("发布文章search.md");
+    const answer = await Opencode.send_message("发布draft.md");
     console.log("AI Response:", answer);
     ElMessage.success("发布成功!");
   } catch (error) {
@@ -658,6 +727,31 @@ onBeforeUnmount(async () => {
     max-width: 1200px;
     margin: 0 auto;
 
+    // 模式切换开关样式
+    .mode-switch {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+
+      .mode-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: #999;
+        transition: all 0.3s ease;
+
+        &.active {
+          color: #333;
+          font-weight: 600;
+        }
+      }
+    }
+
     .input-container {
       display: flex;
       align-items: center;
@@ -703,6 +797,71 @@ onBeforeUnmount(async () => {
         &:disabled {
           opacity: 0.7;
           cursor: not-allowed;
+        }
+      }
+    }
+
+    // 润色模式容器样式
+    .polish-container {
+      max-width: 800px;
+      margin: 0 auto;
+
+      .polish-textarea {
+        width: 100%;
+        padding: 16px 20px;
+        border: 2px solid #e0e0e0;
+        border-radius: 16px;
+        outline: none;
+        font-size: 15px;
+        line-height: 1.6;
+        resize: vertical;
+        min-height: 120px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: #764ba2;
+          box-shadow: 0 0 0 4px rgba(118, 75, 162, 0.1);
+        }
+
+        &::placeholder {
+          color: #999;
+        }
+      }
+
+      .polish-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        width: 100%;
+        margin-top: 16px;
+        padding: 14px 24px;
+        background: linear-gradient(135deg, #764ba2, #667eea);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-size: 16px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+
+        &:hover:not(:disabled) {
+          background: linear-gradient(135deg, #6a4190, #5a6fd8);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
+        }
+
+        &:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          background: #ccc;
+        }
+
+        .icon {
+          font-size: 18px;
         }
       }
     }
@@ -770,13 +929,13 @@ onBeforeUnmount(async () => {
     flex: 1;
     display: flex;
     max-width: 1200px;
-    margin: 16px auto 16px;
-    height: calc(100% - 60px);
+    margin: 0px auto 16px;
+    height: calc(100% - 0px);
     box-sizing: border-box;
+    padding-top: 50px;
 
-    // 左侧markdown面板
-    .markdown-panel {
-      display: none;
+    // 左侧编辑面板
+    .editor-panel {
       flex: 1;
       box-sizing: border-box;
       background: white;
@@ -790,12 +949,34 @@ onBeforeUnmount(async () => {
         background: #f8f9fa;
         padding: 16px 20px;
         border-bottom: 2px solid #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
         h3 {
           margin: 0;
           font-size: 18px;
           font-weight: 700;
           color: #333;
+        }
+
+        // 模式切换开关样式
+        .mode-switch {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+
+          .mode-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #999;
+            transition: all 0.3s ease;
+
+            &.active {
+              color: #333;
+              font-weight: 600;
+            }
+          }
         }
       }
 
@@ -804,71 +985,115 @@ onBeforeUnmount(async () => {
         height: calc(100% - 64px);
         overflow-y: auto;
 
-        .markdown-content {
-          line-height: 1.7;
-          color: #333;
+        // 搜索模式容器样式
+        .search-container {
+          .input-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
 
-          h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #667eea;
-          }
-
-          h2 {
-            font-size: 22px;
-            margin-bottom: 16px;
-            color: #333;
-          }
-
-          p {
-            margin-bottom: 16px;
-            font-size: 15px;
-          }
-
-          strong {
-            color: #333;
-            font-weight: 600;
-          }
-
-          em {
-            color: #666;
-            font-style: italic;
-          }
-
-          ul {
-            margin-bottom: 20px;
-            padding-left: 24px;
-
-            li {
-              margin-bottom: 10px;
-              color: #666;
-              font-size: 15px;
-            }
-          }
-
-          pre {
-            background: #f8f9f9;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-
-            code {
-              font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+            .search-input {
+              flex: 1;
+              padding: 12px 16px;
+              border: 2px solid #e0e0e0;
+              border-radius: 12px;
+              outline: none;
               font-size: 14px;
-              color: #333;
+              transition: all 0.3s ease;
+
+              &:focus {
+                border-color: #667eea;
+                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+              }
+            }
+
+            .search-btn {
+              padding: 12px 20px;
+              background: linear-gradient(135deg, #667eea, #5a6fd8);
+              color: white;
+              border: none;
+              border-radius: 12px;
+              cursor: pointer;
+              font-size: 14px;
+              font-weight: 600;
+              transition: all 0.3s ease;
+              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+              display: inline-flex;
+              align-items: center;
+              gap: 6px;
+              white-space: nowrap;
+
+              &:hover:not(:disabled) {
+                background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+              }
+
+              &:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+              }
+            }
+          }
+        }
+
+        // 润色模式容器样式
+        .polish-container {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+
+          .polish-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+
+            &:focus {
+              border-color: #764ba2;
+              box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+            }
+
+            &::placeholder {
+              color: #999;
             }
           }
 
-          a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
+          .polish-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #764ba2, #667eea);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
 
-            &:hover {
-              text-decoration: underline;
-              color: #5a6fd8;
+            &:hover:not(:disabled) {
+              background: linear-gradient(135deg, #6a4190, #5a6fd8);
+              transform: translateY(-1px);
+              box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
+            }
+
+            &:disabled {
+              opacity: 0.7;
+              cursor: not-allowed;
+              background: #ccc;
             }
           }
         }

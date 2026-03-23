@@ -303,6 +303,13 @@ pub async fn execute_opencode_serve(
     //     eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
     // }
 
+    log(format!(
+        "folder: {}",
+        target_workspace.to_string_lossy().to_string()
+    ))
+    .await
+    .unwrap();
+
     //  opencode serve
     tokio::spawn(async move {
         #[cfg(target_os = "windows")]
