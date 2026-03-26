@@ -70,6 +70,7 @@ import MusicDownload from "./MusicDownload.vue";
 import ScheduleManager from "./ScheduleManager.vue";
 import WechatPublisher from "./WechatPublisher.vue";
 import TravelPlan from "./TravelPlan.vue";
+import MovieFinder from "./MovieFinder.vue";
 
 const { t, locale } = useI18n();
 
@@ -78,6 +79,7 @@ const components = {
   ScheduleManager: ScheduleManager,
   WechatPublisher: WechatPublisher,
   TravelPlan: TravelPlan,
+  MovieFinder: MovieFinder,
 };
 
 const activeApp = ref("MusicDownload");

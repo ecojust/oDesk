@@ -92,6 +92,11 @@
         "title": "旅行计划",
         "description": "生成个性化旅行计划",
         "category": "旅行工具"
+      },
+      "movieFinder": {
+        "title": "电影搜索",
+        "description": "搜索电影",
+        "category": "娱乐工具"
       }
     },
     "launch": "启动",

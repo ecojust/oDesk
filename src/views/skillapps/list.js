@@ -27,6 +27,14 @@ const getList = () => {
       category: t("skillapps.list.travelPlan.category"),
       color: "#4ECDC4",
     },
+    {
+      title: t("skillapps.list.movieFinder.title"),
+      key: "MovieFinder",
+      description: t("skillapps.list.movieFinder.description"),
+      icon: "🎬",
+      category: t("skillapps.list.movieFinder.category"),
+      color: "#667eea",
+    },
   ];
 };
 
