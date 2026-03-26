@@ -1,109 +1,14 @@
 <template>
   <div class="movie-finder">
-    <!-- 技能信息弹窗 -->
-    <el-dialog
-      v-model="skillsDialogVisible"
-      :title="t('wechatPublisher.workspaceStatus')"
-      width="600px"
-      :before-close="handleSkillsDialogClose"
-      class="skills-dialog"
-      center
-      align-center
-    >
-      <div class="skill-info-content">
-        <div class="info-details">
-          <div class="detail-item">
-            <label>{{ t("wechatPublisher.connectionStatus") }}:</label>
-            <span
-              class="status-badge"
-              :class="isConnected ? 'status-connected' : 'status-disconnected'"
-            >
-              {{
-                isConnected
-                  ? t("wechatPublisher.connected")
-                  : t("wechatPublisher.disconnected")
-              }}
-            </span>
-          </div>
-
-          <div class="detail-item">
-            <label>{{ t("wechatPublisher.sessionId") }}:</label>
-            <span class="session-id">{{
-              sessionId || t("wechatPublisher.none")
-            }}</span>
-          </div>
-        </div>
-
-        <div class="skills-list" v-if="skills.length > 0">
-          <div class="skills-list-header">
-            {{ t("wechatPublisher.availableSkills") }}
-            <button
-              class="reset-skills-btn"
-              @click="resetSkills"
-              :title="t('wechatPublisher.resetSkills') || '重置技能'"
-            >
-              🔄
-            </button>
-          </div>
-          <div class="skill-cards">
-            <div
-              v-for="skill in skills"
-              :key="skill"
-              :class="['skill-card']"
-              @click="selectSkill(skill)"
-            >
-              <div class="skill-icon">🛠️</div>
-              <div class="skill-content">
-                <div class="skill-name">{{ skill }}</div>
-                <div class="skill-actions">
-                  <button class="export-btn">
-                    <i class="icon">📤</i>
-                    {{ t("wechatPublisher.export") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
-
-    <div class="server-status">
-      <!-- 连接状态指示器 -->
-      <div class="connection-indicator" v-if="isConnected">
-        <div class="indicator-content">
-          <div class="indicator-icon">✅</div>
-          <span class="indicator-text">{{
-            t("wechatPublisher.connected")
-          }}</span>
-          <button class="skills-manage-btn" @click="openSkillsDialog">
-            💻
-          </button>
-        </div>
-      </div>
-      <div class="connection-indicator warning" v-else>
-        <div class="indicator-content">
-          <div class="indicator-icon" :class="{ connecting: isConnectting }">
-            <span v-if="isConnectting" class="loading-spinner"></span>
-            <span v-else>⚠️</span>
-          </div>
-          <span class="indicator-text">
-            {{
-              isConnectting
-                ? t("wechatPublisher.connecting")
-                : t("wechatPublisher.disconnected")
-            }}
-          </span>
-          <button
-            v-if="!isConnectting"
-            class="reconnect-btn"
-            @click="activeWorkspace"
-          >
-            {{ t("wechatPublisher.retryConnection") }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <ServerStatus
+      :isConnected="isConnected"
+      :isConnectting="isConnectting"
+      :sessionId="sessionId"
+      :skills="skills"
+      @reconnect="activeWorkspace"
+      @resetSkills="resetSkills"
+      @selectSkill="selectSkill"
+    />
 
     <!-- 搜索Loading状态 -->
     <div class="loading-overlay" v-if="isSearching">
@@ -183,20 +88,26 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from "vue";
+import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { useSkillApp } from "@/composables/useSkillApp";
+import ServerStatus from "@/components/ServerStatus.vue";
 
 const { t } = useI18n();
 const APPID = "oDesk-movie-finder";
 
-// 响应式数据
-const isConnectting = ref(false);
-const skills = ref([]);
-const sessionId = ref("");
-const isConnected = ref(false);
-const skillsDialogVisible = ref(false);
+// 使用公共技能应用组合式函数
+const {
+  isConnectting,
+  skills,
+  sessionId,
+  isConnected,
+  activeWorkspace,
+  resetSkills,
+  selectSkill,
+} = useSkillApp(APPID, ["movie-resource-finder"]);
 
 // 响应式数据
 const searchQuery = ref("星际穿越");
@@ -212,39 +123,15 @@ let webviewInstance = null;
 let appWindow = null;
 
 // 模拟电影数据
-const mockMovies = [
-  // {
-  //   id: 6,
-  //   platform: "爱看机器人",
-  //   url: "https://v.ikanbot.com/play/395951",
-  // },
-];
+const mockMovies = [];
 
 // 搜索电影
 const searchMovies = async () => {
   if (!searchQuery.value.trim()) {
     return;
   }
-
   isSearching.value = true;
   hasSearched.value = true;
-
-  // // 模拟搜索延迟
-  // await new Promise((resolve) => setTimeout(resolve, 800));
-
-  // // 在模拟数据中搜索
-  // const query = searchQuery.value.toLowerCase();
-  // movies.value = mockMovies.filter(
-  //   (movie) =>
-  //     movie.title.toLowerCase().includes(query) ||
-  //     movie.description.toLowerCase().includes(query) ||
-  //     movie.year.includes(query),
-  // );
-
-  // // 如果没有匹配结果，显示所有电影（模拟搜索结果）
-  // if (movies.value.length === 0) {
-  //   movies.value = [...mockMovies];
-  // }
 
   try {
     console.log("Starting article search...");
@@ -267,8 +154,6 @@ const searchMovies = async () => {
 const selectMovie = async (movie) => {
   selectedMovie.value = movie;
   currentIframeUrl.value = movie.url;
-
-  // 销毁之前的 webview 实例
   if (webviewInstance) {
     try {
       await webviewInstance.close();
@@ -277,10 +162,7 @@ const selectMovie = async (movie) => {
     }
     webviewInstance = null;
   }
-
-  // 等待 DOM 更新后创建新的 webview
   await nextTick();
-
   if (movie.url) {
     try {
       // 使用 WebviewWindow API 创建新的 webview 窗口
@@ -321,117 +203,25 @@ const destroyWebview = async () => {
   }
 };
 
-// 处理图片加载错误
-const handleImageError = (event) => {
-  event.target.src =
-    "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjE2MCIgdmlld0JveD0iMCAwIDEyMCAxNjAiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxyZWN0IHdpZHRoPSIxMjAiIGhlaWdodD0iMTYwIiBmaWxsPSIjRjVGNUY1Ii8+CjxwYXRoIGQ9Ik01MCA2MEg3MFY4MEg1MFY2MFoiIGZpbGw9IiNDQ0NDQ0MiLz4KPHA+V2hhdCBpcyB0aGUgbW92aWU/PC9wPgo8L3N2Zz4K";
-};
-
-// 打开技能管理弹窗
-const openSkillsDialog = () => {
-  skillsDialogVisible.value = true;
-};
-
-// 关闭技能管理弹窗
-const handleSkillsDialogClose = () => {
-  skillsDialogVisible.value = false;
-};
-
-// 重置技能
-const resetSkills = async () => {
-  try {
-    // 先删除已存在的技能，然后再unzip
-    const skillsToReset = ["movie-resource-finder"];
-
-    for (const skill of skillsToReset) {
-      try {
-        // 先尝试删除已存在的skill
-        await Opencode.delete_workspace_skill(APPID, skill);
-        console.log(`已删除技能: ${skill}`);
-      } catch (e) {
-        // skill不存在时会报错，忽略这个错误
-        console.log(`技能 ${skill} 不存在，跳过删除`);
-      }
-
-      // 然后重新unzip
-      await Opencode.unzip_skill_to_workspace(skill, APPID);
-      console.log(`已安装技能: ${skill}`);
-    }
-
-    // 重新扫描技能列表
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-  } catch (error) {
-    console.error("重置技能失败:", error);
-  }
-};
-
-const selectSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
-};
-
 const searchFiles = async () => {
   try {
     const content = await Opencode.read_workspace_file_content(
       APPID,
       "list.json",
     );
-
     const res = JSON.parse(content);
-
     movies.value = res.playUrls;
-    console.log("searchFiles", list);
   } catch (error) {}
-};
-
-const activeWorkspace = async () => {
-  console.log("activeWorkspace---");
-  isConnected.value = false;
-  isConnectting.value = true;
-  try {
-    // await Opencode.initialize_workspace_serve(APPID);
-    isConnected.value = true;
-
-    sessionId.value = Opencode.sessionId;
-
-    await Opencode.unzip_skill_to_workspace("movie-resource-finder", APPID);
-
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-
-    console.log("skillsList", skillsList);
-
-    searchFiles();
-  } catch (error) {
-    console.error("Workspace activation failed:", error);
-    // 如果连接失败，显示模拟数据
-    // movies.value = [...mockMovies];
-  } finally {
-    isConnectting.value = false;
-  }
 };
 
 // 初始化
 onMounted(() => {
-  // 先显示模拟数据
-  // movies.value = [...mockMovies];
-  // 然后尝试连接工作空间
   searchFiles();
-
   activeWorkspace();
 });
 
 onBeforeUnmount(async () => {
-  // 销毁 webview 实例
   await destroyWebview();
-  await Opencode.killAllOpencodeServer();
 });
 </script>
 

@@ -4,7 +4,9 @@
       <transition name="fade-slide" mode="out-in">
         <div v-if="view === 'list'" key="list" class="wallpaper-list">
           <el-scrollbar>
-            <div v-if="loading" class="loading">{{ t('htmlWallpaper.loading') }}</div>
+            <div v-if="loading" class="loading">
+              {{ t("htmlWallpaper.loading") }}
+            </div>
             <div v-else class="grid">
               <!-- 新增 HTML 按钮 -->
               <div class="html-item add-new" @click="createNewHTML">
@@ -12,7 +14,7 @@
                   <el-icon size="48"><Plus /></el-icon>
                 </div>
                 <div class="meta">
-                  <h3>{{ t('htmlWallpaper.newHtml') }}</h3>
+                  <h3>{{ t("htmlWallpaper.newHtml") }}</h3>
                 </div>
               </div>
               <!-- 现有 HTML 列表 -->
@@ -37,11 +39,11 @@
                       size="small"
                       type="danger"
                       @click="removeHTMLBackground(item)"
-                      >{{ t('htmlWallpaper.remove') }}</el-button
+                      >{{ t("htmlWallpaper.remove") }}</el-button
                     >
-                    <el-button size="small" @click="openDetail(item)"
-                      >{{ t('htmlWallpaper.edit') }}</el-button
-                    >
+                    <el-button size="small" @click="openDetail(item)">{{
+                      t("htmlWallpaper.edit")
+                    }}</el-button>
                   </div>
                 </div>
               </div>
@@ -58,20 +60,24 @@
                 <el-icon><ArrowLeft /></el-icon>
               </el-button>
               <span class="detail-title">{{
-                currentHTML?.title || t('htmlWallpaper.htmlEditor')
+                currentHTML?.title || t("htmlWallpaper.htmlEditor")
               }}</span>
             </div>
 
             <div class="button-bar">
               <div class="update-cover-switch">
-                <span class="switch-label">{{ t('htmlWallpaper.updateCover') }}</span>
+                <span class="switch-label">{{
+                  t("htmlWallpaper.updateCover")
+                }}</span>
                 <el-switch v-model="updateCover" />
               </div>
               <el-button @click="previewHTML" :loading="previewing">
-                {{ t('htmlWallpaper.preview') }}
+                {{ t("htmlWallpaper.preview") }}
               </el-button>
 
-              <el-button @click="saveHTML" type="primary">{{ t('htmlWallpaper.save') }}</el-button>
+              <el-button @click="saveHTML" type="primary">{{
+                t("htmlWallpaper.save")
+              }}</el-button>
             </div>
           </div>
           <div class="detail">
@@ -89,7 +95,7 @@
                   sandbox="allow-scripts allow-same-origin"
                 ></iframe>
                 <div v-else class="preview-placeholder">
-                  <p>{{ t('htmlWallpaper.clickPreviewToView') }}</p>
+                  <p>{{ t("htmlWallpaper.clickPreviewToView") }}</p>
                 </div>
               </div>
             </div>
@@ -322,8 +328,8 @@ const saveHTML = async () => {
     goBack();
   } catch (e) {
     console.error("Failed to save HTML:", e);
-    ElMessageBox.alert(t('htmlWallpaper.saveFailed') + e, "错误", {
-      confirmButtonText: t('common.confirm'),
+    ElMessageBox.alert(t("htmlWallpaper.saveFailed") + e, "错误", {
+      confirmButtonText: t("common.confirm"),
       type: "error",
     });
   }
@@ -338,11 +344,11 @@ const generateThumbnail = async (folderPath) => {
 // 移除 HTML 壁纸
 const removeHTMLBackground = async (item) => {
   ElMessageBox.confirm(
-    t('htmlWallpaper.confirmRemoveHtml', { title: item.title }),
-    t('htmlWallpaper.confirmRemove'),
+    t("htmlWallpaper.confirmRemoveHtml", { title: item.title }),
+    t("htmlWallpaper.confirmRemove"),
     {
-      confirmButtonText: t('common.confirm'),
-      cancelButtonText: t('common.cancel'),
+      confirmButtonText: t("common.confirm"),
+      cancelButtonText: t("common.cancel"),
       type: "warning",
     },
   )

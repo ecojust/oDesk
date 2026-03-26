@@ -1,80 +1,14 @@
 <template>
   <div class="schedule-manager">
-    <!-- 技能信息弹窗 -->
-    <el-dialog
-      v-model="skillsDialogVisible"
-      :title="t('scheduleManager.workspaceStatus')"
-      width="600px"
-      :before-close="handleSkillsDialogClose"
-      class="skills-dialog"
-      center
-      align-center
-    >
-      <div class="skill-info-content">
-        <div class="info-details">
-          <div class="detail-item">
-            <label>{{ t("scheduleManager.connectionStatus") }}:</label>
-            <span
-              class="status-badge"
-              :class="isConnected ? 'status-connected' : 'status-disconnected'"
-            >
-              {{
-                isConnected
-                  ? t("scheduleManager.connected")
-                  : t("scheduleManager.disconnected")
-              }}
-            </span>
-          </div>
-
-          <div class="detail-item">
-            <label>{{ t("scheduleManager.sessionId") }}:</label>
-            <span class="session-id">{{
-              sessionId || t("scheduleManager.none")
-            }}</span>
-          </div>
-        </div>
-
-        <div class="skills-list" v-if="skills.length > 0">
-          <div class="skills-list-header">
-            {{ t("scheduleManager.availableSkills") }}
-            <button
-              class="reset-skills-btn"
-              @click="resetSkills"
-              :title="t('scheduleManager.resetSkills') || '重置技能'"
-            >
-              🔄
-            </button>
-          </div>
-          <div class="skill-cards">
-            <div
-              v-for="skill in skills"
-              :key="skill"
-              :class="['skill-card']"
-              @click="selectSkill(skill)"
-            >
-              <div class="skill-icon">🛠️</div>
-              <div class="skill-content">
-                <div class="skill-name">{{ skill }}</div>
-                <div class="skill-actions">
-                  <button class="export-btn">
-                    <i class="icon">📤</i>
-                    {{ t("scheduleManager.export") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleSkillsDialogClose">{{
-            t("scheduleManager.close")
-          }}</el-button>
-        </div>
-      </template> -->
-    </el-dialog>
+    <ServerStatus
+      :isConnected="isConnected"
+      :isConnectting="isConnectting"
+      :sessionId="sessionId"
+      :skills="skills"
+      @reconnect="activeWorkspace"
+      @resetSkills="resetSkills"
+      @selectSkill="selectSkill"
+    />
 
     <!-- 原有的排班表预览弹窗 -->
     <el-dialog
@@ -97,43 +31,6 @@
         </div>
       </div>
     </el-dialog>
-
-    <div class="server-status">
-      <!-- 连接状态指示器 -->
-      <div class="connection-indicator" v-if="isConnected">
-        <div class="indicator-content">
-          <div class="indicator-icon">✅</div>
-          <span class="indicator-text">{{
-            t("scheduleManager.connected")
-          }}</span>
-          <button class="skills-manage-btn" @click="openSkillsDialog">
-            💻
-          </button>
-        </div>
-      </div>
-      <div class="connection-indicator warning" v-else>
-        <div class="indicator-content">
-          <div class="indicator-icon" :class="{ connecting: isConnectting }">
-            <span v-if="isConnectting" class="loading-spinner"></span>
-            <span v-else>⚠️</span>
-          </div>
-          <span class="indicator-text">
-            {{
-              isConnectting
-                ? t("scheduleManager.connecting")
-                : t("scheduleManager.disconnected")
-            }}
-          </span>
-          <button
-            v-if="!isConnectting"
-            class="reconnect-btn"
-            @click="activeWorkspace"
-          >
-            {{ t("scheduleManager.retryConnection") }}
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- 主界面 - 始终显示，但根据连接状态调整内容 -->
     <div class="main-container">
@@ -266,12 +163,12 @@
                       : t("scheduleManager.waitingForService")
                   }}
                 </p>
-                <div class="empty-actions" v-if="isConnected">
+                <!-- <div class="empty-actions" v-if="isConnected">
                   <button @click="showExamples" class="example-btn">
                     <i class="icon">💡</i>
                     {{ t("scheduleManager.viewExample") }}
                   </button>
-                </div>
+                </div> -->
               </div>
             </div>
           </el-scrollbar>
@@ -288,8 +185,8 @@ import {
   onMounted,
   onActivated,
   onDeactivated,
-  onBeforeUnmount,
   computed,
+  onBeforeUnmount,
 } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
@@ -297,8 +194,25 @@ import { sleep } from "@/utils/util";
 import { Open } from "@element-plus/icons-vue";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
 import { ElMessage } from "element-plus";
+import { useSkillApp } from "@/composables/useSkillApp";
+import ServerStatus from "@/components/ServerStatus.vue";
+
 const { t } = useI18n();
 const APPID = "oDesk-schedule-manager";
+
+// 使用公共技能应用组合式函数
+const {
+  isConnectting,
+  skills,
+  sessionId,
+  isConnected,
+  skillsDialogVisible,
+  activeWorkspace,
+  resetSkills,
+  selectSkill,
+  openSkillsDialog,
+  handleSkillsDialogClose,
+} = useSkillApp(APPID, ["schedule-manager"]);
 
 // 响应式数据
 const question = ref(`
@@ -316,20 +230,13 @@ const isDownloading = ref(false);
 const musicFolders = ref([]);
 const currentPlaying = ref(null);
 
-const isConnectting = ref(false);
-
-const skills = ref([]);
 const showGeneratePanel = ref(false);
 const showDropdown = ref(false);
 const currentSkill = ref("");
 
-const sessionId = ref("");
-const isConnected = ref(false);
-
 // Dialog 状态管理
 const dialogVisible = ref(false);
 const dialogUrl = ref("");
-const skillsDialogVisible = ref(false);
 
 const exportExcel = async (result) => {
   const excel = result.title.replace(".html", ".xlsx");
@@ -338,59 +245,6 @@ const exportExcel = async (result) => {
   });
 };
 
-// 打开技能管理弹窗
-const openSkillsDialog = () => {
-  skillsDialogVisible.value = true;
-};
-
-// 关闭技能管理弹窗
-const handleSkillsDialogClose = () => {
-  skillsDialogVisible.value = false;
-};
-
-// 重置技能
-const resetSkills = async () => {
-  try {
-    // ElMessage.info("正在重置技能...");
-
-    // 先删除已存在的技能，然后再unzip
-    const skillsToReset = ["schedule-manager"];
-
-    for (const skill of skillsToReset) {
-      try {
-        // 先尝试删除已存在的skill
-        await Opencode.delete_workspace_skill(APPID, skill);
-        console.log(`已删除技能: ${skill}`);
-      } catch (e) {
-        // skill不存在时会报错，忽略这个错误
-        console.log(`技能 ${skill} 不存在，跳过删除`);
-      }
-
-      // 然后重新unzip
-      await Opencode.unzip_skill_to_workspace(skill, APPID);
-      console.log(`已安装技能: ${skill}`);
-    }
-
-    // 重新扫描技能列表
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-
-    // ElMessage.success("技能重置成功!");
-    ElMessage.info(t("skillapps.restartSkillApp"));
-  } catch (error) {
-    console.error("重置技能失败:", error);
-    ElMessage.error("重置技能失败: " + error.message);
-  }
-};
-
-const exportSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
-};
 // 方法定义
 const handleQuestion = async () => {
   if (!question.value.trim()) return;
@@ -399,49 +253,14 @@ const handleQuestion = async () => {
 
   try {
     const answer = await Opencode.send_message(question.value);
-    console.log("AI Response:", answer);
 
     const htmls = await Opencode.scan_worksapce_file(APPID, {
       path: "",
     });
 
-    console.log("htmls", htmls);
     searchResults.value = htmls;
-
-    // // 模拟生成排班结果
-    // const mockResults = [
-    //   {
-    //     title: "4月第一周排班表",
-    //     date: "2024年4月1日 - 4月7日",
-    //     employeeCount: "25",
-    //     shifts: "7点班, 10点班, 14点班, 16点班",
-    //     generatedAt: new Date().toLocaleString(),
-    //   },
-    //   {
-    //     title: "4月第二周排班表",
-    //     date: "2024年4月8日 - 4月14日",
-    //     employeeCount: "25",
-    //     shifts: "7点班, 10点班, 14点班, 16点班",
-    //     generatedAt: new Date().toLocaleString(),
-    //   },
-    // ];
-
-    // // 模拟延迟
-    // await new Promise((resolve) => setTimeout(resolve, 1500));
-
-    // searchResults.value = mockResults;
   } catch (error) {
     console.error("Error generating schedule:", error);
-    // 即使出错也显示一些示例数据
-    searchResults.value = [
-      {
-        title: t("scheduleManager.scheduleGenerationFailed"),
-        date: t("scheduleManager.checkInputFormat"),
-        employeeCount: "25",
-        shifts: "7点班, 10点班, 14点班, 16点班",
-        generatedAt: new Date().toLocaleString(),
-      },
-    ];
   } finally {
     isLoading.value = false;
   }
@@ -475,61 +294,10 @@ const showExamples = () => {
   `;
 };
 
-const activeWorkspace = async () => {
-  console.log("activeWorkspace---");
-  // 设置连接状态为正在连接
-  isConnected.value = false;
-  isConnectting.value = true;
-  try {
-    // await Opencode.open_workspace(APPID);
-
-    await Opencode.initialize_workspace_serve(APPID);
-    isConnected.value = true;
-
-    sessionId.value = Opencode.sessionId;
-    const htmls = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-      postfix: "html",
-    });
-    searchResults.value = htmls;
-
-    await Opencode.unzip_skill_to_workspace("schedule-manager", APPID);
-
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-
-    // 连接成功
-  } catch (error) {
-    console.error("Workspace activation failed:", error);
-    // 连接失败，保持未连接状态
-  } finally {
-    isConnectting.value = false;
-  }
-};
-
-// 下拉菜单控制方法
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value;
-};
-
-const selectSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
-};
-
 // 初始化
 onMounted(() => {
   console.log("ScheduleManager mounted");
   activeWorkspace();
-});
-
-onBeforeUnmount(async () => {
-  await Opencode.killAllOpencodeServer();
-  console.log("ScheduleManager unmounting");
 });
 </script>
 

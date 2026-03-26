@@ -1,72 +1,14 @@
 <template>
   <div class="travel-plan">
-    <!-- 技能信息弹窗 -->
-    <el-dialog
-      v-model="skillsDialogVisible"
-      :title="t('travelPlan.workspaceStatus')"
-      width="600px"
-      :before-close="handleSkillsDialogClose"
-      class="skills-dialog"
-      center
-      align-center
-    >
-      <div class="skill-info-content">
-        <div class="info-details">
-          <div class="detail-item">
-            <label>{{ t("travelPlan.connectionStatus") }}:</label>
-            <span
-              class="status-badge"
-              :class="isConnected ? 'status-connected' : 'status-disconnected'"
-            >
-              {{
-                isConnected
-                  ? t("travelPlan.connected")
-                  : t("travelPlan.disconnected")
-              }}
-            </span>
-          </div>
-
-          <div class="detail-item">
-            <label>{{ t("travelPlan.sessionId") }}:</label>
-            <span class="session-id">{{
-              sessionId || t("travelPlan.none")
-            }}</span>
-          </div>
-        </div>
-
-        <div class="skills-list" v-if="skills.length > 0">
-          <div class="skills-list-header">
-            {{ t("travelPlan.availableSkills") }}
-            <button
-              class="reset-skills-btn"
-              @click="resetSkills"
-              :title="t('travelPlan.resetSkills') || '重置技能'"
-            >
-              🔄
-            </button>
-          </div>
-          <div class="skill-cards">
-            <div
-              v-for="skill in skills"
-              :key="skill"
-              :class="['skill-card']"
-              @click="selectSkill(skill)"
-            >
-              <div class="skill-icon">🛠️</div>
-              <div class="skill-content">
-                <div class="skill-name">{{ skill }}</div>
-                <div class="skill-actions">
-                  <button class="export-btn">
-                    <i class="icon">📤</i>
-                    {{ t("travelPlan.export") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
+    <ServerStatus
+      :isConnected="isConnected"
+      :isConnectting="isConnectting"
+      :sessionId="sessionId"
+      :skills="skills"
+      @reconnect="activeWorkspace"
+      @resetSkills="resetSkills"
+      @selectSkill="selectSkill"
+    />
 
     <!-- 旅行计划预览弹窗 -->
     <el-dialog
@@ -89,41 +31,6 @@
         </div>
       </div>
     </el-dialog>
-
-    <div class="server-status">
-      <!-- 连接状态指示器 -->
-      <div class="connection-indicator" v-if="isConnected">
-        <div class="indicator-content">
-          <div class="indicator-icon">✅</div>
-          <span class="indicator-text">{{ t("travelPlan.connected") }}</span>
-          <button class="skills-manage-btn" @click="openSkillsDialog">
-            💻
-          </button>
-        </div>
-      </div>
-      <div class="connection-indicator warning" v-else>
-        <div class="indicator-content">
-          <div class="indicator-icon" :class="{ connecting: isConnectting }">
-            <span v-if="isConnectting" class="loading-spinner"></span>
-            <span v-else>⚠️</span>
-          </div>
-          <span class="indicator-text">
-            {{
-              isConnectting
-                ? t("travelPlan.connecting")
-                : t("travelPlan.disconnected")
-            }}
-          </span>
-          <button
-            v-if="!isConnectting"
-            class="reconnect-btn"
-            @click="activeWorkspace"
-          >
-            {{ t("travelPlan.retryConnection") }}
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- 主界面 -->
     <div class="main-container">
@@ -305,12 +212,6 @@
                       : t("travelPlan.waitingForService")
                   }}
                 </p>
-                <div class="empty-actions" v-if="isConnected">
-                  <button @click="showExamples" class="example-btn">
-                    <i class="icon">💡</i>
-                    {{ t("travelPlan.viewExample") }}
-                  </button>
-                </div>
               </div>
             </div>
           </el-scrollbar>
@@ -326,20 +227,32 @@ import { useI18n } from "vue-i18n";
 import { Search, Location } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
 import { ElMessage } from "element-plus";
+import { useSkillApp } from "@/composables/useSkillApp";
+import ServerStatus from "@/components/ServerStatus.vue";
+
 const { t } = useI18n();
 const APPID = "oDesk-travel-plan";
+
+// 使用公共技能应用组合式函数
+const {
+  isConnectting,
+  skills,
+  sessionId,
+  isConnected,
+  skillsDialogVisible,
+  activeWorkspace,
+  resetSkills,
+  selectSkill,
+  openSkillsDialog,
+  handleSkillsDialogClose,
+} = useSkillApp(APPID, ["travel-map"]);
 
 // 响应式数据
 const formRef = ref(null);
 const isLoading = ref(false);
 const searchResults = ref([]);
-const isConnectting = ref(false);
-const skills = ref([]);
-const sessionId = ref("");
-const isConnected = ref(false);
 const dialogVisible = ref(false);
 const dialogUrl = ref("");
-const skillsDialogVisible = ref(false);
 
 // 表单数据
 const formData = reactive({
@@ -386,61 +299,6 @@ const imageTypeOptions = [
   { value: "时间轴", label: t("travelPlan.typeTimeline") },
   { value: "地图路线", label: t("travelPlan.typeMapRoute") },
 ];
-
-// 打开技能管理弹窗
-const openSkillsDialog = () => {
-  skillsDialogVisible.value = true;
-};
-
-// 关闭技能管理弹窗
-const handleSkillsDialogClose = () => {
-  skillsDialogVisible.value = false;
-};
-
-// 重置技能
-const resetSkills = async () => {
-  try {
-    // ElMessage.info("正在重置技能...");
-
-    // 先删除已存在的技能，然后再unzip
-    const skillsToReset = ["travel-map"];
-
-    for (const skill of skillsToReset) {
-      try {
-        // 先尝试删除已存在的skill
-        await Opencode.delete_workspace_skill(APPID, skill);
-        console.log(`已删除技能: ${skill}`);
-      } catch (e) {
-        // skill不存在时会报错，忽略这个错误
-        console.log(`技能 ${skill} 不存在，跳过删除`);
-      }
-
-      // 然后重新unzip
-      await Opencode.unzip_skill_to_workspace(skill, APPID);
-      console.log(`已安装技能: ${skill}`);
-    }
-
-    // 重新扫描技能列表
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-
-    // ElMessage.success("技能重置成功!");
-    ElMessage.info(t("skillapps.restartSkillApp"));
-  } catch (error) {
-    console.error("重置技能失败:", error);
-    ElMessage.error("重置技能失败: " + error.message);
-  }
-};
-
-// 选择技能
-const selectSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
-};
 
 // 查询旅行计划
 const handleSearch = async () => {
@@ -527,82 +385,13 @@ const handleClose = () => {
   dialogUrl.value = "";
 };
 
-// 复制URL
-const copyUrl = async (url) => {
-  if (!url) {
-    console.warn("No URL to copy");
-    return;
-  }
-
-  try {
-    await navigator.clipboard.writeText(url);
-    console.log("URL copied to clipboard:", url);
-    // 可以添加成功提示
-  } catch (error) {
-    console.error("Failed to copy URL:", error);
-    // 降级方案：使用传统方法
-    const textArea = document.createElement("textarea");
-    textArea.value = url;
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand("copy");
-    document.body.removeChild(textArea);
-    console.log("URL copied using fallback method:", url);
-  }
-};
-
-// 导出计划
-const exportPlan = async (result) => {
-  console.log("Export plan:", result);
-  // 实现导出逻辑
-};
-
-// 显示示例
-const showExamples = () => {
-  formData.destination = "日本东京";
-  formData.duration = 5;
-  formData.visualStyle = "modern";
-  formData.imageType = "photo";
-};
-
-// 激活工作区
-const activeWorkspace = async () => {
-  console.log("activeWorkspace---");
-  isConnected.value = false;
-  isConnectting.value = true;
-  try {
-    await Opencode.initialize_workspace_serve(APPID);
-    isConnected.value = true;
-
-    sessionId.value = Opencode.sessionId;
-    const pngs = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-      postfix: "svg",
-    });
-
-    console.log("pngs", pngs);
-    searchResults.value = pngs;
-
-    await Opencode.unzip_skill_to_workspace("travel-map", APPID);
-
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-  } catch (error) {
-    console.error("Workspace activation failed:", error);
-  } finally {
-    isConnectting.value = false;
-  }
-};
-
 // 初始化
 onMounted(() => {
   activeWorkspace();
 });
 
 onBeforeUnmount(async () => {
-  await Opencode.killAllOpencodeServer();
+  //
 });
 </script>
 

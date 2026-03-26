@@ -301,6 +301,23 @@
     "purple": "Purple",
     "phyCat": "PhyCat"
   },
+  "serverStatus": {
+    "connected": "Connected",
+    "connecting": "Connecting...",
+    "disconnected": "Disconnected",
+    "retryConnection": "Retry Connection"
+  },
+  "skillsDialog": {
+    "workspaceStatus": "Workspace Status",
+    "connectionStatus": "Connection Status",
+    "connected": "Connected",
+    "disconnected": "Disconnected",
+    "sessionId": "Session ID",
+    "none": "None",
+    "availableSkills": "Available Skills",
+    "resetSkills": "Reset Skills",
+    "export": "Export"
+  },
   "travelPlan": {
     "workspaceStatus": "Workspace Status",
     "connectionStatus": "Connection Status",

@@ -1,187 +1,14 @@
 <template>
   <div class="wechat-publisher">
-    <!-- 技能信息弹窗 -->
-    <el-dialog
-      v-model="skillsDialogVisible"
-      :title="t('wechatPublisher.workspaceStatus')"
-      width="600px"
-      :before-close="handleSkillsDialogClose"
-      class="skills-dialog"
-      center
-      align-center
-    >
-      <div class="skill-info-content">
-        <div class="info-details">
-          <div class="detail-item">
-            <label>{{ t("wechatPublisher.connectionStatus") }}:</label>
-            <span
-              class="status-badge"
-              :class="isConnected ? 'status-connected' : 'status-disconnected'"
-            >
-              {{
-                isConnected
-                  ? t("wechatPublisher.connected")
-                  : t("wechatPublisher.disconnected")
-              }}
-            </span>
-          </div>
-
-          <div class="detail-item">
-            <label>{{ t("wechatPublisher.sessionId") }}:</label>
-            <span class="session-id">{{
-              sessionId || t("wechatPublisher.none")
-            }}</span>
-          </div>
-        </div>
-
-        <div class="skills-list" v-if="skills.length > 0">
-          <div class="skills-list-header">
-            {{ t("wechatPublisher.availableSkills") }}
-            <button
-              class="reset-skills-btn"
-              @click="resetSkills"
-              :title="t('skillapps.resetSkills')"
-            >
-              🔄
-            </button>
-          </div>
-          <div class="skill-cards">
-            <div
-              v-for="skill in skills"
-              :key="skill"
-              :class="['skill-card']"
-              @click="selectSkill(skill)"
-            >
-              <div class="skill-icon">🛠️</div>
-              <div class="skill-content">
-                <div class="skill-name">{{ skill }}</div>
-                <div class="skill-actions">
-                  <button class="export-btn">
-                    <i class="icon">📤</i>
-                    {{ t("wechatPublisher.export") }}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="config-section">
-          <div class="config-header">
-            {{ t("skillapps.configSettings") }}
-          </div>
-          <div class="config-form">
-            <div class="config-item">
-              <label>{{ t("wechatPublisher.appid") }}:</label>
-              <el-input
-                :type="showAppId ? 'text' : 'password'"
-                v-model="config.wechat.appid"
-                :placeholder="t('wechatPublisher.pleaseEnterAppid')"
-                class="config-input"
-              >
-                <template #suffix>
-                  <el-icon
-                    class="password-eye-icon"
-                    @click="showAppId = !showAppId"
-                  >
-                    <View v-if="showAppId" />
-                    <Hide v-else />
-                  </el-icon>
-                </template>
-              </el-input>
-            </div>
-            <div class="config-item">
-              <label>{{ t("wechatPublisher.appsecret") }}:</label>
-              <el-input
-                :type="showAppSecret ? 'text' : 'password'"
-                v-model="config.wechat.appsecret"
-                :placeholder="t('wechatPublisher.pleaseEnterAppsecret')"
-                class="config-input"
-              >
-                <template #suffix>
-                  <el-icon
-                    class="password-eye-icon"
-                    @click="showAppSecret = !showAppSecret"
-                  >
-                    <View v-if="showAppSecret" />
-                    <Hide v-else />
-                  </el-icon>
-                </template>
-              </el-input>
-            </div>
-            <div class="config-item">
-              <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
-              <el-select
-                v-model="config.wenyanTheme"
-                class="config-input theme-select"
-              >
-                <el-option
-                  v-for="theme in themeOptions"
-                  :key="theme.value"
-                  :value="theme.value"
-                  :label="theme.label"
-                >
-                  <span class="theme-option">
-                    <span class="theme-icon">{{ theme.icon }}</span>
-                    <span class="theme-label">{{ theme.label }}</span>
-                  </span>
-                </el-option>
-              </el-select>
-            </div>
-            <div class="config-actions">
-              <el-button type="primary" size="small" @click="saveConfig">
-                {{ t("skillapps.save") }}
-              </el-button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- <template #footer>
-        <div class="dialog-footer">
-          <el-button @click="handleSkillsDialogClose">{{
-            t("wechatPublisher.close")
-          }}</el-button>
-        </div>
-      </template> -->
-    </el-dialog>
-
-    <div class="server-status">
-      <!-- 连接状态指示器 -->
-      <div class="connection-indicator" v-if="isConnected">
-        <div class="indicator-content">
-          <div class="indicator-icon">✅</div>
-          <span class="indicator-text">{{
-            t("wechatPublisher.connected")
-          }}</span>
-          <button class="skills-manage-btn" @click="openSkillsDialog">
-            💻
-          </button>
-        </div>
-      </div>
-      <div class="connection-indicator warning" v-else>
-        <div class="indicator-content">
-          <div class="indicator-icon" :class="{ connecting: isConnectting }">
-            <span v-if="isConnectting" class="loading-spinner"></span>
-            <span v-else>⚠️</span>
-          </div>
-          <span class="indicator-text">
-            {{
-              isConnectting
-                ? t("wechatPublisher.connecting")
-                : t("wechatPublisher.disconnected")
-            }}
-          </span>
-          <button
-            v-if="!isConnectting"
-            class="reconnect-btn"
-            @click="activeWorkspace"
-          >
-            {{ t("wechatPublisher.retryConnection") }}
-          </button>
-        </div>
-      </div>
-    </div>
+    <ServerStatus
+      :isConnected="isConnected"
+      :isConnectting="isConnectting"
+      :sessionId="sessionId"
+      :skills="skills"
+      @reconnect="activeWorkspace"
+      @resetSkills="resetSkills"
+      @selectSkill="selectSkill"
+    />
 
     <!-- 搜索Loading状态 -->
     <div class="loading-overlay" v-if="isLoading">
@@ -322,17 +149,37 @@ import {
   onMounted,
   onActivated,
   onDeactivated,
-  onBeforeUnmount,
   computed,
+  onBeforeUnmount,
 } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode, { wechat_config } from "@/service/shell/opencode";
 import { sleep } from "@/utils/util";
 import { Open, View, Hide, Search, Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
+import { useSkillApp } from "@/composables/useSkillApp";
+import ServerStatus from "@/components/ServerStatus.vue";
 
 const { t } = useI18n();
 const APPID = "oDesk-wechat-publisher";
+
+// 使用公共技能应用组合式函数
+const {
+  isConnectting,
+  skills,
+  sessionId,
+  isConnected,
+  skillsDialogVisible,
+  activeWorkspace,
+  resetSkills,
+  selectSkill,
+  openSkillsDialog,
+  handleSkillsDialogClose,
+} = useSkillApp(APPID, [
+  "topic-searcher",
+  "wechat-publisher",
+  "article-writer",
+]);
 
 // 响应式数据
 const question = ref("");
@@ -344,24 +191,13 @@ const isDownloading = ref(false);
 const musicFolders = ref([]);
 const currentPlaying = ref(null);
 
-const isConnectting = ref(false);
-
 // 润色模式相关
 const isPolishMode = ref(false);
 const polishContent = ref("");
 
-const skills = ref([]);
 const showGeneratePanel = ref(false);
 const showDropdown = ref(false);
 const currentSkill = ref("");
-
-const sessionId = ref("");
-const isConnected = ref(false);
-
-// Dialog 状态管理
-const dialogVisible = ref(false);
-const dialogUrl = ref("");
-const skillsDialogVisible = ref(false);
 
 // AppSecret 显示/隐藏状态
 const showAppSecret = ref(false);
@@ -374,56 +210,6 @@ const exportExcel = async (result) => {
   await Opencode.export_workspace_file(APPID, {
     filePath: excel,
   });
-};
-
-// 打开技能管理弹窗
-const openSkillsDialog = () => {
-  skillsDialogVisible.value = true;
-};
-
-// 关闭技能管理弹窗
-const handleSkillsDialogClose = () => {
-  skillsDialogVisible.value = false;
-};
-
-const resetSkills = async () => {
-  try {
-    // ElMessage.info(t("skillapps.resettingSkills"));
-
-    // 先删除已存在的技能，然后再unzip
-    const skillsToReset = [
-      "topic-searcher",
-      "wechat-publisher",
-      "article-writer",
-    ];
-
-    for (const skill of skillsToReset) {
-      try {
-        // 先尝试删除已存在的skill
-        await Opencode.delete_workspace_skill(APPID, skill);
-        console.log(`已删除技能: ${skill}`);
-      } catch (e) {
-        // skill不存在时会报错，忽略这个错误
-        console.log(`技能 ${skill} 不存在，跳过删除`);
-      }
-
-      // 然后重新unzip
-      await Opencode.unzip_skill_to_workspace(skill, APPID);
-      console.log(`已安装技能: ${skill}`);
-    }
-
-    // 重新扫描技能列表
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-
-    // ElMessage.success(t("skillapps.resetSkillsSuccess"));
-    ElMessage.info(t("skillapps.restartSkillApp"));
-  } catch (error) {
-    console.error("重置技能失败:", error);
-    ElMessage.error(t("skillapps.resetSkillsFailed") + error.message);
-  }
 };
 
 const saveConfig = async () => {
@@ -442,24 +228,14 @@ const saveConfig = async () => {
   }
 };
 
-const exportSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
-};
-
 const handleSearch = async () => {
   if (!question.value.trim()) return;
   isLoading.value = true;
   try {
     console.log("Starting article search...");
-
     const searchContent = `
-    
-  ${question.value}
-
-  Please search for relevant content based on the above requirements, do not publish
+      ${question.value}
+      Please search for relevant content based on the above requirements, do not publish
     `;
     const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
@@ -502,55 +278,8 @@ const handlePolish = async () => {
   }
 };
 
-const preview = (url) => {
-  // const isWindows = navigator.userAgent.includes('Windows');
-  // if (isWindows) {
-  //   window.open(url, '_blank');
-  //   return;
-  // }
-  dialogUrl.value = url;
-  dialogVisible.value = true;
-};
-
-const handleClose = () => {
-  dialogVisible.value = false;
-  dialogUrl.value = "";
-};
-
 const clearInput = () => {
   question.value = "";
-};
-
-const activeWorkspace = async () => {
-  console.log("activeWorkspace---");
-  // 设置连接状态为正在连接
-  isConnected.value = false;
-  isConnectting.value = true;
-  try {
-    // await Opencode.open_workspace(APPID);
-
-    await Opencode.initialize_workspace_serve(APPID);
-    isConnected.value = true;
-
-    sessionId.value = Opencode.sessionId;
-
-    await Opencode.unzip_skill_to_workspace("topic-searcher", APPID);
-    await Opencode.unzip_skill_to_workspace("wechat-publisher", APPID);
-    await Opencode.unzip_skill_to_workspace("article-writer", APPID);
-
-    const skillsList = await Opencode.scan_worksapce_skills(APPID, {
-      path: ".opencode/skill/",
-    });
-    skills.value = skillsList;
-    await searchFiles();
-
-    // 连接成功
-  } catch (error) {
-    console.error("Workspace activation failed:", error);
-    // 连接失败，保持未连接状态
-  } finally {
-    isConnectting.value = false;
-  }
 };
 
 const config = ref({
@@ -613,21 +342,7 @@ const searchFiles = async () => {
 
   if (html) {
     htmlPreview.value = await Opencode.read_workspace_file_content(APPID, html);
-
-    // document.querySelector(".html-content").innerHTML = htmlContent;
   }
-};
-
-// 下拉菜单控制方法
-const toggleDropdown = () => {
-  showDropdown.value = !showDropdown.value;
-};
-
-const selectSkill = async (skill) => {
-  console.log("skill", skill);
-  await Opencode.export_workspace_skill(APPID, {
-    skill: skill,
-  });
 };
 
 const handlePublish = async () => {
@@ -656,14 +371,12 @@ const handlePublish = async () => {
 
 // 初始化
 onMounted(() => {
-  console.log("ScheduleManager mounted");
   activeWorkspace();
   readConfig();
 });
 
 onBeforeUnmount(async () => {
-  await Opencode.killAllOpencodeServer();
-  console.log("ScheduleManager unmounting");
+  //
 });
 </script>
 

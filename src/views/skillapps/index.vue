@@ -66,7 +66,6 @@ import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
 import getList from "./list";
 
-import MusicDownload from "./MusicDownload.vue";
 import ScheduleManager from "./ScheduleManager.vue";
 import WechatPublisher from "./WechatPublisher.vue";
 import TravelPlan from "./TravelPlan.vue";
@@ -75,7 +74,6 @@ import MovieFinder from "./MovieFinder.vue";
 const { t, locale } = useI18n();
 
 const components = {
-  MusicDownload: MusicDownload,
   ScheduleManager: ScheduleManager,
   WechatPublisher: WechatPublisher,
   TravelPlan: TravelPlan,

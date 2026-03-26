@@ -311,6 +311,23 @@
     "purple": "紫罗兰",
     "phyCat": "猫咪"
   },
+  "serverStatus": {
+    "connected": "已连接",
+    "connecting": "正在连接...",
+    "disconnected": "未连接",
+    "retryConnection": "重试连接"
+  },
+  "skillsDialog": {
+    "workspaceStatus": "工作区状态",
+    "connectionStatus": "连接状态",
+    "connected": "已连接",
+    "disconnected": "未连接",
+    "sessionId": "会话ID",
+    "none": "无",
+    "availableSkills": "可用技能",
+    "resetSkills": "重置技能",
+    "export": "导出"
+  },
   "travelPlan": {
     "workspaceStatus": "工作区状态",
     "connectionStatus": "连接状态",
