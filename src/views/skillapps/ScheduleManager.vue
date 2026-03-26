@@ -179,21 +179,10 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  reactive,
-  onMounted,
-  onActivated,
-  onDeactivated,
-  computed,
-  onBeforeUnmount,
-} from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
-import { sleep } from "@/utils/util";
-import { Open } from "@element-plus/icons-vue";
 import MarkdownEditor from "@/components/MarkdownEditor.vue";
-import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 
@@ -206,12 +195,9 @@ const {
   skills,
   sessionId,
   isConnected,
-  skillsDialogVisible,
   activeWorkspace,
   resetSkills,
   selectSkill,
-  openSkillsDialog,
-  handleSkillsDialogClose,
 } = useSkillApp(APPID, ["schedule-manager"]);
 
 // 响应式数据
@@ -225,14 +211,7 @@ const question = ref(`
 `);
 const isLoading = ref(false);
 const searchResults = ref([]);
-const downloadQueue = ref([]);
-const isDownloading = ref(false);
-const musicFolders = ref([]);
-const currentPlaying = ref(null);
-
 const showGeneratePanel = ref(false);
-const showDropdown = ref(false);
-const currentSkill = ref("");
 
 // Dialog 状态管理
 const dialogVisible = ref(false);
@@ -245,6 +224,13 @@ const exportExcel = async (result) => {
   });
 };
 
+const getResults = async () => {
+  const htmls = await Opencode.scan_worksapce_file(APPID, {
+    path: "",
+    postfix: "html",
+  });
+  searchResults.value = htmls;
+};
 // 方法定义
 const handleQuestion = async () => {
   if (!question.value.trim()) return;
@@ -253,12 +239,7 @@ const handleQuestion = async () => {
 
   try {
     const answer = await Opencode.send_message(question.value);
-
-    const htmls = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-    });
-
-    searchResults.value = htmls;
+    getResults();
   } catch (error) {
     console.error("Error generating schedule:", error);
   } finally {
@@ -281,23 +262,11 @@ const handleClose = () => {
   dialogUrl.value = "";
 };
 
-const clearInput = () => {
-  question.value = "";
-};
-
-const showExamples = () => {
-  question.value = `
-员工数量：20
-月份：5月
-班次：早班(8:00-16:00)，中班(16:00-00:00)，晚班(00:00-08:00)
-请生成排班表
-  `;
-};
-
 // 初始化
-onMounted(() => {
+onMounted(async () => {
   console.log("ScheduleManager mounted");
-  activeWorkspace();
+  await activeWorkspace();
+  getResults();
 });
 </script>
 

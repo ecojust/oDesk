@@ -143,19 +143,10 @@
 </template>
 
 <script setup>
-import {
-  ref,
-  reactive,
-  onMounted,
-  onActivated,
-  onDeactivated,
-  computed,
-  onBeforeUnmount,
-} from "vue";
+import { ref, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import Opencode, { wechat_config } from "@/service/shell/opencode";
-import { sleep } from "@/utils/util";
-import { Open, View, Hide, Search, Edit } from "@element-plus/icons-vue";
+import Opencode from "@/service/shell/opencode";
+import { Search, Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
@@ -173,8 +164,6 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
-  openSkillsDialog,
-  handleSkillsDialogClose,
 } = useSkillApp(APPID, [
   "topic-searcher",
   "wechat-publisher",
@@ -185,48 +174,10 @@ const {
 const question = ref("");
 const isLoading = ref(false);
 const isPublishing = ref(false);
-const searchResults = ref([]);
-const downloadQueue = ref([]);
-const isDownloading = ref(false);
-const musicFolders = ref([]);
-const currentPlaying = ref(null);
 
 // 润色模式相关
 const isPolishMode = ref(false);
 const polishContent = ref("");
-
-const showGeneratePanel = ref(false);
-const showDropdown = ref(false);
-const currentSkill = ref("");
-
-// AppSecret 显示/隐藏状态
-const showAppSecret = ref(false);
-
-// AppID 显示/隐藏状态
-const showAppId = ref(false);
-
-const exportExcel = async (result) => {
-  const excel = result.title.replace(".html", ".xlsx");
-  await Opencode.export_workspace_file(APPID, {
-    filePath: excel,
-  });
-};
-
-const saveConfig = async () => {
-  try {
-    await Opencode.write_workspace_file_content(
-      APPID,
-      "config.json",
-      JSON.stringify(config.value, null, 2),
-    );
-    ElMessage.success(t("skillapps.configSaveSuccess"));
-  } catch (error) {
-    console.error("保存配置失败:", error);
-    // ElMessage.error("配置保存失败: " + error.message);
-  } finally {
-    skillsDialogVisible.value = false;
-  }
-};
 
 const handleSearch = async () => {
   if (!question.value.trim()) return;
@@ -278,53 +229,6 @@ const handlePolish = async () => {
   }
 };
 
-const clearInput = () => {
-  question.value = "";
-};
-
-const config = ref({
-  wechat: {
-    appid: "",
-    appsecret: "",
-  },
-  wenyanTheme: "default",
-});
-
-// 排版主题选项
-const themeOptions = computed(() => [
-  { value: "default", label: t("wechatPublisher.defaultTheme"), icon: "📄" },
-  { value: "orangeheart", label: t("wechatPublisher.orangeHeart"), icon: "🧡" },
-  { value: "rainbow", label: t("wechatPublisher.rainbow"), icon: "🌈" },
-  { value: "lapis", label: t("wechatPublisher.lapis"), icon: "💎" },
-  { value: "pie", label: t("wechatPublisher.pie"), icon: "🥧" },
-  { value: "maize", label: t("wechatPublisher.maize"), icon: "🌽" },
-  { value: "purple", label: t("wechatPublisher.purple"), icon: "💜" },
-  { value: "phycat", label: t("wechatPublisher.phyCat"), icon: "🐱" },
-]);
-
-const readConfig = async () => {
-  try {
-    const res = await Opencode.read_workspace_file_content(
-      APPID,
-      "config.json",
-    );
-
-    config.value = JSON.parse(res);
-
-    console.log("config", config);
-  } catch (error) {
-    config.value = wechat_config;
-
-    await Opencode.write_workspace_file_content(
-      APPID,
-      "config.json",
-      JSON.stringify(wechat_config),
-    );
-
-    console.log("config", error);
-  }
-};
-
 const htmlPreview = ref("");
 
 const searchFiles = async () => {
@@ -333,27 +237,18 @@ const searchFiles = async () => {
     postfix: ["md", "html"],
   });
 
-  const md = searchs.find((s) => s.title == "draft.md").title;
-  const html = searchs.find((s) => s.title == "draft.html").title;
-
-  if (md) {
-    const mdContent = await Opencode.read_workspace_file_content(APPID, md);
-  }
+  const html = searchs.find((s) => s.title == "draft.html");
 
   if (html) {
-    htmlPreview.value = await Opencode.read_workspace_file_content(APPID, html);
+    htmlPreview.value = await Opencode.read_workspace_file_content(
+      APPID,
+      html.title,
+    );
   }
 };
 
 const handlePublish = async () => {
   if (isPublishing.value) return;
-
-  // 检查appid和appsecret是否已配置
-  if (!config.value.wechat.appid || !config.value.wechat.appsecret) {
-    ElMessage.warning(t("skillapps.pleaseConfigFirst"));
-    skillsDialogVisible.value = true; // 打开配置弹窗
-    return;
-  }
 
   isPublishing.value = true;
   try {
@@ -372,11 +267,6 @@ const handlePublish = async () => {
 // 初始化
 onMounted(() => {
   activeWorkspace();
-  readConfig();
-});
-
-onBeforeUnmount(async () => {
-  //
 });
 </script>
 

@@ -92,6 +92,7 @@ import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode from "@/service/shell/opencode";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 
@@ -113,17 +114,11 @@ const {
 const searchQuery = ref("星际穿越");
 const movies = ref([]);
 const selectedMovie = ref(null);
-const currentIframeUrl = ref("https://huarenok.com/voddetail/12882.html");
 const isSearching = ref(false);
 const hasSearched = ref(false);
 
 // Webview 相关
-const webviewContainer = ref(null);
 let webviewInstance = null;
-let appWindow = null;
-
-// 模拟电影数据
-const mockMovies = [];
 
 // 搜索电影
 const searchMovies = async () => {
@@ -146,14 +141,12 @@ const searchMovies = async () => {
   } finally {
     isSearching.value = false;
     selectedMovie.value = null;
-    currentIframeUrl.value = "";
   }
 };
 
 // 选择电影
 const selectMovie = async (movie) => {
   selectedMovie.value = movie;
-  currentIframeUrl.value = movie.url;
   if (webviewInstance) {
     try {
       await webviewInstance.close();

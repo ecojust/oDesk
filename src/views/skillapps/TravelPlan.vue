@@ -222,11 +222,10 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onBeforeUnmount } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useI18n } from "vue-i18n";
-import { Search, Location } from "@element-plus/icons-vue";
+import { Search } from "@element-plus/icons-vue";
 import Opencode from "@/service/shell/opencode";
-import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 
@@ -239,12 +238,9 @@ const {
   skills,
   sessionId,
   isConnected,
-  skillsDialogVisible,
   activeWorkspace,
   resetSkills,
   selectSkill,
-  openSkillsDialog,
-  handleSkillsDialogClose,
 } = useSkillApp(APPID, ["travel-map"]);
 
 // 响应式数据
@@ -285,20 +281,17 @@ const formRules = {
       trigger: "change",
     },
   ],
-  imageType: [
-    {
-      required: true,
-      message: t("travelPlan.imageTypeRequired"),
-      trigger: "change",
-    },
-  ],
 };
 
-// 图片类型选项
-const imageTypeOptions = [
-  { value: "时间轴", label: t("travelPlan.typeTimeline") },
-  { value: "地图路线", label: t("travelPlan.typeMapRoute") },
-];
+const getResults = async () => {
+  const pngs = await Opencode.scan_worksapce_file(APPID, {
+    path: "",
+    postfix: "svg",
+  });
+
+  console.log("pngs", pngs);
+  searchResults.value = pngs;
+};
 
 // 查询旅行计划
 const handleSearch = async () => {
@@ -325,45 +318,11 @@ const handleSearch = async () => {
     `;
 
     console.log("Sending prompt:", prompt);
-
     const answer = await Opencode.send_message(prompt);
     console.log("AI Response:", answer);
-
-    const pngs = await Opencode.scan_worksapce_file(APPID, {
-      path: "",
-      postfix: "svg",
-    });
-
-    console.log("pngs", pngs);
-    searchResults.value = pngs;
-
-    // 如果没有生成文件，添加一个模拟结果
-    // if (pngs.length === 0) {
-    //   searchResults.value = [
-    //     {
-    //       title: `${formData.destination}${formData.duration}日游`,
-    //       destination: formData.destination,
-    //       duration: formData.duration,
-    //       visualStyle: formData.visualStyle,
-    //       imageType: formData.imageType,
-    //       url: "",
-    //       generatedAt: new Date().toLocaleString(),
-    //     },
-    //   ];
-    // }
+    getResults();
   } catch (error) {
     console.error("Error generating travel plan:", error);
-    searchResults.value = [
-      {
-        title: t("travelPlan.planGenerationFailed"),
-        destination: formData.destination,
-        duration: formData.duration,
-        visualStyle: formData.visualStyle,
-        imageType: formData.imageType,
-        url: "",
-        generatedAt: new Date().toLocaleString(),
-      },
-    ];
   } finally {
     isLoading.value = false;
   }
@@ -386,12 +345,9 @@ const handleClose = () => {
 };
 
 // 初始化
-onMounted(() => {
-  activeWorkspace();
-});
-
-onBeforeUnmount(async () => {
-  //
+onMounted(async () => {
+  await activeWorkspace();
+  getResults();
 });
 </script>
 
