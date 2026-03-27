@@ -32,7 +32,23 @@ export default class Opencode {
         ],
       },
     });
+
+    // 播放成功音效
+    Opencode.playSuccessSound();
+
     return result.parts?.find((part: any) => part.type == "text")?.text || "";
+  }
+
+  static playSuccessSound() {
+    try {
+      const audio = new Audio();
+      audio.src = "./music/bell.mp3";
+      audio.play().catch((e2) => {
+        console.log("Alternative audio play also failed:", e2);
+      });
+    } catch (e) {
+      console.log("Failed to play success sound:", e);
+    }
   }
 
   static async new_session() {
@@ -197,6 +213,10 @@ export default class Opencode {
         } else {
           result = result.filter(
             (r: any) => r.type == (payload.postfix || "html"),
+          );
+          result.sort(
+            (a: any, b: any) =>
+              new Date(b.time).getTime() - new Date(a.time).getTime(),
           );
         }
       }

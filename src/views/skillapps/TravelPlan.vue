@@ -171,6 +171,9 @@
                             result.title || result.name || `Image ${index + 1}`
                           }}
                         </h4>
+                        <span class="image-time" v-if="result.time">
+                          {{ result.time }}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -577,15 +580,32 @@ onMounted(async () => {
 
                     .image-info {
                       padding: 12px 16px;
+                      display: flex;
+                      justify-content: space-between;
+                      align-items: center;
+                      gap: 12px;
 
                       .image-title {
-                        margin: 0 0 8px 0;
-                        font-size: 14px;
+                        flex: 1;
+                        min-width: 0;
+                        font-size: 12px;
                         color: #333;
                         font-weight: 600;
                         line-height: 1.4;
                         overflow: hidden;
                         text-overflow: ellipsis;
+                        white-space: nowrap;
+                      }
+
+                      .image-time {
+                        flex-shrink: 0;
+                        color: #1976d2;
+                        font-size: 11px;
+                        font-weight: 600;
+                        background: #e3f2fd;
+                        padding: 4px 8px;
+                        border-radius: 12px;
+                        border: 1px solid #bbdefb;
                         white-space: nowrap;
                       }
 

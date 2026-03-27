@@ -203,7 +203,11 @@ const searchFiles = async () => {
       "list.json",
     );
     const res = JSON.parse(content);
+    console.log("res", res);
+
     movies.value = res.playUrls;
+
+    searchQuery.value = res?.movie || "";
   } catch (error) {}
 };
 
