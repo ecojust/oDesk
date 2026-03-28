@@ -28,16 +28,22 @@ export function useSkillApp(appId, skillls = []) {
       isConnected.value = true;
       sessionId.value = Opencode.sessionId;
 
+      // 扫描技能列表
+      const skillsList1 = await Opencode.scan_worksapce_skills(appId, {
+        path: ".opencode/skill/",
+      });
+      skills.value = skillsList1;
+
       // 安装技能
       for (const skill of skillls) {
         await Opencode.unzip_skill_to_workspace(skill, appId);
       }
 
       // 扫描技能列表
-      const skillsList = await Opencode.scan_worksapce_skills(appId, {
+      const skillsList2 = await Opencode.scan_worksapce_skills(appId, {
         path: ".opencode/skill/",
       });
-      skills.value = skillsList;
+      skills.value = skillsList2;
 
       return true;
     } catch (error) {

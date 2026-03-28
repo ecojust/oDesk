@@ -35,6 +35,14 @@ const getList = () => {
       category: t("skillapps.list.movieFinder.category"),
       color: "#667eea",
     },
+    {
+      title: "古诗词作者",
+      key: "AncienPoetry",
+      description: t("skillapps.list.movieFinder.description"),
+      icon: "🎬",
+      category: t("skillapps.list.movieFinder.category"),
+      color: "#667eea",
+    },
   ];
 };
 
