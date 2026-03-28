@@ -87,6 +87,11 @@
         "title": "Travel Plan",
         "description": "Generate personalized travel plans",
         "category": "Travel Tools"
+      },
+      "ancienPoetry": {
+        "title": "Ancient Poetry Authors",
+        "description": "Explore ancient poetry authors and their works",
+        "category": "Cultural Tools"
       }
     },
     "launch": "Launch",

@@ -97,6 +97,11 @@
         "title": "电影搜索",
         "description": "搜索电影",
         "category": "娱乐工具"
+      },
+      "ancienPoetry": {
+        "title": "古诗词作者",
+        "description": "探索古诗词作者及其作品",
+        "category": "文化工具"
       }
     },
     "launch": "启动",

@@ -36,12 +36,12 @@ const getList = () => {
       color: "#667eea",
     },
     {
-      title: "古诗词作者",
+      title: t("skillapps.list.ancienPoetry.title"),
       key: "AncienPoetry",
-      description: t("skillapps.list.movieFinder.description"),
-      icon: "🎬",
-      category: t("skillapps.list.movieFinder.category"),
-      color: "#667eea",
+      description: t("skillapps.list.ancienPoetry.description"),
+      icon: "📜",
+      category: t("skillapps.list.ancienPoetry.category"),
+      color: "#C41E3A",
     },
   ];
 };

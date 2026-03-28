@@ -131,7 +131,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
-} = useSkillApp(APPID, []);
+} = useSkillApp(APPID, ["create-timeline-webpage"]);
 
 // 响应式数据
 const searchQuery = ref("");
