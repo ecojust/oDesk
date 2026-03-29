@@ -180,22 +180,6 @@ const handleClose = () => {
   dialogUrl.value = "";
 };
 
-// const loadPoetData = async () => {
-//   try {
-//     const content = await Opencode.read_workspace_file_content(
-//       APPID,
-//       "list.json",
-//     );
-//     const res = JSON.parse(content);
-//     console.log("res", res);
-
-//     poets.value = res.poets || [];
-//     searchQuery.value = res?.poet || "";
-//   } catch (error) {
-//     console.log("加载诗人数据失败:", error);
-//   }
-// };
-
 // 加载诗人数据
 const loadPoetData = async () => {
   const htmls = await Opencode.scan_worksapce_file(APPID, {
