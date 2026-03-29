@@ -545,21 +545,25 @@ onBeforeUnmount(async () => {});
       border-radius: 0;
       margin: 0;
       width: 100vw !important;
-
+      position: relative;
+      padding: 0;
       .el-dialog__header {
+        position: absolute;
+        width: 100%;
+        z-index: 999;
         padding: 16px 20px;
-        border-bottom: 1px solid #e9ecef;
+        // border-bottom: 1px solid #e9ecef;
         // background: linear-gradient(135deg, #f5f5dc, #faf0e6);
 
         .el-dialog__title {
           font-size: 16px;
-          font-weight: 700;
-          color: #8b4513;
+          font-weight: 900;
+          color: #fff;
         }
 
         .el-dialog__headerbtn {
           .el-dialog__close {
-            color: #8b4513;
+            color: #fff;
             font-size: 18px;
             opacity: 0.8;
 
@@ -572,7 +576,7 @@ onBeforeUnmount(async () => {});
 
       .el-dialog__body {
         padding: 0;
-        height: calc(100vh - 100px);
+        height: calc(100vh - 0px);
         overflow: hidden;
 
         .dialog-content {
@@ -589,7 +593,7 @@ onBeforeUnmount(async () => {});
 
             .preview-frame {
               flex: 1;
-              padding: 16px;
+              padding: 0;
               background: #ffffff;
               display: flex;
               align-items: center;
@@ -599,8 +603,8 @@ onBeforeUnmount(async () => {});
                 width: 100%;
                 height: 100%;
                 border: none;
-                border-radius: 8px;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+                border-radius: 0;
+                box-shadow: none;
                 background: white;
               }
             }
