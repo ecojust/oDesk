@@ -99,7 +99,9 @@
                   v-for="theme in visibleThemes"
                   :key="theme.name"
                   class="theme-item"
-                  :class="{ active: config.wenyanTheme === theme.name }"
+                  :class="{
+                    active: config.wenyanTheme === theme.key,
+                  }"
                   @click="selectTheme(theme)"
                 >
                   <div class="theme-preview-image">
@@ -121,7 +123,10 @@
             </div>
           </div>
           <div class="config-actions">
-            <el-button type="primary" size="small" @click="saveConfig">
+            <el-button @click="configDialogVisible = false">
+              {{ t("common.cancel") }}
+            </el-button>
+            <el-button type="primary" @click="saveConfig">
               {{ t("skillapps.save") }}
             </el-button>
           </div>
@@ -361,7 +366,7 @@ const loadMoreThemes = () => {
 const wenyanCustomCss = ref(false);
 // 选择主题
 const selectTheme = (item) => {
-  config.value.wenyanTheme = item.file || item.name;
+  config.value.wenyanTheme = item.key;
   config.value.wenyanCustomCss = !item.buildIn;
 };
 
@@ -382,6 +387,7 @@ initThemeList();
 
 // 打开配置对话框
 const openConfigDialog = () => {
+  readConfig();
   configDialogVisible.value = true;
 };
 
@@ -478,6 +484,7 @@ const readConfig = async () => {
     );
 
     config.value = JSON.parse(res);
+    config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
 
     console.log("config", config);
   } catch (error) {
@@ -496,11 +503,11 @@ const readConfig = async () => {
 const saveConfig = async () => {
   console.log("config.value", config.value);
   try {
-    // await Opencode.write_workspace_file_content(
-    //   APPID,
-    //   "config.json",
-    //   JSON.stringify(config.value, null, 2),
-    // );
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(config.value, null, 2),
+    );
     ElMessage.success(t("skillapps.configSaveSuccess"));
   } catch (error) {
     console.error("保存配置失败:", error);
@@ -1352,6 +1359,15 @@ onMounted(() => {
         background-clip: text;
       }
     }
+  }
+
+  .config-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
   }
 
   .theme-list-container {
