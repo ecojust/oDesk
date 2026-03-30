@@ -35,7 +35,7 @@
     </div>
 
     <!-- 发布配置 -->
-    <el-dialog v-model="configDialogVisible">
+    <el-dialog v-model="configDialogVisible" title="发布配置">
       <div class="config-section">
         <div class="config-header">
           {{ t("skillapps.configSettings") }}
@@ -1129,13 +1129,13 @@ onMounted(() => {
 
     .el-dialog__header {
       padding: 20px 24px 16px;
-      background: linear-gradient(135deg, #667eea, #764ba2);
+      // background: linear-gradient(135deg, #667eea, #764ba2);
       border-bottom: none;
 
       .el-dialog__title {
         font-size: 18px;
         font-weight: 700;
-        color: white;
+        // color: white;
       }
 
       .el-dialog__headerbtn {
@@ -1143,12 +1143,12 @@ onMounted(() => {
         right: 20px;
 
         .el-dialog__close {
-          color: rgba(255, 255, 255, 0.8);
+          // color: rgb(0, 0, 0);
           font-size: 20px;
           transition: all 0.2s ease;
 
           &:hover {
-            color: white;
+            // color: white;
             transform: scale(1.1);
           }
         }
@@ -1156,7 +1156,7 @@ onMounted(() => {
     }
 
     .el-dialog__body {
-      padding: 24px;
+      padding: 0 24px;
       background: #fafbfc;
     }
 
@@ -1394,51 +1394,63 @@ onMounted(() => {
     }
 
     .theme-list {
-      height: 200px;
+      height: 400px;
       overflow-y: auto;
       border: 1px solid #e0e0e0;
       border-radius: 8px;
       background: white;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px;
+      align-content: flex-start;
 
       .theme-item {
-        display: flex;
-        align-items: center;
-        padding: 12px;
+        position: relative;
+        width: calc(33.333% - 8px);
+        height: 240px;
+        border-radius: 12px;
+        overflow: hidden;
         cursor: pointer;
         transition: all 0.3s ease;
-        border-bottom: 1px solid #f0f0f0;
-
-        &:last-child {
-          border-bottom: none;
-        }
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 
         &:hover {
-          background: #f8f9fa;
+          transform: translateY(-4px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         &.active {
-          background: linear-gradient(135deg, #667eea, #764ba2);
-          color: white;
+          box-shadow:
+            0 0 0 3px #667eea,
+            0 8px 20px rgba(102, 126, 234, 0.3);
 
-          .theme-name {
+          &::after {
+            content: "✓";
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-          }
-
-          .theme-file {
-            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            font-weight: bold;
+            z-index: 10;
           }
         }
 
         .theme-preview-image {
-          width: 40px;
-          height: 40px;
-          margin-right: 12px;
-          border-radius: 6px;
-          overflow: hidden;
-          background: #f0f0f0;
-          display: flex;
-          align-items: center;
-          justify-content: center;
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, #667eea, #764ba2);
 
           img {
             width: 100%;
@@ -1447,29 +1459,48 @@ onMounted(() => {
           }
 
           .theme-placeholder {
-            font-size: 20px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
           }
         }
 
         .theme-info {
-          flex: 1;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          right: 0;
+          padding: 12px;
+          background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+          color: white;
 
           .theme-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
+            color: white;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
 
           .theme-file {
-            font-size: 12px;
-            color: #999;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.8);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
           }
         }
       }
 
       .theme-loading {
-        padding: 12px;
+        grid-column: span 2;
+        padding: 20px;
         text-align: center;
         color: #999;
         font-size: 14px;

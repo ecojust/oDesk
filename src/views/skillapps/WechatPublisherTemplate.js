@@ -3,14 +3,14 @@ const styleList = [
     key: "default",
     buildIn: true,
     label: "default",
-    description: "内置皮肤",
+    description: "内置皮肤default",
     icon: "📄",
   },
   {
     key: "orangeheart",
     buildIn: true,
     label: "orangeHeart",
-    description: "内置皮肤",
+    description: "内置皮肤orangeHeart",
 
     icon: "🧡",
   },
@@ -18,7 +18,7 @@ const styleList = [
     key: "rainbow",
     buildIn: true,
     label: "rainbow",
-    description: "内置皮肤",
+    description: "内置皮肤rainbow",
 
     icon: "🌈",
   },
@@ -26,7 +26,7 @@ const styleList = [
     key: "lapis",
     buildIn: true,
     label: "lapis",
-    description: "内置皮肤",
+    description: "内置皮肤lapis",
 
     icon: "💎",
   },
@@ -34,7 +34,7 @@ const styleList = [
     key: "pie",
     buildIn: true,
     label: "pie",
-    description: "默认皮肤",
+    description: "默认皮肤pie",
 
     icon: "🥧",
   },
@@ -42,7 +42,7 @@ const styleList = [
     key: "maize",
     buildIn: true,
     label: "maize",
-    description: "默认皮肤",
+    description: "默认皮肤maize",
 
     icon: "🌽",
   },
@@ -50,15 +50,14 @@ const styleList = [
     key: "purple",
     buildIn: true,
     label: "purple",
-    description: "默认皮肤",
-
+    description: "默认皮肤purple",
     icon: "💜",
   },
   {
     key: "phycat",
     buildIn: true,
     label: "phyCat",
-    description: "默认皮肤",
+    description: "默认皮肤phycat",
 
     icon: "🐱",
   },
@@ -67,7 +66,7 @@ const styleList = [
     key: "arcade",
     file: "style-arcade",
     description: "街机游戏风",
-    preview: "/preview/themes/arcade.png",
+    preview: "/wechatTemplate/image.png",
   },
   {
     key: "artdeco",
