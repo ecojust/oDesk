@@ -186,7 +186,8 @@
     "searchingArticles": "正在搜索文章...",
     "polishingArticles": "正在润色文章...",
     "aiGeneratingSearch": "AI正在根据您的关键词生成文章内容",
-    "aiGeneratingPolish": "AI正在根据您的概括生成优质文章"
+    "aiGeneratingPolish": "AI正在根据您的概括生成优质文章",
+    "searchTheme": "搜索主题..."
   },
   "staticWallpaper": {
     "enableLoop": "开启循环",

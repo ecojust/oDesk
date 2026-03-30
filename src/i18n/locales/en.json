@@ -176,7 +176,8 @@
     "searchingArticles": "Searching articles...",
     "polishingArticles": "Polishing articles...",
     "aiGeneratingSearch": "AI is generating article content based on your keywords",
-    "aiGeneratingPolish": "AI is generating quality article based on your summary"
+    "aiGeneratingPolish": "AI is generating quality article based on your summary",
+    "searchTheme": "Search themes..."
   },
   "staticWallpaper": {
     "enableLoop": "Enable Loop",

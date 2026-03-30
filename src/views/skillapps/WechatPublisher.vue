@@ -35,7 +35,7 @@
     </div>
 
     <!-- 发布配置 -->
-    <el-dialog>
+    <el-dialog v-model="configDialogVisible">
       <div class="config-section">
         <div class="config-header">
           {{ t("skillapps.configSettings") }}
@@ -81,22 +81,44 @@
           </div>
           <div class="config-item">
             <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
-            <el-select
-              v-model="config.wenyanTheme"
-              class="config-input theme-select"
-            >
-              <el-option
-                v-for="theme in themeOptions"
-                :key="theme.value"
-                :value="theme.value"
-                :label="theme.label"
+            <div class="theme-list-container">
+              <div class="theme-search">
+                <input
+                  type="text"
+                  v-model="themeSearchQuery"
+                  :placeholder="t('skillapps.searchTheme')"
+                  class="theme-search-input"
+                />
+              </div>
+              <div
+                class="theme-list"
+                ref="themeListRef"
+                @scroll="handleThemeScroll"
               >
-                <span class="theme-option">
-                  <span class="theme-icon">{{ theme.icon }}</span>
-                  <span class="theme-label">{{ theme.label }}</span>
-                </span>
-              </el-option>
-            </el-select>
+                <div
+                  v-for="theme in visibleThemes"
+                  :key="theme.name"
+                  class="theme-item"
+                  :class="{ active: config.wenyanTheme === theme.name }"
+                  @click="selectTheme(theme)"
+                >
+                  <div class="theme-preview-image">
+                    <img
+                      :src="theme.preview"
+                      :alt="theme.description"
+                      @error="handleImageError"
+                    />
+                  </div>
+                  <div class="theme-info">
+                    <div class="theme-name">{{ theme.description }}</div>
+                    <div class="theme-file">{{ theme.name }}</div>
+                  </div>
+                </div>
+                <div v-if="loadingMoreThemes" class="theme-loading">
+                  <span>{{ t("skillapps.loading") }}</span>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="config-actions">
             <el-button type="primary" size="small" @click="saveConfig">
@@ -112,7 +134,17 @@
       <!-- 左侧内容编辑面板 -->
       <div class="editor-panel">
         <div class="panel-header">
-          <h3>{{ t("skillapps.contentEditor") }}</h3>
+          <div class="header-left">
+            <h3>{{ t("skillapps.contentEditor") }}</h3>
+            <el-button
+              class="config-btn"
+              :icon="Setting"
+              size="small"
+              @click="openConfigDialog"
+            >
+              {{ t("skillapps.configSettings") }}
+            </el-button>
+          </div>
           <!-- 模式切换开关 -->
           <div class="mode-switch">
             <span class="mode-label" :class="{ active: !isPolishMode }">{{
@@ -216,10 +248,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
-import Opencode from "@/service/shell/opencode";
-import { Search, Edit } from "@element-plus/icons-vue";
+import Opencode, { wechat_config } from "@/service/shell/opencode";
+import { Search, Edit, Setting } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
@@ -252,6 +284,106 @@ const isPublishing = ref(false);
 // 润色模式相关
 const isPolishMode = ref(false);
 const polishContent = ref("");
+
+// 配置相关
+const configDialogVisible = ref(false);
+const showAppId = ref(false);
+const showAppSecret = ref(false);
+const config = ref({
+  wechat: {
+    appid: "",
+    appsecret: "",
+  },
+  wenyanTheme: "default",
+  wenyanCustomCss: false,
+});
+
+// 主题相关
+const themeSearchQuery = ref("");
+const themeListRef = ref(null);
+const visibleThemes = ref([]);
+const loadingMoreThemes = ref(false);
+const themePageSize = 10;
+const themeCurrentPage = ref(1);
+
+// 初始化主题列表
+const initThemeList = () => {
+  const filtered = styleList.filter(
+    (style) =>
+      style.description
+        .toLowerCase()
+        .includes(themeSearchQuery.value.toLowerCase()) ||
+      style.name.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
+  );
+  visibleThemes.value = filtered.slice(
+    0,
+    themePageSize * themeCurrentPage.value,
+  );
+};
+
+// 主题滚动处理
+const handleThemeScroll = (e) => {
+  const { scrollTop, scrollHeight, clientHeight } = e.target;
+  if (
+    scrollTop + clientHeight >= scrollHeight - 50 &&
+    !loadingMoreThemes.value
+  ) {
+    loadMoreThemes();
+  }
+};
+
+// 加载更多主题
+const loadMoreThemes = () => {
+  if (loadingMoreThemes.value) return;
+
+  const filtered = styleList.filter(
+    (style) =>
+      style.description
+        .toLowerCase()
+        .includes(themeSearchQuery.value.toLowerCase()) ||
+      style.name.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
+  );
+
+  const nextPage = themeCurrentPage.value + 1;
+  const nextThemes = filtered.slice(0, nextPage * themePageSize);
+
+  if (nextThemes.length > visibleThemes.value.length) {
+    loadingMoreThemes.value = true;
+    // 模拟加载延迟
+    setTimeout(() => {
+      visibleThemes.value = nextThemes;
+      themeCurrentPage.value = nextPage;
+      loadingMoreThemes.value = false;
+    }, 300);
+  }
+};
+
+const wenyanCustomCss = ref(false);
+// 选择主题
+const selectTheme = (item) => {
+  config.value.wenyanTheme = item.file || item.name;
+  config.value.wenyanCustomCss = !item.buildIn;
+};
+
+// 图片错误处理
+const handleImageError = (e) => {
+  e.target.style.display = "none";
+  e.target.parentElement.innerHTML = '<div class="theme-placeholder">🎨</div>';
+};
+
+// 监听搜索查询变化
+watch(themeSearchQuery, () => {
+  themeCurrentPage.value = 1;
+  initThemeList();
+});
+
+// 初始化主题列表
+initThemeList();
+
+// 打开配置对话框
+const openConfigDialog = () => {
+  configDialogVisible.value = true;
+};
 
 const handleSearch = async () => {
   if (!question.value.trim()) return;
@@ -289,7 +421,7 @@ const handlePolish = async () => {
     const polishPrompt = `
     ${polishContent.value}
     The above is the article content the user wants to publish, use article-writer to write a WeChat official account article, do not publish
-    
+
     `;
     const answer = await Opencode.send_message(polishPrompt);
     console.log("AI Response:", answer);
@@ -338,9 +470,50 @@ const handlePublish = async () => {
   }
 };
 
+const readConfig = async () => {
+  try {
+    const res = await Opencode.read_workspace_file_content(
+      APPID,
+      "config.json",
+    );
+
+    config.value = JSON.parse(res);
+
+    console.log("config", config);
+  } catch (error) {
+    config.value = wechat_config;
+
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(wechat_config),
+    );
+
+    console.log("config", error);
+  }
+};
+
+const saveConfig = async () => {
+  console.log("config.value", config.value);
+  try {
+    // await Opencode.write_workspace_file_content(
+    //   APPID,
+    //   "config.json",
+    //   JSON.stringify(config.value, null, 2),
+    // );
+    ElMessage.success(t("skillapps.configSaveSuccess"));
+  } catch (error) {
+    console.error("保存配置失败:", error);
+    // ElMessage.error("配置保存失败: " + error.message);
+  } finally {
+    configDialogVisible.value = false;
+  }
+};
+
 // 初始化
 onMounted(() => {
   activeWorkspace();
+  readConfig();
 });
 </script>
 
@@ -587,11 +760,33 @@ onMounted(() => {
         align-items: center;
         justify-content: space-between;
 
-        h3 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 700;
-          color: #333;
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+          }
+
+          .config-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            color: white;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+            &:hover {
+              background: linear-gradient(135deg, #5a6fd8, #6a4190);
+              transform: translateY(-1px);
+              box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+          }
         }
 
         // 模式切换开关样式
@@ -1124,6 +1319,146 @@ onMounted(() => {
     font-size: 12px;
     margin-left: 4px;
     color: #666;
+  }
+
+  .theme-select-container {
+    .theme-select {
+      width: 100%;
+    }
+
+    .theme-preview {
+      margin-top: 8px;
+      padding: 8px 12px;
+      background: linear-gradient(135deg, #f8f9fa, #ffffff);
+      border-radius: 8px;
+      border: 1px solid #e9ecef;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .preview-label {
+        font-size: 12px;
+        color: #666;
+        font-weight: 500;
+      }
+
+      .preview-theme {
+        font-size: 14px;
+        color: #333;
+        font-weight: 600;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+    }
+  }
+
+  .theme-list-container {
+    width: 100%;
+
+    .theme-search {
+      margin-bottom: 12px;
+
+      .theme-search-input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        outline: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        box-sizing: border-box;
+
+        &:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      }
+    }
+
+    .theme-list {
+      height: 200px;
+      overflow-y: auto;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      background: white;
+
+      .theme-item {
+        display: flex;
+        align-items: center;
+        padding: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border-bottom: 1px solid #f0f0f0;
+
+        &:last-child {
+          border-bottom: none;
+        }
+
+        &:hover {
+          background: #f8f9fa;
+        }
+
+        &.active {
+          background: linear-gradient(135deg, #667eea, #764ba2);
+          color: white;
+
+          .theme-name {
+            color: white;
+          }
+
+          .theme-file {
+            color: rgba(255, 255, 255, 0.8);
+          }
+        }
+
+        .theme-preview-image {
+          width: 40px;
+          height: 40px;
+          margin-right: 12px;
+          border-radius: 6px;
+          overflow: hidden;
+          background: #f0f0f0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .theme-placeholder {
+            font-size: 20px;
+          }
+        }
+
+        .theme-info {
+          flex: 1;
+
+          .theme-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+          }
+
+          .theme-file {
+            font-size: 12px;
+            color: #999;
+          }
+        }
+      }
+
+      .theme-loading {
+        padding: 12px;
+        text-align: center;
+        color: #999;
+        font-size: 14px;
+      }
+    }
   }
 
   @media (max-width: 768px) {

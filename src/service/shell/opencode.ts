@@ -324,6 +324,7 @@ const wechat_config = {
     appsecret: "",
   },
   wenyanTheme: "default",
+  wenyanCustomCss: false,
 };
 
 export { wechat_config };
