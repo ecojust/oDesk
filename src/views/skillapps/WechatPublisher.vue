@@ -34,6 +34,79 @@
       </div>
     </div>
 
+    <!-- 发布配置 -->
+    <el-dialog>
+      <div class="config-section">
+        <div class="config-header">
+          {{ t("skillapps.configSettings") }}
+        </div>
+        <div class="config-form">
+          <div class="config-item">
+            <label>{{ t("wechatPublisher.appid") }}:</label>
+            <el-input
+              :type="showAppId ? 'text' : 'password'"
+              v-model="config.wechat.appid"
+              :placeholder="t('wechatPublisher.pleaseEnterAppid')"
+              class="config-input"
+            >
+              <template #suffix>
+                <el-icon
+                  class="password-eye-icon"
+                  @click="showAppId = !showAppId"
+                >
+                  <View v-if="showAppId" />
+                  <Hide v-else />
+                </el-icon>
+              </template>
+            </el-input>
+          </div>
+          <div class="config-item">
+            <label>{{ t("wechatPublisher.appsecret") }}:</label>
+            <el-input
+              :type="showAppSecret ? 'text' : 'password'"
+              v-model="config.wechat.appsecret"
+              :placeholder="t('wechatPublisher.pleaseEnterAppsecret')"
+              class="config-input"
+            >
+              <template #suffix>
+                <el-icon
+                  class="password-eye-icon"
+                  @click="showAppSecret = !showAppSecret"
+                >
+                  <View v-if="showAppSecret" />
+                  <Hide v-else />
+                </el-icon>
+              </template>
+            </el-input>
+          </div>
+          <div class="config-item">
+            <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
+            <el-select
+              v-model="config.wenyanTheme"
+              class="config-input theme-select"
+            >
+              <el-option
+                v-for="theme in themeOptions"
+                :key="theme.value"
+                :value="theme.value"
+                :label="theme.label"
+              >
+                <span class="theme-option">
+                  <span class="theme-icon">{{ theme.icon }}</span>
+                  <span class="theme-label">{{ theme.label }}</span>
+                </span>
+              </el-option>
+            </el-select>
+          </div>
+          <div class="config-actions">
+            <el-button type="primary" size="small" @click="saveConfig">
+              {{ t("skillapps.save") }}
+            </el-button>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
+
     <!-- 中间内容区域 -->
     <div class="content-section">
       <!-- 左侧内容编辑面板 -->
@@ -150,6 +223,7 @@ import { Search, Edit } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
+import styleList from "./WechatPublisherTemplate";
 
 const { t } = useI18n();
 const APPID = "oDesk-wechat-publisher";
