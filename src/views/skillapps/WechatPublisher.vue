@@ -518,9 +518,10 @@ const saveConfig = async () => {
 };
 
 // 初始化
-onMounted(() => {
-  activeWorkspace();
-  readConfig();
+onMounted(async () => {
+  await activeWorkspace();
+  await readConfig();
+  await searchFiles();
 });
 </script>
 
