@@ -82,14 +82,14 @@
           <div class="config-item">
             <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
             <div class="theme-list-container">
-              <div class="theme-search">
+              <!-- <div class="theme-search">
                 <input
                   type="text"
                   v-model="themeSearchQuery"
                   :placeholder="t('skillapps.searchTheme')"
                   class="theme-search-input"
                 />
-              </div>
+              </div> -->
               <div
                 class="theme-list"
                 ref="themeListRef"
@@ -385,6 +385,11 @@ watch(themeSearchQuery, () => {
 // 初始化主题列表
 initThemeList();
 
+const clearDraft = async () => {
+  await Opencode.write_workspace_file_content(APPID, "draft.md", "");
+  await Opencode.write_workspace_file_content(APPID, "draft.html", "");
+};
+
 // 打开配置对话框
 const openConfigDialog = () => {
   readConfig();
@@ -396,6 +401,7 @@ const handleSearch = async () => {
   isLoading.value = true;
   try {
     console.log("Starting article search...");
+    await clearDraft();
     const searchContent = `
       ${question.value}
       Please search for relevant content based on the above requirements, do not publish
@@ -424,6 +430,8 @@ const handlePolish = async () => {
   isLoading.value = true;
   try {
     console.log("Starting article polishing...");
+    await clearDraft();
+
     const polishPrompt = `
     ${polishContent.value}
     The above is the article content the user wants to publish, use article-writer to write a WeChat official account article, do not publish
@@ -485,6 +493,7 @@ const readConfig = async () => {
 
     config.value = JSON.parse(res);
     config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
+    config.value.thumb = config.value.thumb || "";
 
     console.log("config", config);
   } catch (error) {
@@ -1408,38 +1417,38 @@ onMounted(async () => {
 
       .theme-item {
         position: relative;
-        width: calc(33.333% - 8px);
-        height: 240px;
-        border-radius: 12px;
+        width: calc(25% - 9px);
+        height: 150px;
+        border-radius: 8px;
         overflow: hidden;
         cursor: pointer;
         transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
         &:hover {
-          transform: translateY(-4px);
-          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+          transform: translateY(-3px);
+          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
         }
 
         &.active {
           box-shadow:
-            0 0 0 3px #667eea,
-            0 8px 20px rgba(102, 126, 234, 0.3);
+            0 0 0 2px #667eea,
+            0 6px 16px rgba(102, 126, 234, 0.3);
 
           &::after {
             content: "✓";
             position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 24px;
-            height: 24px;
+            top: 6px;
+            right: 6px;
+            width: 20px;
+            height: 20px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 14px;
+            font-size: 12px;
             font-weight: bold;
             z-index: 10;
           }
@@ -1465,7 +1474,7 @@ onMounted(async () => {
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 24px;
             background: linear-gradient(135deg, #667eea, #764ba2);
           }
         }
@@ -1475,12 +1484,12 @@ onMounted(async () => {
           bottom: 0;
           left: 0;
           right: 0;
-          padding: 12px;
+          padding: 8px;
           background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
           color: white;
 
           .theme-name {
-            font-size: 13px;
+            font-size: 11px;
             font-weight: 600;
             color: white;
             margin-bottom: 2px;
@@ -1490,7 +1499,7 @@ onMounted(async () => {
           }
 
           .theme-file {
-            font-size: 11px;
+            font-size: 10px;
             color: rgba(255, 255, 255, 0.8);
             white-space: nowrap;
             overflow: hidden;

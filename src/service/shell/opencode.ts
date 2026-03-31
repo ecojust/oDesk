@@ -325,6 +325,7 @@ const wechat_config = {
   },
   wenyanTheme: "default",
   wenyanCustomCss: false,
+  thumb: "", //"ai"
 };
 
 export { wechat_config };
