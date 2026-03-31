@@ -58,7 +58,6 @@ const styleList = [
     buildIn: true,
     label: "phyCat",
     description: "默认皮肤phycat",
-
     icon: "🐱",
   },
   //diy
@@ -80,12 +79,12 @@ const styleList = [
     description: "工程蓝图风",
     preview: "/preview/themes/blueprint.png",
   },
-  {
-    key: "brutalist",
-    file: "style-brutalist",
-    description: "极简粗野主义",
-    preview: "/preview/themes/brutalist.png",
-  },
+  // {
+  //   key: "brutalist",
+  //   file: "style-brutalist",
+  //   description: "极简粗野主义",
+  //   preview: "/preview/themes/brutalist.png",
+  // },
   {
     key: "carbon",
     file: "style-carbon",
