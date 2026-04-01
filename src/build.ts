@@ -1,6 +1,6 @@
 // 构建版本信息
 export const BUILD_INFO = {
   version: "0.1.0",
-  buildTime: "2026-03-31",
-  buildNumber: "1774968270",
+  buildTime: "2026-04-01",
+  buildNumber: "1775041090",
 };

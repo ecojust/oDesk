@@ -109,6 +109,7 @@
             <el-icon><Document /></el-icon>
             {{ t("stage.viewLogs") }}
           </el-button>
+          <p class="github-tip">github: https://github.com/ecojust/oDesk</p>
         </div>
       </div>
     </el-dialog>
@@ -356,7 +357,7 @@ const testKillOpenServe = async () => {
     .about-button {
       color: rgba(0, 0, 0, 0.6);
       transition: all 0.3s ease;
-      margin: 0 4px;
+      margin: 0 8px 0 4px;
       cursor: pointer;
     }
     .about-button:hover {
@@ -436,6 +437,12 @@ const testKillOpenServe = async () => {
       padding-top: 16px;
       border-top: 1px solid #ebeef5;
       text-align: center;
+      .github-tip {
+        margin-top: 12px;
+        color: #909399;
+        font-size: 13px;
+        font-weight: 900;
+      }
     }
   }
 }
