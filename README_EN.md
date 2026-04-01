@@ -32,6 +32,18 @@
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
 
+<p align="center">
+  <img src="./preview/skillapps/1.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/2.png" width="45%" style="margin: 5px;">
+</p>
+<p align="center">
+  <img src="./preview/skillapps/3.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/4.png" width="45%" style="margin: 5px;">
+</p>
+<p align="center">
+  <img src="./preview/skillapps/5.png" width="45%" style="margin: 5px;">
+</p>
+
 ### 2. Static Wallpapers
 
 - Browse local wallpaper list with thumbnail preview

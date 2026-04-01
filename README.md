@@ -33,13 +33,15 @@
 - **实时连接**：工作区状态实时监控，支持会话管理和文件操作
 
 <p align="center">
-
-<img src="./preview/skillapps/1.png" width="40%" >
-<img src="./preview/skillapps/2.png" width="40%" >
-<img src="./preview/skillapps/3.png" width="40%" >
-<img src="./preview/skillapps/4.png" width="40%" >
-<img src="./preview/skillapps/5.png" width="40%" >
-
+  <img src="./preview/skillapps/1.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/2.png" width="45%" style="margin: 5px;">
+</p>
+<p align="center">
+  <img src="./preview/skillapps/3.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/4.png" width="45%" style="margin: 5px;">
+</p>
+<p align="center">
+  <img src="./preview/skillapps/5.png" width="45%" style="margin: 5px;">
 </p>
 
 ### 2. 静态壁纸
