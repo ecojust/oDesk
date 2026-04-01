@@ -170,26 +170,22 @@
         <div class="panel-content">
           <!-- 搜索模式输入 -->
           <div class="search-container" v-if="!isPolishMode">
-            <div class="input-group">
-              <input
-                type="text"
-                :placeholder="t('skillapps.enterSearchContent')"
-                class="search-input"
-                v-model="question"
-                @keyup.enter="handleSearch"
-              />
-              <button
-                class="search-btn"
-                @click="handleSearch"
-                :disabled="isLoading"
-              >
-                <i class="icon" :class="{ loading: isLoading }">🔍</i>
-                <span v-if="isLoading" class="loading-text">{{
-                  t("skillapps.searching")
-                }}</span>
-                <span v-else>{{ t("skillapps.search") }}</span>
-              </button>
-            </div>
+            <textarea
+              class="search-textarea"
+              v-model="question"
+              :placeholder="t('skillapps.enterSearchContent')"
+            ></textarea>
+            <button
+              class="search-btn"
+              @click="handleSearch"
+              :disabled="isLoading || !question.trim()"
+            >
+              <i class="icon" :class="{ loading: isLoading }">🔍</i>
+              <span v-if="isLoading" class="loading-text">{{
+                t("skillapps.searching")
+              }}</span>
+              <span v-else>{{ t("skillapps.search") }}</span>
+            </button>
           </div>
 
           <!-- 润色模式输入 -->
@@ -833,52 +829,61 @@ onMounted(async () => {
 
         // 搜索模式容器样式
         .search-container {
-          .input-group {
-            display: flex;
-            align-items: center;
-            gap: 12px;
+          display: flex;
+          flex-direction: column;
+          height: 100%;
 
-            .search-input {
-              flex: 1;
-              padding: 12px 16px;
-              border: 2px solid #e0e0e0;
-              border-radius: 12px;
-              outline: none;
-              font-size: 14px;
-              transition: all 0.3s ease;
+          .search-textarea {
+            flex: 1;
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            outline: none;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: none;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
 
-              &:focus {
-                border-color: #667eea;
-                box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-              }
+            &:focus {
+              border-color: #667eea;
+              box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
             }
 
-            .search-btn {
-              padding: 12px 20px;
-              background: linear-gradient(135deg, #667eea, #5a6fd8);
-              color: white;
-              border: none;
-              border-radius: 12px;
-              cursor: pointer;
-              font-size: 14px;
-              font-weight: 600;
-              transition: all 0.3s ease;
-              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-              display: inline-flex;
-              align-items: center;
-              gap: 6px;
-              white-space: nowrap;
+            &::placeholder {
+              color: #999;
+            }
+          }
 
-              &:hover:not(:disabled) {
-                background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
-                transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-              }
+          .search-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #667eea, #5a6fd8);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 
-              &:disabled {
-                opacity: 0.7;
-                cursor: not-allowed;
-              }
+            &:hover:not(:disabled) {
+              background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+              transform: translateY(-1px);
+              box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+            }
+
+            &:disabled {
+              opacity: 0.7;
+              cursor: not-allowed;
+              background: #ccc;
             }
           }
         }
