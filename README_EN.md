@@ -25,7 +25,9 @@
 - **Built-in Apps**:
   - **Schedule Manager**: Intelligent scheduling tool with customizable employee count and shift settings, exportable to Excel
   - **Wechat Publisher**: WeChat public account article publishing tool with AI content generation, multiple themes, and one-click publishing
-  - **Music Download**: Music search and download tool with queue management and local playback
+  - **Travel Plan**: Personalized travel plan generator with multiple visual styles and image types
+  - **Movie Finder**: Movie search tool for quickly finding interesting films
+  - **Ancien Poetry**: Explore the lives and classic verses of poetry masters, experiencing traditional cultural charm
 - **Workspace Management**: Create and manage development workspaces with opencode service execution
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
@@ -61,7 +63,9 @@
 1. **Skill Apps**: Access various skill apps in the "SKILL-APPS" tab
    - **Schedule Manager**: Enter employee count, month, and shift requirements for AI to generate optimal schedules, exportable to Excel
    - **Wechat Publisher**: Configure WeChat public account AppID and AppSecret, search articles by keywords, AI generates content for one-click publishing
-   - **Music Download**: Search music, manage download queue, local playback support
+   - **Travel Plan**: Enter destination, days and other requirements for AI to generate personalized travel plans with multiple visual styles
+   - **Movie Finder**: Quickly search movie information and find interesting films
+   - **Ancien Poetry**: Explore the lives and classic verses of ancient and modern poetry masters, experiencing traditional cultural charm
 2. **Static Wallpapers**: Browse local wallpapers, download cloud wallpapers, and set slideshow in the "Static Wallpapers" tab
 3. **Shader Wallpapers**: Create, edit, and preview GLSL shaders in the "Shader Wallpapers" tab
 4. **HTML Wallpapers**: Set any webpage as wallpaper with real-time editing preview in the "Web Wallpapers" tab
