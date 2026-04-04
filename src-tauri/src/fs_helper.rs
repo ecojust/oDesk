@@ -245,11 +245,11 @@ pub fn unzip_file_to_path(
             }
         };
 
-        println!("unzip file: {} -> {}", file.name(), outpath.display());
+        // println!("unzip file: {} -> {}", file.name(), outpath.display());
 
         // 创建目录（如果文件在子目录中）
         if let Some(p) = outpath.parent() {
-            println!("parent path: {}", p.display());
+            // println!("parent path: {}", p.display());
             if !p.exists() {
                 println!("creating parent dir: {}", p.display());
                 fs::create_dir_all(&p).map_err(|e| format!("Failed to create directory: {}", e))?;
@@ -258,14 +258,14 @@ pub fn unzip_file_to_path(
             println!("no parent, outpath: {}", outpath.display());
         }
 
-        println!("start write file -> {}", outpath.display());
+        // println!("start write file -> {}", outpath.display());
 
         // 检查是否为目录
         if file.is_dir() {
             // 创建目录结构
             fs::create_dir_all(&outpath)
                 .map_err(|e| format!("Failed to create directory: {}", e))?;
-            println!("unzip success: {}", outpath.display());
+            println!("unzip folder success: {}", outpath.display());
         } else {
             // 写入文件
             let mut outfile =
@@ -273,7 +273,7 @@ pub fn unzip_file_to_path(
             std::io::copy(&mut file, &mut outfile)
                 .map_err(|e| format!("Failed to write file: {}", e))?;
 
-            println!("unzip success: {}", outpath.display());
+            // println!("unzip success: {}", outpath.display());
         }
     }
 

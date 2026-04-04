@@ -61,7 +61,7 @@ pub async fn unzip_skill_to_workspace(
 
     unzip_file_to_path(
         skill_zip.to_string_lossy().to_string(),
-        skill_folder.to_string_lossy().to_string(),
+        skill_target_path.to_string_lossy().to_string(),
     )
     .unwrap();
 
@@ -348,11 +348,14 @@ pub async fn execute_opencode_serve(
         #[cfg(not(target_os = "windows"))]
         let output = Command::new("zsh")
             .args(["-l", "-i", "-c", "opencode serve"])
-            .env("PATH", format!(
-                "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{}/.cargo/bin:{}/.local/bin",
-                std::env::var("HOME").unwrap_or_default(),
-                std::env::var("HOME").unwrap_or_default()
-            ))
+            .env(
+                "PATH",
+                format!(
+                    "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{}/.cargo/bin:{}/.local/bin",
+                    std::env::var("HOME").unwrap_or_default(),
+                    std::env::var("HOME").unwrap_or_default()
+                ),
+            )
             .current_dir(&target_workspace)
             .output()
             .await;

@@ -35,9 +35,13 @@ export function useSkillApp(appId, skillls = []) {
       skills.value = skillsList1;
 
       // 安装技能
+
+      console.log("-----------install skill start---------------------");
       for (const skill of skillls) {
+        console.log(`-----${skill}-----`);
         await Opencode.unzip_skill_to_workspace(skill, appId);
       }
+      console.log("-----------install skill end---------------------");
 
       // 扫描技能列表
       const skillsList2 = await Opencode.scan_worksapce_skills(appId, {

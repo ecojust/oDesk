@@ -192,13 +192,13 @@
           <div class="polish-container" v-else>
             <textarea
               class="polish-textarea"
-              v-model="polishContent"
+              v-model="question"
               :placeholder="t('skillapps.enterPolishContent')"
             ></textarea>
             <button
               class="polish-btn"
               @click="handlePolish"
-              :disabled="isLoading || !polishContent.trim()"
+              :disabled="isLoading || !question.trim()"
             >
               <i class="icon" :class="{ loading: isLoading }">✨</i>
               <span v-if="isLoading" class="loading-text">{{
@@ -284,7 +284,6 @@ const isPublishing = ref(false);
 
 // 润色模式相关
 const isPolishMode = ref(false);
-const polishContent = ref("");
 
 // 配置相关
 const configDialogVisible = ref(false);
@@ -394,6 +393,10 @@ const openConfigDialog = () => {
 
 const handleSearch = async () => {
   if (!question.value.trim()) return;
+
+  config.value.prompt = question.value;
+  await saveConfig();
+
   isLoading.value = true;
   try {
     console.log("Starting article search...");
@@ -414,10 +417,12 @@ const handleSearch = async () => {
 };
 
 const handlePolish = async () => {
-  if (!polishContent.value.trim()) return;
+  if (!question.value.trim()) return;
 
+  config.value.prompt = question.value;
+  await saveConfig();
   // 检查字数是否小于60
-  const contentLength = polishContent.value.trim().length;
+  const contentLength = question.value.trim().length;
   if (contentLength < 60) {
     ElMessage.warning(t("skillapps.polishMinLength", { count: contentLength }));
     return;
@@ -429,7 +434,7 @@ const handlePolish = async () => {
     await clearDraft();
 
     const polishPrompt = `
-    ${polishContent.value}
+    ${question.value}
     The above is the article content the user wants to publish, use article-writer to write a WeChat official account article, do not publish
 
     `;
@@ -490,6 +495,8 @@ const readConfig = async () => {
     config.value = JSON.parse(res);
     config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
     config.value.thumb = config.value.thumb || "";
+    config.value.prompt = config.value.prompt || "";
+    question.value = config.value.prompt;
 
     console.log("config", config);
   } catch (error) {
