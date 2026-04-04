@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 旅行计划预览弹窗 -->
@@ -244,6 +245,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, ["travel-map"]);
 
 // 响应式数据

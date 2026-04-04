@@ -1,4 +1,4 @@
-import { ref, onBeforeUnmount } from "vue";
+import { ref, onBeforeUnmount, onMounted } from "vue";
 import Opencode from "@/service/shell/opencode";
 import { ElMessage } from "element-plus";
 
@@ -14,6 +14,33 @@ export function useSkillApp(appId, skillls = []) {
   const skills = ref([]);
   const sessionId = ref("");
   const isConnected = ref(false);
+
+  const definePermission = async () => {
+    const defaultConfig = {
+      $schema: "https://opencode.ai/config.json",
+      permission: {
+        read: {
+          "*": "allow",
+        },
+        edit: {
+          "*": "allow",
+        },
+      },
+    };
+
+    await Opencode.write_workspace_file_content(
+      appId,
+      "opencode.json",
+      JSON.stringify(defaultConfig),
+    );
+  };
+
+  const openWorkspace = async () => {
+    ElMessage.info(`即将打开工作区：${appId}`);
+
+    console.log(`即将打开工作区：${appId}`);
+    await Opencode.open_workspace(appId);
+  };
 
   /**
    * 激活工作区
@@ -108,6 +135,10 @@ export function useSkillApp(appId, skillls = []) {
     await Opencode.killAllOpencodeServer();
   };
 
+  onMounted(() => {
+    definePermission();
+  });
+
   // 组件卸载时清理
   onBeforeUnmount(async () => {
     await cleanup();
@@ -125,5 +156,6 @@ export function useSkillApp(appId, skillls = []) {
     resetSkills,
     selectSkill,
     cleanup,
+    openWorkspace,
   };
 }

@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 中间内容区域 -->
@@ -34,6 +35,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, ["movie-resource-finder"]);
 const APPID = "oDesk-skill-app";
 

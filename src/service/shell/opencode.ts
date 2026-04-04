@@ -15,6 +15,19 @@ export default class Opencode {
     await Opencode.new_session();
   }
 
+  static async openWorkspace(workspace:string){
+     try {
+      const result = await invoke("workspace_file_insert_text", {
+        workspace,
+      });
+      console.log(result);
+      return result;
+    } catch (e) {
+      // alert("Failed to workspace_file_insert_text: " + e);
+      throw e;
+    }
+  }
+
   static async send_message(message: string) {
     const result = await RequestService.postBody({
       url: `http://127.0.0.1:4096/session/${Opencode.sessionId}/message`,

@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 搜索Loading状态 -->
@@ -271,6 +272,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, [
   "topic-searcher",
   "wechat-publisher",

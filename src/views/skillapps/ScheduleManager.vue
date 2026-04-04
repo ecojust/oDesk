@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 原有的排班表预览弹窗 -->
@@ -198,6 +199,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, ["schedule-manager"]);
 
 // 响应式数据

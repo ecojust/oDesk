@@ -69,13 +69,22 @@
         <div class="skills-list" v-if="skills.length > 0">
           <div class="skills-list-header">
             {{ t("skillsDialog.availableSkills") }}
-            <button
-              class="reset-skills-btn"
-              @click="$emit('resetSkills')"
-              :title="t('skillsDialog.resetSkills')"
-            >
-              🔄
-            </button>
+            <div class="header-actions">
+              <button
+                class="debug-btn"
+                @click="$emit('openWorkspace')"
+                title="打开工作空间目录"
+              >
+                📂
+              </button>
+              <button
+                class="reset-skills-btn"
+                @click="$emit('resetSkills')"
+                :title="t('skillsDialog.resetSkills')"
+              >
+                🔄
+              </button>
+            </div>
           </div>
           <div class="skill-cards">
             <div
@@ -126,7 +135,7 @@ defineProps({
   },
 });
 
-defineEmits(["reconnect", "resetSkills", "selectSkill"]);
+defineEmits(["reconnect", "resetSkills", "selectSkill", "openWorkspace"]);
 
 const skillsDialogVisible = ref(false);
 
@@ -374,8 +383,38 @@ const handleSkillsDialogClose = () => {
         border-radius: 2px;
       }
 
-      .reset-skills-btn {
+      .header-actions {
         margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      .debug-btn {
+        background: linear-gradient(135deg, #10b981, #059669);
+        border: none;
+        color: white;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+
+        &:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        &:active {
+          transform: scale(0.95);
+        }
+      }
+
+      .reset-skills-btn {
         background: linear-gradient(135deg, #667eea, #764ba2);
         border: none;
         color: white;

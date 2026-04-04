@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 诗人生平预览弹窗 -->
@@ -128,6 +129,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, ["create-timeline-webpage"]);
 
 // 响应式数据

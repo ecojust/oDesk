@@ -8,6 +8,7 @@
       @reconnect="activeWorkspace"
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
+      @openWorkspace="openWorkspace"
     />
 
     <!-- 搜索Loading状态 -->
@@ -26,9 +27,6 @@
     <div class="content-section">
       <!-- 搜索和结果面板 -->
       <div class="search-panel">
-        <div class="panel-header">
-          <h3>电影搜索</h3>
-        </div>
         <div class="panel-content">
           <!-- 搜索容器 -->
           <div class="search-container">
@@ -108,6 +106,7 @@ const {
   activeWorkspace,
   resetSkills,
   selectSkill,
+  openWorkspace,
 } = useSkillApp(APPID, ["movie-resource-finder"]);
 
 // 响应式数据
@@ -213,7 +212,7 @@ const searchFiles = async () => {
 
 // 初始化
 onMounted(() => {
-// Opencode.open_workspace(APPID)
+  // Opencode.open_workspace(APPID)
   searchFiles();
   activeWorkspace();
 });
