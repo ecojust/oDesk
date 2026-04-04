@@ -102,6 +102,11 @@
         "title": "诗词大师",
         "description": "探索诗词大师的生平与经典名句",
         "category": "文化工具"
+      },
+      "graphicalRecipes": {
+        "title": "菜品制作图解",
+        "description": "智能生成菜品详细制作步骤图示",
+        "category": "生活工具"
       }
     },
     "launch": "启动",

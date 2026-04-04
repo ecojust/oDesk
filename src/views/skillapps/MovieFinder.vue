@@ -213,7 +213,7 @@ const searchFiles = async () => {
 
 // 初始化
 onMounted(() => {
-Opencode.open_workspace(APPID)
+// Opencode.open_workspace(APPID)
   searchFiles();
   activeWorkspace();
 });

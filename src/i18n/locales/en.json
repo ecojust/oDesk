@@ -92,6 +92,11 @@
         "title": "Poetry Masters",
         "description": "Explore the biographies and classic verses of poetry masters",
         "category": "Cultural Tools"
+      },
+      "graphicalRecipes": {
+        "title": "Graphical Recipes",
+        "description": "AI powered step-by-step cooking instructions with visual illustrations",
+        "category": "Lifestyle Tools"
       }
     },
     "launch": "Launch",

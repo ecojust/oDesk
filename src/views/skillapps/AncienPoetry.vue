@@ -48,9 +48,6 @@
     <div class="content-section">
       <!-- 搜索和结果面板 -->
       <div class="search-panel">
-        <div class="panel-header">
-          <h3>诗人生平</h3>
-        </div>
         <div class="panel-content">
           <!-- 搜索容器 -->
           <div class="search-container">
@@ -287,25 +284,10 @@ onBeforeUnmount(async () => {});
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       min-width: 0;
 
-      .panel-header {
-        background: linear-gradient(135deg, #f5f5dc, #faf0e6);
-        padding: 16px 20px;
-        border-bottom: 2px solid #deb887;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-
-        h3 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 700;
-          color: #8b4513;
-        }
-      }
 
       .panel-content {
         padding: 20px;
-        height: calc(100% - 64px);
+        height: 100%;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
