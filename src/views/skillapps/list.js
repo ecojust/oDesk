@@ -43,6 +43,16 @@ const getList = () => {
       category: t("skillapps.list.ancienPoetry.category"),
       color: "#C41E3A",
     },
+    {
+      title: t("skillapps.list.ancienPoetry.title"),
+      key: "GraphicalRecipes",
+      description: t("skillapps.list.ancienPoetry.description"),
+      icon: "📜",
+      category: t("skillapps.list.ancienPoetry.category"),
+      color: "#C41E3A",
+    },
+
+    
   ];
 };
 

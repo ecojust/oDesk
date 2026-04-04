@@ -335,7 +335,7 @@ pub async fn execute_opencode_serve(
     .await
     .unwrap();
 
-    //  opencode serve
+    //  opencode serve - 强制加载用户完整环境变量 (解决GUI应用PATH缺失问题)
     tokio::spawn(async move {
         #[cfg(target_os = "windows")]
         let output = Command::new("cmd")
@@ -346,16 +346,16 @@ pub async fn execute_opencode_serve(
             .await;
 
         #[cfg(not(target_os = "windows"))]
-        let output = Command::new("bash")
-            .args(["-l", "-c", "opencode serve"])
+        let output = Command::new("zsh")
+            .args(["-l", "-i", "-c", "opencode serve"])
+            .env("PATH", format!(
+                "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{}/.cargo/bin:{}/.local/bin",
+                std::env::var("HOME").unwrap_or_default(),
+                std::env::var("HOME").unwrap_or_default()
+            ))
             .current_dir(&target_workspace)
             .output()
             .await;
-        // let sidecar_command = app.shell().sidecar("opencode").unwrap().arg("serve");
-        // let (mut rx, mut _child) = sidecar_command.spawn().expect("Failed to spawn sidecar");
-        // let sidecar_command = app.shell().sidecar("opencode").unwrap().arg("serve");
-        // let output = sidecar_command.output();
-        // let response = String::from_utf8(output.stdout).unwrap();
 
         match output {
             Ok(output) => {
@@ -368,7 +368,7 @@ pub async fn execute_opencode_serve(
                 log(log_content).await.unwrap();
             }
             Err(e) => {
-                let log_content = format!("ERROR:{}\nSTDOUT:\nSTDERR:\nSTATUS: None\n", e);
+                let log_content = format!("ERROR:{}\n", e);
                 log(log_content).await.unwrap();
             }
         }
