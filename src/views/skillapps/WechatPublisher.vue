@@ -172,6 +172,7 @@
           <!-- 搜索模式输入 -->
           <div class="search-container" v-if="!isPolishMode">
             <textarea
+              @input="savePrompt"
               class="search-textarea"
               v-model="question"
               :placeholder="t('skillapps.enterSearchContent')"
@@ -192,6 +193,7 @@
           <!-- 润色模式输入 -->
           <div class="polish-container" v-else>
             <textarea
+              @input="savePrompt"
               class="polish-textarea"
               v-model="question"
               :placeholder="t('skillapps.enterPolishContent')"
@@ -308,6 +310,18 @@ const loadingMoreThemes = ref(false);
 const themePageSize = 10;
 const themeCurrentPage = ref(1);
 
+let isSaving = false;
+
+const savePrompt = async () => {
+  console.log("savePrompt------");
+  config.value.prompt = question.value;
+  if (!isSaving) {
+    isSaving = true;
+    await saveConfig(false);
+    isSaving = false;
+  }
+};
+
 // 初始化主题列表
 const initThemeList = () => {
   const filtered = styleList.filter(
@@ -396,16 +410,14 @@ const openConfigDialog = () => {
 const handleSearch = async () => {
   if (!question.value.trim()) return;
 
-  config.value.prompt = question.value;
-  await saveConfig();
-
   isLoading.value = true;
   try {
     console.log("Starting article search...");
     await clearDraft();
     const searchContent = `
       ${question.value}
-      Please search for relevant content based on the above requirements, do not publish
+
+      请使用topic-searcher这个skill，根据上述需求搜索信息，按照该skill的要求来就行，不要发布
     `;
     const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
@@ -421,8 +433,6 @@ const handleSearch = async () => {
 const handlePolish = async () => {
   if (!question.value.trim()) return;
 
-  config.value.prompt = question.value;
-  await saveConfig();
   // 检查字数是否小于60
   const contentLength = question.value.trim().length;
   if (contentLength < 60) {
@@ -514,7 +524,7 @@ const readConfig = async () => {
   }
 };
 
-const saveConfig = async () => {
+const saveConfig = async (showmessage = true) => {
   console.log("config.value", config.value);
   try {
     await Opencode.write_workspace_file_content(
@@ -522,7 +532,7 @@ const saveConfig = async () => {
       "config.json",
       JSON.stringify(config.value, null, 2),
     );
-    ElMessage.success(t("skillapps.configSaveSuccess"));
+    showmessage && ElMessage.success(t("skillapps.configSaveSuccess"));
   } catch (error) {
     console.error("保存配置失败:", error);
     // ElMessage.error("配置保存失败: " + error.message);
