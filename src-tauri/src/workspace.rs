@@ -409,3 +409,54 @@ pub async fn execute_opencode_serve(
 
     Ok(format!("opencode serve started successfully in "))
 }
+
+#[tauri::command]
+pub fn copy_file_to_workspace(
+    workspace: String,
+    sourcepath: String,
+    targetfilename: Option<String>,
+) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_dir = base_dir.join("workspaces").join(workspace);
+
+    // 检查源文件是否存在
+    let source_file = std::path::Path::new(&sourcepath);
+    if !source_file.exists() {
+        return Err(format!("Source file does not exist: {}", sourcepath));
+    }
+
+    // 确定目标文件名
+    let target_filename = if let Some(filename) = targetfilename {
+        filename
+    } else {
+        // 如果没有提供目标文件名，使用源文件名
+        source_file
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| "Failed to get source file name".to_string())?
+            .to_string()
+    };
+
+    let target_path = target_dir.join(target_filename);
+
+    // 检查目标文件是否已存在
+    if target_path.exists() {
+        return Err(format!(
+            "Target file already exists: {}",
+            target_path.display()
+        ));
+    }
+
+    // 创建目标目录（如果不存在）
+    fs::create_dir_all(&target_dir)
+        .map_err(|e| format!("Failed to create target directory: {}", e))?;
+
+    // 复制文件
+    fs::copy(&source_file, &target_path).map_err(|e| format!("Failed to copy file: {}", e))?;
+
+    Ok(format!(
+        "File successfully copied from {} to {}",
+        sourcepath,
+        target_path.display()
+    ))
+}

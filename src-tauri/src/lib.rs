@@ -15,9 +15,9 @@ use fs_helper::{export_file, open_folder, read_file};
 use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
 
 use workspace::{
-    create_workspace, delete_workspace_skill, execute_opencode_serve, export_workspace_file,
-    export_workspace_skill, kill_existing_opencode_processes, open_workspace,
-    read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
+    copy_file_to_workspace, create_workspace, delete_workspace_skill, execute_opencode_serve,
+    export_workspace_file, export_workspace_skill, kill_existing_opencode_processes,
+    open_workspace, read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
     unzip_skill_to_workspace, workspace_file_insert_text, write_workspace_file_content,
 };
 
@@ -47,6 +47,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_http::init())
         .plugin(tauri_plugin_shell::init())
+        .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             //fetch
             fetch_request,
@@ -96,7 +97,8 @@ pub fn run() {
             unzip_skill_to_workspace,
             read_workspace_file_content,
             write_workspace_file_content,
-            delete_workspace_skill
+            delete_workspace_skill,
+            copy_file_to_workspace
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

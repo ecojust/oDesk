@@ -15,8 +15,8 @@ export default class Opencode {
     await Opencode.new_session();
   }
 
-  static async openWorkspace(workspace:string){
-     try {
+  static async openWorkspace(workspace: string) {
+    try {
       const result = await invoke("workspace_file_insert_text", {
         workspace,
       });
@@ -170,6 +170,24 @@ export default class Opencode {
         filename,
       });
       return content;
+    } catch (e) {
+      console.log("Failed to start opencode serve: ", e);
+      throw e;
+    }
+  }
+
+  static async copy_file_to_workspace(
+    workspace: String,
+    sourcepath: String,
+    targetfilename: String,
+  ) {
+    try {
+      let ret = await invoke("copy_file_to_workspace", {
+        workspace,
+        sourcepath,
+        targetfilename,
+      });
+      return ret;
     } catch (e) {
       console.log("Failed to start opencode serve: ", e);
       throw e;
@@ -341,11 +359,10 @@ const wechat_config = {
   thumb: "", //"ai"
 };
 
-
 const audio_book_config = {
   title: "中国社会各阶级的分析",
   voice: "zh-CN-XiaoxiaoNeural",
   thumb: "thumb.png",
 };
 
-export { wechat_config,audio_book_config };
+export { wechat_config, audio_book_config };

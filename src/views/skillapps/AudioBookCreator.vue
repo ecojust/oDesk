@@ -36,7 +36,7 @@
                 class="cover-item"
                 :class="{ active: config.thumb === bg }"
                 :style="{ backgroundImage: `url(${bg})` }"
-                @click="config.thumb = bg"
+                @click="selectCoverImage"
               ></div>
             </div>
           </el-form-item>
@@ -69,6 +69,7 @@ import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import Opencode, { audio_book_config } from "@/service/shell/opencode";
+import { open } from "@tauri-apps/plugin-dialog";
 
 const APPID = "oDesk-audio-book-creator";
 
@@ -149,6 +150,30 @@ const saveConfig = async (showmessage = true) => {
   }
 };
 
+const selectCoverImage = async () => {
+  console.log("selectCoverImage");
+  try {
+    const path = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "图片",
+          extensions: ["png", "jpg", "jpeg", "webp", "gif"],
+        },
+      ],
+    });
+
+    if (path) {
+      await Opencode.copy_file_to_workspace(APPID, path, "thumb.png");
+
+      ElMessage.success("封面图片已选择");
+    }
+  } catch (error) {
+    console.error("选择图片失败:", error);
+    ElMessage.error("选择图片失败，请重试");
+  }
+};
+
 const fetchthumb = async () => {
   try {
     const pngs = await Opencode.scan_worksapce_file(APPID, {
@@ -161,13 +186,13 @@ const fetchthumb = async () => {
   }
 };
 
-const savethumb = async () => {
-  await Opencode.write_workspace_file_content(
-    APPID,
-    "thumb.png",
-    // content.value,
-  );
-};
+// const savethumb = async () => {
+//   await Opencode.write_workspace_file_content(
+//     APPID,
+//     "thumb.png",
+//     // content.value,
+//   );
+// };
 
 const saveContent = async () => {
   await Opencode.write_workspace_file_content(
@@ -236,6 +261,20 @@ onMounted(() => {
         border: 3px solid transparent;
         transition: all 0.2s;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #909399;
+        font-size: 14px;
+        background-color: #f5f7fa;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23c0c4cc' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: center 50px;
+
+        &::after {
+          content: "点击选择封面图片";
+          margin-top: 100px;
+        }
 
         &:hover {
           transform: translateY(-3px);
