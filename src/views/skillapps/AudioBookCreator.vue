@@ -20,9 +20,10 @@
           <!-- 书籍标题 -->
           <el-form-item label="书籍题目">
             <el-input
-              v-model="book.title"
+              v-model="config.title"
               placeholder="输入有声书标题"
               clearable
+              @change="saveConfig"
             />
           </el-form-item>
 
@@ -33,9 +34,9 @@
                 v-for="(bg, index) in coverList"
                 :key="index"
                 class="cover-item"
-                :class="{ active: book.cover === bg }"
+                :class="{ active: config.thumb === bg }"
                 :style="{ backgroundImage: `url(${bg})` }"
-                @click="book.cover = bg"
+                @click="config.thumb = bg"
               ></div>
             </div>
           </el-form-item>
@@ -45,15 +46,16 @@
       <!-- 右侧内容区 -->
       <div class="content-area">
         <el-input
-          v-model="book.content"
+          v-model="content"
           type="textarea"
           placeholder="在此输入书本内容..."
           class="content-input"
           resize="none"
+          @change="saveContent"
         />
 
         <div class="footer-bar">
-          <span class="counter">字数：{{ book.content.length }}</span>
+          <span class="counter">字数：{{ content.length }}</span>
           <el-button type="primary" @click="createBook">生成有声书</el-button>
         </div>
       </div>
@@ -62,7 +64,7 @@
 </template>
 
 <script setup>
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, ref } from "vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
@@ -91,9 +93,11 @@ const content = ref("");
 const coverList = ["/preview/themes/forest.png"];
 
 const createBook = () => {
-  if (!book.title) return ElMessage.warning("请输入题目");
-  if (!book.content) return ElMessage.warning("请输入内容");
+  if (!config.title) return ElMessage.warning("请输入题目");
+  if (!content) return ElMessage.warning("请输入内容");
   ElMessage.success("开始生成有声书");
+
+  // TODO: 调用 media-generator 技能生成有声书
 };
 
 const readConfig = async () => {
@@ -138,17 +142,45 @@ const saveConfig = async (showmessage = true) => {
       "config.json",
       JSON.stringify(config.value, null, 2),
     );
-    showmessage && ElMessage.success(t("skillapps.configSaveSuccess"));
+    showmessage && ElMessage.success("配置保存成功");
   } catch (error) {
     console.error("保存配置失败:", error);
-    // ElMessage.error("配置保存失败: " + error.message);
-  } finally {
-    configDialogVisible.value = false;
+    ElMessage.error("配置保存失败");
   }
+};
+
+const fetchthumb = async () => {
+  try {
+    const pngs = await Opencode.scan_worksapce_file(APPID, {
+      path: "",
+      postfix: "png",
+    });
+    console.log(pngs);
+  } catch (error) {
+    console.error("保存配置失败:", error);
+  }
+};
+
+const savethumb = async () => {
+  await Opencode.write_workspace_file_content(
+    APPID,
+    "thumb.png",
+    // content.value,
+  );
+};
+
+const saveContent = async () => {
+  await Opencode.write_workspace_file_content(
+    APPID,
+    "content.txt",
+    content.value,
+  );
 };
 
 onMounted(() => {
   readConfig();
+  readContent();
+  fetchthumb();
 });
 </script>
 

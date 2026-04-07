@@ -201,6 +201,48 @@ pub fn create_workspace(workspace: String) -> Result<String, String> {
     ))
 }
 
+#[tauri::command]
+pub fn write_workspace_file_content(
+    workspace: String,
+    filename: String,
+    content: String,
+) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir.join("workspaces").join(workspace).join(filename);
+
+    // 通过文件扩展名自动判断类型
+    let ext = target_path
+        .extension()
+        .and_then(|ext| ext.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+
+    // 图片格式列表
+    let image_extensions = ["png", "jpg", "jpeg", "gif", "bmp", "webp", "svg"];
+
+    if image_extensions.contains(&ext.as_str()) {
+        // 图片类型：base64解码后写入
+        // 处理可能的data URI前缀 (例如 data:image/png;base64,)
+        let clean_content = if content.contains("base64,") {
+            content.split_once("base64,").unwrap().1.to_string()
+        } else {
+            content
+        };
+
+        let decoded_bytes = base64::decode(clean_content)
+            .map_err(|e| format!("Failed to decode base64 image: {}", e))?;
+
+        std::fs::write(&target_path, decoded_bytes)
+            .map_err(|e| format!("Failed to write image file: {}", e))?;
+    } else {
+        // 文本类型：直接写入
+        std::fs::write(&target_path, &content)
+            .map_err(|e| format!("Failed to write text file: {}", e))?;
+    }
+
+    Ok("File written successfully".to_string())
+}
+
 /// 向工作区中的文件追加一行文本（不存在则自动创建）
 #[tauri::command]
 pub fn workspace_file_insert_text(
@@ -232,18 +274,6 @@ pub fn read_workspace_file_content(workspace: String, filename: String) -> Resul
     let content =
         std::fs::read_to_string(&target_path).map_err(|e| format!("Failed to read file: {}", e))?;
     Ok(content)
-}
-
-#[tauri::command]
-pub fn write_workspace_file_content(
-    workspace: String,
-    filename: String,
-    content: String,
-) -> Result<String, String> {
-    let base_dir = get_appdata_dir()?;
-    let target_path = base_dir.join("workspaces").join(workspace).join(filename);
-    std::fs::write(&target_path, &content).map_err(|e| format!("Failed to write file: {}", e))?;
-    Ok("File written successfully".to_string())
 }
 
 #[tauri::command]
