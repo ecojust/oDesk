@@ -72,11 +72,9 @@ import TravelPlan from "./TravelPlan.vue";
 import MovieFinder from "./MovieFinder.vue";
 import AncienPoetry from "./AncienPoetry.vue";
 import GraphicalRecipes from "./GraphicalRecipes.vue";
+import AudioBookCreator from "./AudioBookCreator.vue";
 
-
-
-
-
+import app from "./app.vue";
 
 const { t, locale } = useI18n();
 
@@ -86,7 +84,8 @@ const components = {
   TravelPlan: TravelPlan,
   MovieFinder: MovieFinder,
   AncienPoetry: AncienPoetry,
-  GraphicalRecipes:GraphicalRecipes
+  GraphicalRecipes: GraphicalRecipes,
+  AudioBookCreator: AudioBookCreator,
 };
 
 const activeApp = ref("MusicDownload");

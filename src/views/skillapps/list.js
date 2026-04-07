@@ -52,7 +52,23 @@ const getList = () => {
       color: "#FF9F43",
     },
 
-    
+    {
+      title: t("skillapps.list.graphicalRecipes.title"),
+      key: "AudioBookCreator",
+      description: t("skillapps.list.graphicalRecipes.description"),
+      icon: "🍳",
+      category: t("skillapps.list.graphicalRecipes.category"),
+      color: "#FF9F43",
+    },
+
+    // {
+    //   title: t("skillapps.list.graphicalRecipes.title"),
+    //   key: "app",
+    //   description: t("skillapps.list.graphicalRecipes.description"),
+    //   icon: "🍳",
+    //   category: t("skillapps.list.graphicalRecipes.category"),
+    //   color: "#FF9F43",
+    // },
   ];
 };
 
