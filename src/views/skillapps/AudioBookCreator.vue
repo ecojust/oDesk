@@ -11,22 +11,65 @@
       @openWorkspace="openWorkspace"
     />
 
-    <!-- 中间内容区域 -->
-    <div class="content-section">123123</div>
+    <div class="main-container">
+      <!-- 左侧配置区 -->
+      <div class="config-panel">
+        <div class="panel-title">有声书设置</div>
+
+        <el-form label-position="top">
+          <!-- 书籍标题 -->
+          <el-form-item label="书籍题目">
+            <el-input
+              v-model="book.title"
+              placeholder="输入有声书标题"
+              clearable
+            />
+          </el-form-item>
+
+          <!-- 封面背景 -->
+          <el-form-item label="封面图片">
+            <div class="cover-selector">
+              <div
+                v-for="(bg, index) in coverList"
+                :key="index"
+                class="cover-item"
+                :class="{ active: book.cover === bg }"
+                :style="{ backgroundImage: `url(${bg})` }"
+                @click="book.cover = bg"
+              ></div>
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 右侧内容区 -->
+      <div class="content-area">
+        <el-input
+          v-model="book.content"
+          type="textarea"
+          placeholder="在此输入书本内容..."
+          class="content-input"
+          resize="none"
+        />
+
+        <div class="footer-bar">
+          <span class="counter">字数：{{ book.content.length }}</span>
+          <el-button type="primary" @click="createBook">生成有声书</el-button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
-import { useI18n } from "vue-i18n";
-import Opencode from "@/service/shell/opencode";
-import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { onMounted, reactive } from "vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
-const { t } = useI18n();
+import Opencode, { audio_book_config } from "@/service/shell/opencode";
 
-// 使用公共技能应用组合式函数
+const APPID = "oDesk-audio-book-creator";
+
 const {
   isConnectting,
   skills,
@@ -37,46 +80,177 @@ const {
   selectSkill,
   openWorkspace,
 } = useSkillApp(APPID, ["media-generator"]);
-const APPID = "oDesk-audio-book-creator";
 
-const searchFiles = async () => {
-  try {
-    const content = await Opencode.read_workspace_file_content(
-      APPID,
-      "list.json",
-    );
-    const res = JSON.parse(content);
-    console.log("res", res);
+const config = ref({
+  title: "中国社会各阶级的分析",
+  voice: "zh-CN-XiaoxiaoNeural",
+  thumb: "thumb.png",
+});
+const content = ref("");
 
-    movies.value = res.playUrls;
+const coverList = ["/preview/themes/forest.png"];
 
-    searchQuery.value = res?.movie || "";
-  } catch (error) {}
+const createBook = () => {
+  if (!book.title) return ElMessage.warning("请输入题目");
+  if (!book.content) return ElMessage.warning("请输入内容");
+  ElMessage.success("开始生成有声书");
 };
 
-// 初始化
-onMounted(() => {
-  // searchFiles();
-});
+const readConfig = async () => {
+  try {
+    const res = await Opencode.read_workspace_file_content(
+      APPID,
+      "config.json",
+    );
 
-onBeforeUnmount(async () => {});
+    config.value = JSON.parse(res);
+    config.value.title = config.value.title || "";
+    console.log("config", config);
+  } catch (error) {
+    config.value = audio_book_config;
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(audio_book_config),
+    );
+    console.log("config", error);
+  }
+};
+
+const readContent = async () => {
+  try {
+    const res = await Opencode.read_workspace_file_content(
+      APPID,
+      "content.txt",
+    );
+
+    content.value = res;
+  } catch (error) {
+    content.value = "";
+  }
+};
+
+const saveConfig = async (showmessage = true) => {
+  console.log("config.value", config.value);
+  try {
+    await Opencode.write_workspace_file_content(
+      APPID,
+      "config.json",
+      JSON.stringify(config.value, null, 2),
+    );
+    showmessage && ElMessage.success(t("skillapps.configSaveSuccess"));
+  } catch (error) {
+    console.error("保存配置失败:", error);
+    // ElMessage.error("配置保存失败: " + error.message);
+  } finally {
+    configDialogVisible.value = false;
+  }
+};
+
+onMounted(() => {
+  readConfig();
+});
 </script>
 
 <style lang="less" scoped>
 .Audio-Book-Creator {
-  position: relative;
-  height: 100%;
+  height: 100vh;
+  background: #f8f9fa;
   box-sizing: border-box;
+  overflow: hidden;
 
-  // 内容区域样式
-  .content-section {
-    flex: 1;
+  .main-container {
     display: flex;
-    max-width: 1200px;
-    margin: 0px auto 16px;
+    gap: 16px;
+    padding: 16px;
     height: calc(100% - 0px);
     box-sizing: border-box;
     padding-top: 50px;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .config-panel {
+    width: 300px;
+    flex-shrink: 0;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-sizing: border-box;
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      color: #303133;
+      text-align: left;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #f0f2f5;
+    }
+
+    .cover-selector {
+      display: flex;
+      justify-content: center;
+      padding: 8px 0;
+
+      .cover-item {
+        width: 160px;
+        height: 220px;
+        border-radius: 12px;
+        background-size: cover;
+        background-position: center;
+        cursor: pointer;
+        border: 3px solid transparent;
+        transition: all 0.2s;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        &:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        &.active {
+          border-color: #409eff;
+          box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.2);
+        }
+      }
+    }
+  }
+
+  .content-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-sizing: border-box;
+    min-height: 0;
+
+    .content-input {
+      flex: 1;
+      :deep(textarea) {
+        height: 100% !important;
+        font-size: 15px;
+        line-height: 1.8;
+        border: none;
+      }
+    }
+
+    .footer-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #ebeef5;
+
+      .counter {
+        color: #909399;
+        font-size: 13px;
+      }
+    }
   }
 }
 </style>

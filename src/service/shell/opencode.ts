@@ -341,4 +341,11 @@ const wechat_config = {
   thumb: "", //"ai"
 };
 
-export { wechat_config };
+
+const audio_book_config = {
+  title: "中国社会各阶级的分析",
+  voice: "zh-CN-XiaoxiaoNeural",
+  thumb: "thumb.png",
+};
+
+export { wechat_config,audio_book_config };
