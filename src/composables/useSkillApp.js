@@ -18,15 +18,18 @@ export function useSkillApp(appId, skillls = []) {
   const definePermission = async () => {
     const defaultConfig = {
       $schema: "https://opencode.ai/config.json",
-      permission: {
-        read: {
-          "*": "allow",
-        },
-        edit: {
-          "*": "allow",
-        },
-      },
+      // permission: {
+      //   read: {
+      //     "*": "allow",
+      //   },
+      //   edit: {
+      //     "*": "allow",
+      //   },
+      // },
+      permission: "allow",
     };
+
+    console.log("definePermission");
 
     await Opencode.write_workspace_file_content(
       appId,

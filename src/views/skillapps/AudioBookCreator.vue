@@ -31,11 +31,8 @@
           <el-form-item label="封面图片">
             <div class="cover-selector">
               <div
-                v-for="(bg, index) in coverList"
-                :key="index"
                 class="cover-item"
-                :class="{ active: config.thumb === bg }"
-                :style="{ backgroundImage: `url(${bg})` }"
+                :style="preview ? { backgroundImage: `url(${preview})` } : {}"
                 @click="selectCoverImage"
               ></div>
             </div>
@@ -90,15 +87,26 @@ const config = ref({
   thumb: "thumb.png",
 });
 const content = ref("");
+const preview = ref("");
 
 const coverList = ["/preview/themes/forest.png"];
 
-const createBook = () => {
-  if (!config.title) return ElMessage.warning("请输入题目");
-  if (!content) return ElMessage.warning("请输入内容");
-  ElMessage.success("开始生成有声书");
+const isgenerating = ref(false);
+const createBook = async () => {
+  if (!config.value.title) return ElMessage.warning("请输入题目");
+  if (!content.value) return ElMessage.warning("请输入内容");
 
   // TODO: 调用 media-generator 技能生成有声书
+  isgenerating.value = true;
+  try {
+    console.log("Starting article publishing...");
+    const answer = await Opencode.send_message("请根据配置生成口播");
+    console.log("AI Response:", answer);
+  } catch (error) {
+    console.error("发布失败:", error);
+  } finally {
+    isgenerating.value = false;
+  }
 };
 
 const readConfig = async () => {
@@ -165,7 +173,7 @@ const selectCoverImage = async () => {
 
     if (path) {
       await Opencode.copy_file_to_workspace(APPID, path, "thumb.png");
-
+      await fetchthumb();
       ElMessage.success("封面图片已选择");
     }
   } catch (error) {
@@ -180,19 +188,18 @@ const fetchthumb = async () => {
       path: "",
       postfix: "png",
     });
+
+    const thumb = pngs.find((png) => png.title == "thumb.png");
+
+    if (thumb) {
+      preview.value = thumb.url;
+    }
+
     console.log(pngs);
   } catch (error) {
     console.error("保存配置失败:", error);
   }
 };
-
-// const savethumb = async () => {
-//   await Opencode.write_workspace_file_content(
-//     APPID,
-//     "thumb.png",
-//     // content.value,
-//   );
-// };
 
 const saveContent = async () => {
   await Opencode.write_workspace_file_content(
@@ -202,7 +209,9 @@ const saveContent = async () => {
   );
 };
 
-onMounted(() => {
+onMounted(async () => {
+  await activeWorkspace();
+
   readConfig();
   readContent();
   fetchthumb();
@@ -250,10 +259,11 @@ onMounted(() => {
       display: flex;
       justify-content: center;
       padding: 8px 0;
+      width: 100%;
 
       .cover-item {
-        width: 160px;
-        height: 220px;
+        width: 100%;
+        height: 260px;
         border-radius: 12px;
         background-size: cover;
         background-position: center;
@@ -279,11 +289,6 @@ onMounted(() => {
         &:hover {
           transform: translateY(-3px);
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-        }
-
-        &.active {
-          border-color: #409eff;
-          box-shadow: 0 0 0 4px rgba(64, 158, 255, 0.2);
         }
       }
     }
