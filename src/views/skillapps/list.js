@@ -53,12 +53,12 @@ const getList = () => {
     },
 
     {
-      title: t("skillapps.list.graphicalRecipes.title"),
+      title: t("skillapps.list.audioBookCreator.title"),
       key: "AudioBookCreator",
-      description: t("skillapps.list.graphicalRecipes.description"),
-      icon: "🍳",
-      category: t("skillapps.list.graphicalRecipes.category"),
-      color: "#FF9F43",
+      description: t("skillapps.list.audioBookCreator.description"),
+      icon: "🎧",
+      category: t("skillapps.list.audioBookCreator.category"),
+      color: "#9B59B6",
     },
 
     // {
