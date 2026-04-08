@@ -53,7 +53,10 @@
 
         <div class="footer-bar">
           <span class="counter">字数：{{ content.length }}</span>
-          <el-button type="primary" @click="createBook">生成有声书</el-button>
+          <div style="display: flex; gap: 12px">
+            <el-button @click="deletdresult">清除生成结果</el-button>
+            <el-button type="primary" @click="createBook">生成有声书</el-button>
+          </div>
         </div>
       </div>
     </div>
@@ -71,7 +74,15 @@
     :append-to-body="true"
     :lock-scroll="false"
   >
-    <div class="png-grid">
+    <!-- 视频预览区域 -->
+    <div v-if="videoUrl" class="video-preview">
+      <div class="video-title">🎬 生成完成 - 有声书视频</div>
+      <video :src="videoUrl" controls autoplay muted class="video-player">
+        您的浏览器不支持视频播放
+      </video>
+    </div>
+
+    <div v-else class="png-grid">
       <div
         v-for="png in scannedPngs"
         :key="png.url"
@@ -161,6 +172,19 @@ const coverList = ["/preview/themes/forest.png"];
 const isGenerating = ref(false);
 const dialogVisible = ref(false);
 const scannedPngs = ref([]);
+const videoUrl = ref("");
+
+const deletdresult = async () => {
+  try {
+    await Opencode.delete_workspace_folder(APPID, "output");
+    ElMessage.success("生成结果已清除");
+    scannedPngs.value = [];
+    videoUrl.value = "";
+  } catch (error) {
+    console.error("清除失败:", error);
+    ElMessage.error("清除失败，请重试");
+  }
+};
 
 const createBook = async () => {
   if (!config.value.title) return ElMessage.warning("请输入题目");
@@ -175,10 +199,27 @@ const createBook = async () => {
   // 后台执行生成逻辑
   try {
     console.log("Starting article publishing...");
-    await Opencode.delete_workspace_folder(APPID, "output");
     const answer = await Opencode.send_message("请根据配置生成口播");
     console.log("AI Response:", answer);
     ElMessage.success("有声书生成成功");
+
+    // 生成成功后扫描视频文件
+    try {
+      const videos = await Opencode.scan_worksapce_file(APPID, {
+        path: "output",
+        postfix: "mp4",
+      });
+
+      if (videos && videos.length > 0) {
+        // 找到最新的video.mp4
+        const targetVideo =
+          videos.find((v) => v.title === "video.mp4") || videos[0];
+        videoUrl.value = targetVideo.url;
+        console.log("找到生成的视频文件:", targetVideo.url);
+      }
+    } catch (videoError) {
+      console.error("扫描视频文件失败:", videoError);
+    }
   } catch (error) {
     console.error("发布失败:", error);
     ElMessage.error("生成失败，请重试");
@@ -305,11 +346,10 @@ const fetchthumb = async () => {
 
 const confirmCreate = async () => {
   // 停止扫描
-  if (scanInterval) {
-    clearInterval(scanInterval);
-    scanInterval = null;
-  }
+  isGenerating.value = false;
   dialogVisible.value = false;
+  // 关闭时清空视频地址
+  videoUrl.value = "";
 };
 
 const saveContent = async () => {
@@ -441,11 +481,32 @@ onMounted(async () => {
   }
 }
 
+.video-preview {
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 12px;
+  color: white;
+
+  .video-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .video-player {
+    width: 100%;
+    max-height: 360px;
+    border-radius: 8px;
+    background: #000;
+  }
+}
+
 .png-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 12px;
-  max-height: 520px;
+  max-height: 380px;
   overflow-y: auto;
   padding: 12px;
   margin: 0 -10px;
