@@ -71,10 +71,11 @@
     :close-on-press-escape="false"
     top="5vh"
     center
-    :append-to-body="true"
-    :lock-scroll="false"
-  >
-    <!-- 视频预览区域 -->
+:append-to-body="true"
+      :lock-scroll="false"
+      @close="handleDialogClose"
+    >
+      <!-- 视频预览区域 -->
     <div v-if="videoUrl" class="video-preview">
       <div
         class="video-title"
@@ -89,7 +90,14 @@
           下载视频
         </el-button>
       </div>
-      <video :src="videoUrl" controls autoplay muted class="video-player">
+      <video
+        ref="videoRef"
+        :src="videoUrl"
+        controls
+        autoplay
+        muted
+        class="video-player"
+      >
         您的浏览器不支持视频播放
       </video>
     </div>
@@ -186,6 +194,15 @@ const dialogVisible = ref(false);
 const scannedPngs = ref([]);
 const videoUrl = ref("");
 const videoPath = ref("");
+const videoRef = ref(null);
+
+const handleDialogClose = () => {
+  if (videoRef.value) {
+    videoRef.value.pause();
+    videoRef.value.currentTime = 0;
+  }
+  videoUrl.value = "";
+};
 
 const deletdresult = async () => {
   try {
