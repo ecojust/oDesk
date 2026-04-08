@@ -92,6 +92,7 @@ const preview = ref("");
 const coverList = ["/preview/themes/forest.png"];
 
 const isgenerating = ref(false);
+
 const createBook = async () => {
   if (!config.value.title) return ElMessage.warning("请输入题目");
   if (!content.value) return ElMessage.warning("请输入内容");
