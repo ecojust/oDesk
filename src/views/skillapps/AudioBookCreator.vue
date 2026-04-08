@@ -62,9 +62,14 @@
   <!-- PNG图片选择对话框 -->
   <el-dialog
     v-model="dialogVisible"
-    title="扫描到的图片"
-    width="800px"
+    title="🔍 生成进度 - 扫描到的图片"
+    width="900px"
     :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    top="5vh"
+    center
+    :append-to-body="true"
+    :lock-scroll="false"
   >
     <div class="png-grid">
       <div
@@ -80,9 +85,38 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <div style="flex: 1; text-align: left; color: #909399; font-size: 13px">
-          {{ isGenerating ? "🔄 生成中，实时扫描图片..." : "✅ 生成完成" }}
-          已发现 {{ scannedPngs.length }} 张图片
+        <div
+          style="
+            flex: 1;
+            text-align: left;
+            color: #909399;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          "
+        >
+          <svg
+            v-if="isGenerating"
+            class="spin-icon"
+            viewBox="0 0 24 24"
+            width="16"
+            height="16"
+          >
+            <path
+              d="M12 4V1M12 23v-3M4.22 4.22 2.11 2.11M21.89 21.89l-2.11-2.11M1 12H4M20 12h3M4.22 19.78l-2.11 2.11M21.89 2.11l-2.11 2.11"
+              fill="none"
+              stroke="#409eff"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span>{{
+            isGenerating ? "生成中，实时扫描图片..." : "✅ 生成完成"
+          }}</span>
+          <span style="color: #409eff; font-weight: 600"
+            >已发现 {{ scannedPngs.length }} 张图片</span
+          >
         </div>
         <el-button @click="confirmCreate" :disabled="isGenerating"
           >关闭</el-button
@@ -165,7 +199,7 @@ const loopScan = async () => {
       });
       console.log("实时扫描到PNG文件:", pngs.length + " 个");
 
-      scannedPngs.value = pngs;
+      scannedPngs.value = pngs.reverse();
 
       await sleep(delay);
       await scanPngFiles(delay);
@@ -409,28 +443,31 @@ onMounted(async () => {
 
 .png-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 16px;
-  max-height: 400px;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  max-height: 520px;
   overflow-y: auto;
-  padding: 8px;
+  padding: 12px;
+  margin: 0 -10px;
 
   .png-item {
     width: 100%;
-    height: 120px;
-    border-radius: 8px;
+    height: 140px;
+    border-radius: 10px;
     background-size: cover;
     background-position: center;
     position: relative;
     cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.2s;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 2px solid #f0f2f5;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
 
     &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transform: translateY(-4px) scale(1.02);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
       border-color: #409eff;
+      z-index: 10;
     }
 
     .png-name {
@@ -438,15 +475,17 @@ onMounted(async () => {
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
       color: white;
-      font-size: 12px;
-      padding: 4px 8px;
-      border-bottom-left-radius: 6px;
-      border-bottom-right-radius: 6px;
+      font-size: 11px;
+      padding: 20px 8px 8px 8px;
+      border-bottom-left-radius: 8px;
+      border-bottom-right-radius: 8px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
+      font-weight: 500;
+      letter-spacing: 0.2px;
     }
   }
 }
@@ -455,5 +494,18 @@ onMounted(async () => {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.spin-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
