@@ -58,6 +58,38 @@
       </div>
     </div>
   </div>
+
+  <!-- PNG图片选择对话框 -->
+  <el-dialog
+    v-model="dialogVisible"
+    title="扫描到的图片"
+    width="800px"
+    :close-on-click-modal="false"
+  >
+    <div class="png-grid">
+      <div
+        v-for="png in scannedPngs"
+        :key="png.url"
+        class="png-item"
+        :style="{ backgroundImage: `url(${png.url})` }"
+        :title="png.title"
+      >
+        <div class="png-name">{{ png.title }}</div>
+      </div>
+    </div>
+
+    <template #footer>
+      <span class="dialog-footer">
+        <div style="flex: 1; text-align: left; color: #909399; font-size: 13px">
+          {{ isGenerating ? "🔄 生成中，实时扫描图片..." : "✅ 生成完成" }}
+          已发现 {{ scannedPngs.length }} 张图片
+        </div>
+        <el-button @click="confirmCreate" :disabled="isGenerating"
+          >关闭</el-button
+        >
+      </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script setup>
@@ -67,6 +99,7 @@ import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import Opencode, { audio_book_config } from "@/service/shell/opencode";
 import { open } from "@tauri-apps/plugin-dialog";
+import { sleep } from "../../utils/util";
 
 const APPID = "oDesk-audio-book-creator";
 
@@ -91,23 +124,57 @@ const preview = ref("");
 
 const coverList = ["/preview/themes/forest.png"];
 
-const isgenerating = ref(false);
+const isGenerating = ref(false);
+const dialogVisible = ref(false);
+const scannedPngs = ref([]);
 
 const createBook = async () => {
   if (!config.value.title) return ElMessage.warning("请输入题目");
   if (!content.value) return ElMessage.warning("请输入内容");
 
-  // TODO: 调用 media-generator 技能生成有声书
-  isgenerating.value = true;
+  // 立即打开对话框
+  dialogVisible.value = true;
+  isGenerating.value = true;
+  scannedPngs.value = [];
+
+  loopScan();
+  // 后台执行生成逻辑
   try {
     console.log("Starting article publishing...");
     const answer = await Opencode.send_message("请根据配置生成口播");
     console.log("AI Response:", answer);
+    ElMessage.success("有声书生成成功");
   } catch (error) {
     console.error("发布失败:", error);
+    ElMessage.error("生成失败，请重试");
   } finally {
-    isgenerating.value = false;
+    isGenerating.value = false;
+    await scanPngFiles();
   }
+};
+
+const loopScan = async () => {
+  const scanPngFiles = async (delay) => {
+    if (!isGenerating.value) {
+      return;
+    }
+    try {
+      const pngs = await Opencode.scan_worksapce_file(APPID, {
+        path: "output/frames",
+        postfix: "png",
+      });
+      console.log("实时扫描到PNG文件:", pngs.length + " 个");
+
+      scannedPngs.value = pngs;
+
+      await sleep(delay);
+      await scanPngFiles(delay);
+    } catch (error) {
+      console.error("扫描PNG文件失败:", error);
+    }
+  };
+  // 开始循环扫描PNG文件
+  scanPngFiles();
 };
 
 const readConfig = async () => {
@@ -200,6 +267,15 @@ const fetchthumb = async () => {
   } catch (error) {
     console.error("保存配置失败:", error);
   }
+};
+
+const confirmCreate = async () => {
+  // 停止扫描
+  if (scanInterval) {
+    clearInterval(scanInterval);
+    scanInterval = null;
+  }
+  dialogVisible.value = false;
 };
 
 const saveContent = async () => {
@@ -329,5 +405,55 @@ onMounted(async () => {
       }
     }
   }
+}
+
+.png-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: 8px;
+
+  .png-item {
+    width: 100%;
+    height: 120px;
+    border-radius: 8px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border-color: #409eff;
+    }
+
+    .png-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-bottom-left-radius: 6px;
+      border-bottom-right-radius: 6px;
+      text-overflow: ellipsis;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+  }
+}
+
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>
