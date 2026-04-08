@@ -460,3 +460,59 @@ pub fn copy_file_to_workspace(
         target_path.display()
     ))
 }
+
+/// 递归删除工作区下的指定文件夹及其所有内容
+#[tauri::command]
+pub fn delete_workspace_folder(workspace: String, folder_path: String) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir
+        .join("workspaces")
+        .join(workspace)
+        .join(folder_path);
+
+    // 检查路径是否存在
+    if !target_path.exists() {
+        return Ok(format!("Folder does not exist: {}", target_path.display()));
+    }
+
+    // 检查是否是目录
+    if !target_path.is_dir() {
+        return Err(format!(
+            "Path is not a directory: {}",
+            target_path.display()
+        ));
+    }
+
+    // 递归删除目录及所有内容
+    fs::remove_dir_all(&target_path).map_err(|e| format!("Failed to delete folder: {}", e))?;
+
+    Ok(format!(
+        "Successfully deleted folder: {}",
+        target_path.display()
+    ))
+}
+
+/// 删除工作区下的指定单个文件
+#[tauri::command]
+pub fn delete_workspace_file(workspace: String, file_path: String) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let target_path = base_dir.join("workspaces").join(workspace).join(file_path);
+
+    // 检查文件是否存在
+    if !target_path.exists() {
+        return Ok(format!("File does not exist: {}", target_path.display()));
+    }
+
+    // 检查是否是文件
+    if !target_path.is_file() {
+        return Err(format!("Path is not a file: {}", target_path.display()));
+    }
+
+    // 删除文件
+    fs::remove_file(&target_path).map_err(|e| format!("Failed to delete file: {}", e))?;
+
+    Ok(format!(
+        "Successfully deleted file: {}",
+        target_path.display()
+    ))
+}

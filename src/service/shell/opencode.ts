@@ -347,6 +347,20 @@ export default class Opencode {
       throw e;
     }
   }
+
+  static async delete_workspace_folder(workspace: string, folderPath: string) {
+    try {
+      const result = await invoke("delete_workspace_folder", {
+        workspace,
+        folderPath,
+      });
+      console.log(result);
+      return result;
+    } catch (e) {
+      console.log("Failed to delete workspace folder: ", e);
+      throw e;
+    }
+  }
 }
 
 const wechat_config = {

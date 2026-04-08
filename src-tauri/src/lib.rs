@@ -15,10 +15,11 @@ use fs_helper::{export_file, open_folder, read_file};
 use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
 
 use workspace::{
-    copy_file_to_workspace, create_workspace, delete_workspace_skill, execute_opencode_serve,
-    export_workspace_file, export_workspace_skill, kill_existing_opencode_processes,
-    open_workspace, read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
-    unzip_skill_to_workspace, workspace_file_insert_text, write_workspace_file_content,
+    copy_file_to_workspace, create_workspace, delete_workspace_file, delete_workspace_folder,
+    delete_workspace_skill, execute_opencode_serve, export_workspace_file, export_workspace_skill,
+    kill_existing_opencode_processes, open_workspace, read_workspace_file_content,
+    scan_worksapce_file, scan_worksapce_folder, unzip_skill_to_workspace,
+    workspace_file_insert_text, write_workspace_file_content,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -97,8 +98,10 @@ pub fn run() {
             unzip_skill_to_workspace,
             read_workspace_file_content,
             write_workspace_file_content,
+            copy_file_to_workspace,
             delete_workspace_skill,
-            copy_file_to_workspace
+            delete_workspace_folder,
+            delete_workspace_file
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

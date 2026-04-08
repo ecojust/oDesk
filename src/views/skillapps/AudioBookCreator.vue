@@ -175,6 +175,7 @@ const createBook = async () => {
   // 后台执行生成逻辑
   try {
     console.log("Starting article publishing...");
+    await Opencode.delete_workspace_folder(APPID, "output");
     const answer = await Opencode.send_message("请根据配置生成口播");
     console.log("AI Response:", answer);
     ElMessage.success("有声书生成成功");
@@ -183,7 +184,6 @@ const createBook = async () => {
     ElMessage.error("生成失败，请重试");
   } finally {
     isGenerating.value = false;
-    await scanPngFiles();
   }
 };
 
@@ -208,7 +208,7 @@ const loopScan = async () => {
     }
   };
   // 开始循环扫描PNG文件
-  scanPngFiles();
+  scanPngFiles(3000);
 };
 
 const readConfig = async () => {
