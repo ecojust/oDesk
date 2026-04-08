@@ -119,6 +119,37 @@ pub fn open_workspace(workspace: String) -> Result<String, String> {
 }
 
 #[tauri::command]
+pub fn export_workspace_file_with_alias(
+    workspace: String,
+    filepath: String,
+    alias: Option<String>,
+) -> Result<String, String> {
+    let base_dir = get_appdata_dir()?;
+    let source_path = base_dir.join("workspaces").join(workspace).join(&filepath);
+
+    let downloads_dir =
+        dirs::download_dir().ok_or_else(|| "Failed to get downloads directory".to_string())?;
+
+    let target_filename = alias.unwrap_or_else(|| {
+        std::path::Path::new(&filepath)
+            .file_name()
+            .and_then(|n| n.to_str())
+            .unwrap_or("exported_file")
+            .to_string()
+    });
+
+    let target_path = downloads_dir.join(target_filename);
+
+    export_file(
+        source_path.to_string_lossy().to_string(),
+        target_path.to_string_lossy().to_string(),
+    )?;
+
+    let _result = open_folder(downloads_dir.to_string_lossy().to_string());
+    Ok(target_path.to_string_lossy().to_string())
+}
+
+#[tauri::command]
 pub fn export_workspace_file(
     workspace: String,
     filepath: String,

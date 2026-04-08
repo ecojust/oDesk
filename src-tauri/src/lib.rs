@@ -16,10 +16,10 @@ use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
 
 use workspace::{
     copy_file_to_workspace, create_workspace, delete_workspace_file, delete_workspace_folder,
-    delete_workspace_skill, execute_opencode_serve, export_workspace_file, export_workspace_skill,
-    kill_existing_opencode_processes, open_workspace, read_workspace_file_content,
-    scan_worksapce_file, scan_worksapce_folder, unzip_skill_to_workspace,
-    workspace_file_insert_text, write_workspace_file_content,
+    delete_workspace_skill, execute_opencode_serve, export_workspace_file,
+    export_workspace_file_with_alias, export_workspace_skill, kill_existing_opencode_processes,
+    open_workspace, read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
+    unzip_skill_to_workspace, workspace_file_insert_text, write_workspace_file_content,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -95,6 +95,7 @@ pub fn run() {
             scan_worksapce_folder,
             export_workspace_skill,
             export_workspace_file,
+            export_workspace_file_with_alias,
             unzip_skill_to_workspace,
             read_workspace_file_content,
             write_workspace_file_content,

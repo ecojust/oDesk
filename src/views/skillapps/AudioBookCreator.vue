@@ -76,7 +76,19 @@
   >
     <!-- 视频预览区域 -->
     <div v-if="videoUrl" class="video-preview">
-      <div class="video-title">🎬 生成完成 - 有声书视频</div>
+      <div
+        class="video-title"
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <span>🎬 生成完成 - 有声书视频</span>
+        <el-button size="small" type="success" @click="downloadVideo">
+          下载视频
+        </el-button>
+      </div>
       <video :src="videoUrl" controls autoplay muted class="video-player">
         您的浏览器不支持视频播放
       </video>
@@ -173,6 +185,7 @@ const isGenerating = ref(false);
 const dialogVisible = ref(false);
 const scannedPngs = ref([]);
 const videoUrl = ref("");
+const videoPath = ref("");
 
 const deletdresult = async () => {
   try {
@@ -215,6 +228,7 @@ const createBook = async () => {
         const targetVideo =
           videos.find((v) => v.title === "video.mp4") || videos[0];
         videoUrl.value = targetVideo.url;
+        videoPath.value = targetVideo.path;
         console.log("找到生成的视频文件:", targetVideo.url);
       }
     } catch (videoError) {
@@ -341,6 +355,24 @@ const fetchthumb = async () => {
     console.log(pngs);
   } catch (error) {
     console.error("保存配置失败:", error);
+  }
+};
+
+const downloadVideo = async () => {
+  if (videoPath.value) {
+    await Opencode.export_workspace_file_with_alias(APPID, {
+      filePath: videoPath.value,
+      alias: `${config.value.title}.mp4`,
+    });
+    ElMessage.success("视频已下载");
+
+    // const link = document.createElement("a");
+    // link.href = videoUrl.value;
+    // link.download = `有声书-${config.value.title || "生成结果"}.mp4`;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    // ElMessage.success("视频开始下载");
   }
 };
 

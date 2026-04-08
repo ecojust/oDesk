@@ -314,6 +314,28 @@ export default class Opencode {
     }
   }
 
+  static async export_workspace_file_with_alias(
+    workspace: string,
+    payload: {
+      filePath: string;
+      alias: string;
+    },
+  ) {
+    try {
+      const parameters = {
+        workspace,
+        filepath: payload.filePath,
+        alias: payload.alias,
+      };
+
+      let result = await invoke("export_workspace_file_with_alias", parameters);
+      return result;
+    } catch (e) {
+      console.log("Failed to export_workspace_file ", e);
+      throw e;
+    }
+  }
+
   static async export_workspace_skill(
     workspace: string,
     payload: {
