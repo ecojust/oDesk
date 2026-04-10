@@ -29,12 +29,8 @@
 
           <!-- 封面背景 -->
           <el-form-item label="封面图片">
-            <div class="cover-selector">
-              <div
-                class="cover-item"
-                :style="preview ? { backgroundImage: `url(${preview})` } : {}"
-                @click="selectCoverImage"
-              ></div>
+            <div class="cover-selector" @click="selectCoverImage">
+              <img :src="preview" alt="" />
             </div>
           </el-form-item>
         </el-form>
@@ -391,10 +387,12 @@ const fetchthumb = async () => {
     const thumb = pngs.find((png) => png.title == "thumb.png");
 
     if (thumb) {
+      console.log("zhdoaol e. thumb", thumb);
+
       preview.value = thumb.url;
     }
 
-    console.log(pngs);
+    console.log("fetchthumb", pngs);
   } catch (error) {
     console.error("保存配置失败:", error);
   }
@@ -486,35 +484,39 @@ onMounted(async () => {
       justify-content: center;
       padding: 8px 0;
       width: 100%;
+      cursor: pointer;
 
-      .cover-item {
+      img {
         width: 100%;
         height: 260px;
         border-radius: 12px;
-        background-size: cover;
-        background-position: center;
-        cursor: pointer;
+        object-fit: cover;
+        object-position: center;
         border: 3px solid transparent;
-        transition: all 0.2s;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #909399;
-        font-size: 14px;
         background-color: #f5f7fa;
-        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23c0c4cc' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E");
-        background-repeat: no-repeat;
-        background-position: center 50px;
 
-        &::after {
-          content: "点击选择封面图片";
-          margin-top: 100px;
+        // 空状态样式
+        &:not([src]) {
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='48' height='48' viewBox='0 0 24 24' fill='none' stroke='%23c0c4cc' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='3' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Ccircle cx='8.5' cy='8.5' r='1.5'%3E%3C/circle%3E%3Cpolyline points='21 15 16 10 5 21'%3E%3C/polyline%3E%3C/svg%3E");
+          background-repeat: no-repeat;
+          background-position: center 50px;
+
+          &::after {
+            content: "点击选择封面图片";
+            display: block;
+            text-align: center;
+            margin-top: 100px;
+            color: #909399;
+            font-size: 14px;
+          }
         }
 
         &:hover {
           transform: translateY(-3px);
           box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+          border-color: #409eff;
         }
       }
     }
