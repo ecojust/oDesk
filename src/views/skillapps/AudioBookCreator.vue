@@ -62,20 +62,57 @@
     </div>
   </div>
 
-  <!-- PNG图片选择对话框 -->
+  <!-- 全局生成Loading -->
+  <el-dialog
+    v-model="loadingVisible"
+    title="正在生成有声书"
+    width="400px"
+    :close-on-click-modal="false"
+    :close-on-press-escape="false"
+    :show-close="false"
+    :lock-scroll="false"
+    :append-to-body="true"
+    center
+    align-center
+  >
+    <div class="loading-container">
+      <div class="progress-wrapper">
+        <el-progress
+          :percentage="percentage"
+          :stroke-width="12"
+          status="success"
+        />
+        <div class="progress-text">{{ percentage }}%</div>
+        <div class="progress-desc">
+          <svg class="spin-icon" viewBox="0 0 24 24" width="16" height="16">
+            <path
+              d="M12 4V1M12 23v-3M4.22 4.22 2.11 2.11M21.89 21.89l-2.11-2.11M1 12H4M20 12h3M4.22 19.78l-2.11 2.11M21.89 2.11l-2.11 2.11"
+              fill="none"
+              stroke="#409eff"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span>正在生成...</span>
+        </div>
+      </div>
+    </div>
+  </el-dialog>
+
+  <!-- 最终生成结果对话框 -->
   <el-dialog
     v-model="dialogVisible"
-    title="🔍 生成进度 - 扫描到的图片"
     width="900px"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     top="5vh"
     center
-:append-to-body="true"
-      :lock-scroll="false"
-      @close="handleDialogClose"
-    >
-      <!-- 视频预览区域 -->
+    align-center
+    :append-to-body="true"
+    :lock-scroll="false"
+    @close="handleDialogClose"
+  >
+    <!-- 视频预览区域 -->
     <div v-if="videoUrl" class="video-preview">
       <div
         class="video-title"
@@ -85,7 +122,7 @@
           align-items: center;
         "
       >
-        <span>🎬 生成完成 - 有声书视频</span>
+        <span>🎬 生成完成 - {{ config.title }}.mp4</span>
         <el-button size="small" type="success" @click="downloadVideo">
           下载视频
         </el-button>
@@ -116,39 +153,6 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <div
-          style="
-            flex: 1;
-            text-align: left;
-            color: #909399;
-            font-size: 13px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-          "
-        >
-          <svg
-            v-if="isGenerating"
-            class="spin-icon"
-            viewBox="0 0 24 24"
-            width="16"
-            height="16"
-          >
-            <path
-              d="M12 4V1M12 23v-3M4.22 4.22 2.11 2.11M21.89 21.89l-2.11-2.11M1 12H4M20 12h3M4.22 19.78l-2.11 2.11M21.89 2.11l-2.11 2.11"
-              fill="none"
-              stroke="#409eff"
-              stroke-width="2"
-              stroke-linecap="round"
-            />
-          </svg>
-          <span>{{
-            isGenerating ? "生成中，实时扫描图片..." : "✅ 生成完成"
-          }}</span>
-          <span style="color: #409eff; font-weight: 600"
-            >已发现 {{ scannedPngs.length }} 张图片</span
-          >
-        </div>
         <el-button @click="confirmCreate" :disabled="isGenerating"
           >关闭</el-button
         >
@@ -180,7 +184,7 @@ const {
 } = useSkillApp(APPID, ["media-generator"]);
 
 const config = ref({
-  title: "中国社会各阶级的分析",
+  title: "",
   voice: "zh-CN-XiaoxiaoNeural",
   thumb: "thumb.png",
 });
@@ -195,6 +199,8 @@ const scannedPngs = ref([]);
 const videoUrl = ref("");
 const videoPath = ref("");
 const videoRef = ref(null);
+const percentage = ref(0);
+const loadingVisible = ref(false);
 
 const handleDialogClose = () => {
   if (videoRef.value) {
@@ -207,6 +213,28 @@ const handleDialogClose = () => {
 const deletdresult = async () => {
   try {
     await Opencode.delete_workspace_folder(APPID, "output");
+
+    try {
+      const initConfig = {
+        ...config.value,
+        progress: {
+          current: 0,
+          total: 29,
+          percentage: 0,
+          status: "starting",
+          lastUpdated: "2026-04-09T03:36:43.349Z",
+        },
+      };
+      await Opencode.write_workspace_file_content(
+        APPID,
+        "config.json",
+        JSON.stringify(initConfig, null, 2),
+      );
+    } catch (error) {
+      console.error("保存配置失败:", error);
+      ElMessage.error("配置保存失败");
+    }
+
     ElMessage.success("生成结果已清除");
     scannedPngs.value = [];
     videoUrl.value = "";
@@ -220,10 +248,12 @@ const createBook = async () => {
   if (!config.value.title) return ElMessage.warning("请输入题目");
   if (!content.value) return ElMessage.warning("请输入内容");
 
-  // 立即打开对话框
-  dialogVisible.value = true;
+  // 显示全局Loading
+  loadingVisible.value = true;
   isGenerating.value = true;
   scannedPngs.value = [];
+  videoUrl.value = "";
+  percentage.value = 0;
 
   loopScan();
   // 后台执行生成逻辑
@@ -247,6 +277,7 @@ const createBook = async () => {
         videoUrl.value = targetVideo.url;
         videoPath.value = targetVideo.path;
         console.log("找到生成的视频文件:", targetVideo.url);
+        dialogVisible.value = true;
       }
     } catch (videoError) {
       console.error("扫描视频文件失败:", videoError);
@@ -256,31 +287,26 @@ const createBook = async () => {
     ElMessage.error("生成失败，请重试");
   } finally {
     isGenerating.value = false;
+    // 关闭Loading，打开最终结果对话框
+    loadingVisible.value = false;
   }
 };
 
 const loopScan = async () => {
-  const scanPngFiles = async (delay) => {
+  const scanProcess = async (delay) => {
     if (!isGenerating.value) {
       return;
     }
     try {
-      const pngs = await Opencode.scan_worksapce_file(APPID, {
-        path: "output/frames",
-        postfix: "png",
-      });
-      console.log("实时扫描到PNG文件:", pngs.length + " 个");
-
-      scannedPngs.value = pngs.reverse();
+      await readConfig();
 
       await sleep(delay);
-      await scanPngFiles(delay);
+      await scanProcess(delay);
     } catch (error) {
       console.error("扫描PNG文件失败:", error);
     }
   };
-  // 开始循环扫描PNG文件
-  scanPngFiles(3000);
+  scanProcess(3000);
 };
 
 const readConfig = async () => {
@@ -292,6 +318,7 @@ const readConfig = async () => {
 
     config.value = JSON.parse(res);
     config.value.title = config.value.title || "";
+    percentage.value = config.value.progress?.percentage || 0;
     console.log("config", config);
   } catch (error) {
     config.value = audio_book_config;
@@ -424,6 +451,7 @@ onMounted(async () => {
   background: #f8f9fa;
   box-sizing: border-box;
   overflow: hidden;
+  padding-right: 0 !important;
 
   .main-container {
     display: flex;
@@ -608,6 +636,31 @@ onMounted(async () => {
 
 .spin-icon {
   animation: spin 1s linear infinite;
+}
+
+.loading-container {
+  padding: 20px 0;
+
+  .progress-wrapper {
+    text-align: center;
+
+    .progress-text {
+      font-size: 32px;
+      font-weight: 700;
+      color: #409eff;
+      margin: 16px 0 8px 0;
+    }
+
+    .progress-desc {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #909399;
+      font-size: 14px;
+      margin-top: 12px;
+    }
+  }
 }
 
 @keyframes spin {

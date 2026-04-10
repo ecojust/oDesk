@@ -399,6 +399,13 @@ const audio_book_config = {
   title: "中国社会各阶级的分析",
   voice: "zh-CN-XiaoxiaoNeural",
   thumb: "thumb.png",
+  progress: {
+    current: 29,
+    total: 29,
+    percentage: 100,
+    status: "completed",
+    lastUpdated: "2026-04-09T03:36:43.349Z",
+  },
 };
 
 export { wechat_config, audio_book_config };
