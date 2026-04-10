@@ -145,7 +145,10 @@ export function useSkillApp(appId, skillls = []) {
         appId,
         "config.json",
       );
-      config.value = JSON.parse(res);
+      config.value = {
+        ...defaultConfig,
+        ...JSON.parse(res),
+      };
     } catch (error) {
       await Opencode.write_workspace_file_content(
         appId,
@@ -156,14 +159,13 @@ export function useSkillApp(appId, skillls = []) {
     }
   };
 
-  const saveConfig = async (data, showmessage = true) => {
+  const saveConfig = async (showmessage = true) => {
     try {
       await Opencode.write_workspace_file_content(
         appId,
         "config.json",
-        JSON.stringify(data, null, 2),
+        JSON.stringify(config.value, null, 2),
       );
-      config.value = data;
       showmessage && ElMessage.success("配置保存成功");
     } catch (error) {
       console.error("保存配置失败:", error);
