@@ -30,12 +30,15 @@ const { t } = useI18n();
 const {
   isConnectting,
   skills,
+  config,
   sessionId,
   isConnected,
   activeWorkspace,
   resetSkills,
   selectSkill,
   openWorkspace,
+  readConfig,
+  saveConfig,
 } = useSkillApp(APPID, ["text-to-scene-illustration"]);
 const APPID = "oDesk-text-2-image";
 
@@ -55,7 +58,9 @@ const searchFiles = async () => {
 };
 
 // 初始化
-onMounted(() => {
+onMounted(async () => {
+  await readConfig();
+  console.log(config.value);
   // searchFiles();
 });
 

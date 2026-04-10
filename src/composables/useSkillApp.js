@@ -14,6 +14,7 @@ export function useSkillApp(appId, skillls = []) {
   const skills = ref([]);
   const sessionId = ref("");
   const isConnected = ref(false);
+  const config = ref({});
 
   const definePermission = async () => {
     const defaultConfig = {
@@ -138,6 +139,38 @@ export function useSkillApp(appId, skillls = []) {
     await Opencode.killAllOpencodeServer();
   };
 
+  const readConfig = async (defaultConfig) => {
+    try {
+      const res = await Opencode.read_workspace_file_content(
+        appId,
+        "config.json",
+      );
+      config.value = JSON.parse(res);
+    } catch (error) {
+      await Opencode.write_workspace_file_content(
+        appId,
+        "config.json",
+        JSON.stringify(defaultConfig),
+      );
+      config.value = defaultConfig;
+    }
+  };
+
+  const saveConfig = async (data, showmessage = true) => {
+    try {
+      await Opencode.write_workspace_file_content(
+        appId,
+        "config.json",
+        JSON.stringify(data, null, 2),
+      );
+      config.value = data;
+      showmessage && ElMessage.success("配置保存成功");
+    } catch (error) {
+      console.error("保存配置失败:", error);
+      ElMessage.error("配置保存失败");
+    }
+  };
+
   onMounted(() => {
     definePermission();
   });
@@ -153,6 +186,7 @@ export function useSkillApp(appId, skillls = []) {
     skills,
     sessionId,
     isConnected,
+    config,
 
     // 方法
     activeWorkspace,
@@ -160,5 +194,7 @@ export function useSkillApp(appId, skillls = []) {
     selectSkill,
     cleanup,
     openWorkspace,
+    readConfig,
+    saveConfig,
   };
 }

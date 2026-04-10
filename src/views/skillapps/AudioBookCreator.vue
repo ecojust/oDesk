@@ -27,6 +27,23 @@
             />
           </el-form-item>
 
+          <el-row :gutter="12">
+            <el-col :span="12">
+              <el-form-item label="显示字幕">
+                <el-switch v-model="config.showtext" @change="saveConfig" />
+              </el-form-item>
+            </el-col>
+            <el-col :span="12">
+              <el-form-item label="字幕颜色">
+                <el-color-picker
+                  v-model="config.textcolor"
+                  @change="saveConfig"
+                  show-alpha
+                />
+              </el-form-item>
+            </el-col>
+          </el-row>
+
           <!-- 封面背景 -->
           <el-form-item label="封面图片">
             <div class="cover-selector" @click="selectCoverImage">
@@ -183,6 +200,8 @@ const config = ref({
   title: "",
   voice: "zh-CN-XiaoxiaoNeural",
   thumb: "thumb.png",
+  showtext: false,
+  textcolor: "#ff0000",
 });
 const content = ref("");
 const preview = ref("");

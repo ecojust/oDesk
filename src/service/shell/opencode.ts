@@ -399,6 +399,8 @@ const audio_book_config = {
   title: "中国社会各阶级的分析",
   voice: "zh-CN-XiaoxiaoNeural",
   thumb: "thumb.png",
+  showtext: false,
+  textcolor: "#ff0000",
   progress: {
     current: 29,
     total: 29,
