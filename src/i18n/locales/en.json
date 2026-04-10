@@ -102,6 +102,11 @@
         "title": "Audio Book Creator",
         "description": "AI powered text to high quality audio book converter",
         "category": "Multimedia Tools"
+      },
+      "text2Image": {
+        "title": "AI Text to Image",
+        "description": "Intelligent text to image generation with storyboard creation, multi-style rendering, batch generation",
+        "category": "Multimedia Tools"
       }
     },
     "launch": "Launch",

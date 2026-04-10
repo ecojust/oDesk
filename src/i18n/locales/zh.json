@@ -112,6 +112,11 @@
         "title": "有声书生成器",
         "description": "AI智能将文本转换为高质量有声读物",
         "category": "多媒体工具"
+      },
+      "text2Image": {
+        "title": "AI文生图",
+        "description": "智能文本生成图片，支持分镜创作、多风格渲染、批量出图",
+        "category": "多媒体工具"
       }
     },
     "launch": "启动",

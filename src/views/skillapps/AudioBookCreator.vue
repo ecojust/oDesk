@@ -191,8 +191,6 @@ const config = ref({
 const content = ref("");
 const preview = ref("");
 
-const coverList = ["/preview/themes/forest.png"];
-
 const isGenerating = ref(false);
 const dialogVisible = ref(false);
 const scannedPngs = ref([]);

@@ -61,6 +61,14 @@ const getList = () => {
       color: "#9B59B6",
     },
 
+    {
+      title: t("skillapps.list.text2Image.title"),
+      key: "Text2Image",
+      description: t("skillapps.list.text2Image.description"),
+      icon: "🎨",
+      category: t("skillapps.list.text2Image.category"),
+      color: "#8B5CF6",
+    },
     // {
     //   title: t("skillapps.list.graphicalRecipes.title"),
     //   key: "app",

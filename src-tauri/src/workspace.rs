@@ -470,19 +470,11 @@ pub fn copy_file_to_workspace(
 
     let target_path = target_dir.join(target_filename);
 
-    // 检查目标文件是否已存在
-    if target_path.exists() {
-        return Err(format!(
-            "Target file already exists: {}",
-            target_path.display()
-        ));
-    }
-
     // 创建目标目录（如果不存在）
     fs::create_dir_all(&target_dir)
         .map_err(|e| format!("Failed to create target directory: {}", e))?;
 
-    // 复制文件
+    // 复制文件（如果目标文件已存在则直接覆盖）
     fs::copy(&source_file, &target_path).map_err(|e| format!("Failed to copy file: {}", e))?;
 
     Ok(format!(
