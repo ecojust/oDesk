@@ -14,14 +14,14 @@
     <div class="main-container">
       <!-- 左侧配置区 -->
       <div class="config-panel">
-        <div class="panel-title">有声书设置</div>
+        <div class="panel-title">{{ t("audioBookCreator.panelTitle") }}</div>
 
         <el-form label-position="top">
           <!-- 书籍标题 -->
-          <el-form-item label="书籍题目">
+          <el-form-item :label="t('audioBookCreator.bookTitle')">
             <el-input
               v-model="config.title"
-              placeholder="输入有声书标题"
+              :placeholder="t('audioBookCreator.titlePlaceholder')"
               clearable
               @change="saveConfig"
             />
@@ -29,12 +29,12 @@
 
           <el-row :gutter="12">
             <el-col :span="12">
-              <el-form-item label="显示字幕">
+              <el-form-item :label="t('audioBookCreator.showSubtitle')">
                 <el-switch v-model="config.showtext" @change="saveConfig" />
               </el-form-item>
             </el-col>
             <el-col :span="12">
-              <el-form-item label="字幕颜色">
+              <el-form-item :label="t('audioBookCreator.subtitleColor')">
                 <el-color-picker
                   v-model="config.textcolor"
                   @change="saveConfig"
@@ -45,7 +45,7 @@
           </el-row>
 
           <!-- 封面背景 -->
-          <el-form-item label="封面图片">
+          <el-form-item :label="t('audioBookCreator.coverImage')">
             <div class="cover-selector" @click="selectCoverImage">
               <img :src="preview" alt="" />
             </div>
@@ -58,17 +58,23 @@
         <el-input
           v-model="content"
           type="textarea"
-          placeholder="在此输入书本内容..."
+          :placeholder="t('audioBookCreator.contentPlaceholder')"
           class="content-input"
           resize="none"
           @change="saveContent"
         />
 
         <div class="footer-bar">
-          <span class="counter">字数：{{ content.length }}</span>
+          <span class="counter">{{
+            t("audioBookCreator.wordCount", { count: content.length })
+          }}</span>
           <div style="display: flex; gap: 12px">
-            <el-button @click="deletdresult">清除生成结果</el-button>
-            <el-button type="primary" @click="createBook">生成有声书</el-button>
+            <el-button @click="deletdresult">{{
+              t("audioBookCreator.clearResult")
+            }}</el-button>
+            <el-button type="primary" @click="createBook">{{
+              t("audioBookCreator.generate")
+            }}</el-button>
           </div>
         </div>
       </div>
@@ -78,7 +84,7 @@
   <!-- 全局生成Loading -->
   <el-dialog
     v-model="loadingVisible"
-    title="正在生成有声书"
+    :title="t('audioBookCreator.generatingTitle')"
     width="400px"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -106,7 +112,7 @@
               stroke-linecap="round"
             />
           </svg>
-          <span>正在生成...</span>
+          <span>{{ t("audioBookCreator.generating") }}</span>
         </div>
       </div>
     </div>
@@ -135,9 +141,11 @@
           align-items: center;
         "
       >
-        <span>🎬 生成完成 - {{ config.title }}.mp4</span>
+        <span>{{
+          t("audioBookCreator.generateComplete", { title: config.title })
+        }}</span>
         <el-button size="small" type="success" @click="downloadVideo">
-          下载视频
+          {{ t("audioBookCreator.downloadVideo") }}
         </el-button>
       </div>
       <video
@@ -148,7 +156,7 @@
         muted
         class="video-player"
       >
-        您的浏览器不支持视频播放
+        {{ t("audioBookCreator.browserNotSupport") }}
       </video>
     </div>
 
@@ -166,9 +174,9 @@
 
     <template #footer>
       <span class="dialog-footer">
-        <el-button @click="confirmCreate" :disabled="isGenerating"
-          >关闭</el-button
-        >
+        <el-button @click="confirmCreate" :disabled="isGenerating">{{
+          t("common.close")
+        }}</el-button>
       </span>
     </template>
   </el-dialog>
@@ -176,6 +184,7 @@
 
 <script setup>
 import { onMounted, reactive, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
@@ -183,6 +192,7 @@ import Opencode, { audio_book_config } from "@/service/shell/opencode";
 import { open } from "@tauri-apps/plugin-dialog";
 import { sleep } from "../../utils/util";
 
+const { t } = useI18n();
 const APPID = "oDesk-audio-book-creator";
 
 const {
@@ -248,18 +258,20 @@ const deletdresult = async () => {
       ElMessage.error("配置保存失败");
     }
 
-    ElMessage.success("生成结果已清除");
+    ElMessage.success(t("audioBookCreator.clearSuccess"));
     scannedPngs.value = [];
     videoUrl.value = "";
   } catch (error) {
     console.error("清除失败:", error);
-    ElMessage.error("清除失败，请重试");
+    ElMessage.error(t("audioBookCreator.clearFailed"));
   }
 };
 
 const createBook = async () => {
-  if (!config.value.title) return ElMessage.warning("请输入题目");
-  if (!content.value) return ElMessage.warning("请输入内容");
+  if (!config.value.title)
+    return ElMessage.warning(t("audioBookCreator.pleaseEnterTitle"));
+  if (!content.value)
+    return ElMessage.warning(t("audioBookCreator.pleaseEnterContent"));
 
   // 显示全局Loading
   loadingVisible.value = true;
@@ -274,7 +286,7 @@ const createBook = async () => {
     console.log("Starting article publishing...");
     const answer = await Opencode.send_message("请根据配置生成口播");
     console.log("AI Response:", answer);
-    ElMessage.success("有声书生成成功");
+    ElMessage.success(t("audioBookCreator.generateSuccess"));
 
     // 生成成功后扫描视频文件
     try {
@@ -297,7 +309,7 @@ const createBook = async () => {
     }
   } catch (error) {
     console.error("发布失败:", error);
-    ElMessage.error("生成失败，请重试");
+    ElMessage.error(t("audioBookCreator.generateFailed"));
   } finally {
     isGenerating.value = false;
     // 关闭Loading，打开最终结果对话框
@@ -379,7 +391,7 @@ const selectCoverImage = async () => {
       multiple: false,
       filters: [
         {
-          name: "图片",
+          name: t("common.image"),
           extensions: ["png", "jpg", "jpeg", "webp", "gif"],
         },
       ],
@@ -388,11 +400,11 @@ const selectCoverImage = async () => {
     if (path) {
       await Opencode.copy_file_to_workspace(APPID, path, "thumb.png");
       await fetchthumb();
-      ElMessage.success("封面图片已选择");
+      ElMessage.success(t("audioBookCreator.coverSelected"));
     }
   } catch (error) {
     console.error("选择图片失败:", error);
-    ElMessage.error("选择图片失败，请重试");
+    ElMessage.error(t("audioBookCreator.selectCoverFailed"));
   }
 };
 
@@ -423,7 +435,7 @@ const downloadVideo = async () => {
       filePath: videoPath.value,
       alias: `${config.value.title}.mp4`,
     });
-    ElMessage.success("视频已下载");
+    ElMessage.success(t("audioBookCreator.downloadSuccess"));
 
     // const link = document.createElement("a");
     // link.href = videoUrl.value;
@@ -523,7 +535,7 @@ onMounted(async () => {
           background-position: center 50px;
 
           &::after {
-            content: "点击选择封面图片";
+            content: attr(data-cover-hint);
             display: block;
             text-align: center;
             margin-top: 100px;

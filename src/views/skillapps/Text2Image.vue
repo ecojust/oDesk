@@ -14,31 +14,31 @@
     <div class="main-container">
       <!-- 左侧配置区 -->
       <div class="config-panel">
-        <div class="panel-title">图片生成设置</div>
+        <div class="panel-title">{{ t("text2Image.panelTitle") }}</div>
 
         <el-form label-position="top">
           <!-- 图片标题 -->
-          <el-form-item label="图片主题">
+          <el-form-item :label="t('text2Image.imageSubject')">
             <el-input
               v-model="config.title"
-              placeholder="输入图片主题名称"
+              :placeholder="t('text2Image.subjectPlaceholder')"
               clearable
               @change="saveConfig"
             />
           </el-form-item>
 
           <!-- 显示标题 -->
-          <el-form-item label="显示标题">
+          <el-form-item :label="t('text2Image.showTitle')">
             <el-switch v-model="config.showtitle" @change="saveConfig" />
           </el-form-item>
 
           <!-- 显示场景标签 -->
-          <el-form-item label="显示场景标签">
+          <el-form-item :label="t('text2Image.showSceneLabel')">
             <el-switch v-model="config.showscenelabel" @change="saveConfig" />
           </el-form-item>
 
           <!-- 封面背景 -->
-          <el-form-item label="生成的图片">
+          <el-form-item :label="t('text2Image.generatedImage')">
             <div class="generate-images">
               <img @click="showPreview = true" :src="generatedUrl" alt="" />
             </div>
@@ -48,7 +48,7 @@
               @click="downloadImage"
               style="width: 100%; margin-top: 12px"
             >
-              下载图片
+              {{ t("text2Image.downloadImage") }}
             </el-button>
           </el-form-item>
         </el-form>
@@ -72,20 +72,22 @@
         <el-input
           v-model="prompt"
           type="textarea"
-          placeholder="在此输入图片描述提示词，详细描述你想要生成的图片内容..."
+          :placeholder="t('text2Image.promptPlaceholder')"
           class="content-input"
           resize="none"
           @change="savePrompt"
         />
 
         <div class="footer-bar">
-          <span class="counter">字数：{{ prompt.length }}</span>
+          <span class="counter">{{
+            t("text2Image.wordCount", { count: prompt.length })
+          }}</span>
           <div style="display: flex; gap: 12px">
             <el-button
               type="primary"
               @click="generateImage"
               :loading="isGenerating"
-              >生成图片</el-button
+              >{{ t("text2Image.generateImage") }}</el-button
             >
           </div>
         </div>
@@ -96,11 +98,14 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import Opencode from "@/service/shell/opencode";
 import { Picture as IconPicture } from "@element-plus/icons-vue";
+
+const { t } = useI18n();
 const APPID = "oDesk-text-2-image";
 
 const {
@@ -125,7 +130,8 @@ const generatedPath = ref("");
 const showPreview = ref(false);
 
 const generateImage = async () => {
-  if (!prompt.value) return ElMessage.warning("请输入内容");
+  if (!prompt.value)
+    return ElMessage.warning(t("text2Image.pleaseEnterPrompt"));
   isGenerating.value = true;
   try {
     console.log("Starting image generation...");
@@ -133,11 +139,11 @@ const generateImage = async () => {
       "请适用text-to-scene-illustration这个skill根据配置生成图片",
     );
     console.log("AI Response:", answer);
-    ElMessage.success("图片生成成功");
+    ElMessage.success(t("text2Image.generateSuccess"));
     getImage();
   } catch (error) {
     console.error("生成失败:", error);
-    ElMessage.error("生成失败，请重试");
+    ElMessage.error(t("text2Image.generateFailed"));
   } finally {
     isGenerating.value = false;
   }
@@ -167,7 +173,7 @@ const downloadImage = async () => {
       filePath: generatedPath.value,
       alias: `${config.value.title}.png`,
     });
-    ElMessage.success("图片已下载");
+    ElMessage.success(t("text2Image.downloadSuccess"));
   }
 };
 
@@ -281,7 +287,7 @@ onMounted(async () => {
       }
 
       &:not(:has(img[src]))::after {
-        content: "生成后的图片将显示在这里";
+        content: attr(data-preview-hint);
         color: #909399;
         font-size: 13px;
         padding: 20px;

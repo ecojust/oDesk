@@ -14,7 +14,7 @@
     <!-- 预览弹窗 -->
     <el-dialog
       v-model="dialogVisible"
-      title="食谱预览"
+      :title="t('graphicalRecipes.dialogTitle')"
       width="90%"
       :before-close="handleClose"
       fullscreen
@@ -37,8 +37,8 @@
     <div class="loading-overlay" v-if="isLoading">
       <div class="loading-card">
         <div class="loading-icon">🍽️</div>
-        <h3>正在生成食谱图解</h3>
-        <p>AI 正在为您制作精美的食谱步骤图，请稍候...</p>
+        <h3>{{ t("graphicalRecipes.generating") }}</h3>
+        <p>{{ t("graphicalRecipes.generatingDescription") }}</p>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -55,7 +55,7 @@
             <div class="input-group">
               <input
                 type="text"
-                placeholder="输入菜品名称，例如：红烧肉、宫保鸡丁、意大利面"
+                :placeholder="t('graphicalRecipes.searchPlaceholder')"
                 class="search-input"
                 v-model="formData.dishName"
                 @keyup.enter="handleGenerate"
@@ -66,8 +66,10 @@
                 :disabled="isLoading"
               >
                 <i class="icon" :class="{ loading: isLoading }">🍳</i>
-                <span v-if="isLoading" class="loading-text">生成中</span>
-                <span v-else>生成</span>
+                <span v-if="isLoading" class="loading-text">{{
+                  t("graphicalRecipes.generatingStatus")
+                }}</span>
+                <span v-else>{{ t("graphicalRecipes.generate") }}</span>
               </button>
             </div>
           </div>
@@ -94,7 +96,11 @@
                 </div>
                 <div class="image-info">
                   <h4 class="image-title">
-                    {{ result.title || result.name || `步骤 ${index + 1}` }}
+                    {{
+                      result.title ||
+                      result.name ||
+                      t("graphicalRecipes.step", { index: index + 1 })
+                    }}
                   </h4>
                 </div>
               </div>
@@ -104,15 +110,15 @@
           <!-- 空状态 -->
           <div class="empty-state" v-else-if="!isLoading && hasSearched">
             <div class="empty-icon">👨‍🍳</div>
-            <h3>未找到相关食谱</h3>
-            <p>请尝试其他菜品名称</p>
+            <h3>{{ t("graphicalRecipes.noResults") }}</h3>
+            <p>{{ t("graphicalRecipes.tryAnother") }}</p>
           </div>
 
           <!-- 初始状态 -->
           <div class="initial-state" v-else>
             <div class="initial-icon">🍽️</div>
-            <h3>输入菜品名称生成食谱图解</h3>
-            <p>支持各种家常菜、西餐、甜点等菜品生成</p>
+            <h3>{{ t("graphicalRecipes.initialHint") }}</h3>
+            <p>{{ t("graphicalRecipes.supportDescription") }}</p>
           </div>
         </div>
       </div>
@@ -141,7 +147,7 @@ const {
   resetSkills,
   selectSkill,
   openWorkspace,
-} = useSkillApp(APPID, ['recipe-steps-diagram']);
+} = useSkillApp(APPID, ["recipe-steps-diagram"]);
 
 // 响应式数据
 const isLoading = ref(false);
@@ -299,7 +305,6 @@ onMounted(async () => {
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       min-width: 0;
-
 
       .panel-content {
         padding: 20px;

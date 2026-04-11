@@ -357,5 +357,17 @@
     "typeArtistic": "Artistic Creation",
     "typeTimeline": "Timeline",
     "typeMapRoute": "Map Route"
+  },
+  "ancienPoetry": {
+    "dialogTitle": "Poet Biography Details",
+    "generating": "Generating poet biography",
+    "generatingDescription": "AI is organizing poet information for you...",
+    "searchPlaceholder": "Enter poet name...",
+    "generate": "Generate",
+    "noResults": "No poets found",
+    "tryAnother": "Please try another poet name",
+    "initialHint": "Enter poet name to generate biography",
+    "supportDescription": "Supports ancient poets, lyricists, etc.",
+    "generateFailed": "Failed to generate poet biography: "
   }
 }

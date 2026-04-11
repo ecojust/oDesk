@@ -15,8 +15,8 @@
     <div class="loading-overlay" v-if="isSearching">
       <div class="loading-card">
         <div class="loading-icon">🎬</div>
-        <h3>正在搜索电影</h3>
-        <p>AI正在为您查找相关电影...</p>
+        <h3>{{ t("movieFinder.generating") }}</h3>
+        <p>{{ t("movieFinder.generatingDescription") }}</p>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -33,7 +33,7 @@
             <div class="input-group">
               <input
                 type="text"
-                placeholder="输入电影名称、演员、导演..."
+                :placeholder="t('movieFinder.searchPlaceholder')"
                 class="search-input"
                 v-model="searchQuery"
                 @keyup.enter="searchMovies"
@@ -44,8 +44,10 @@
                 :disabled="isSearching"
               >
                 <i class="icon" :class="{ loading: isSearching }">🔍</i>
-                <span v-if="isSearching" class="loading-text">搜索中</span>
-                <span v-else>搜索</span>
+                <span v-if="isSearching" class="loading-text">{{
+                  t("movieFinder.searchingStatus")
+                }}</span>
+                <span v-else>{{ t("movieFinder.search") }}</span>
               </button>
             </div>
           </div>
@@ -69,15 +71,15 @@
           <!-- 空状态 -->
           <div class="empty-state" v-else-if="!isSearching && hasSearched">
             <div class="empty-icon">🎬</div>
-            <h3>未找到相关电影</h3>
-            <p>请尝试其他关键词</p>
+            <h3>{{ t("movieFinder.noResults") }}</h3>
+            <p>{{ t("movieFinder.tryAnother") }}</p>
           </div>
 
           <!-- 初始状态 -->
           <div class="initial-state" v-else>
             <div class="initial-icon">🎥</div>
-            <h3>输入关键词搜索电影</h3>
-            <p>支持电影名称、演员、导演等搜索</p>
+            <h3>{{ t("movieFinder.initialHint") }}</h3>
+            <p>{{ t("movieFinder.supportDescription") }}</p>
           </div>
         </div>
       </div>

@@ -14,7 +14,7 @@
     <!-- 诗人生平预览弹窗 -->
     <el-dialog
       v-model="dialogVisible"
-      title="诗人生平详情"
+      :title="t('ancienPoetry.dialogTitle')"
       width="90%"
       :before-close="handleClose"
       fullscreen
@@ -37,8 +37,8 @@
     <div class="loading-overlay" v-if="isSearching">
       <div class="loading-card">
         <div class="loading-icon">📜</div>
-        <h3>正在生成诗人生平</h3>
-        <p>AI正在为您整理诗人资料...</p>
+        <h3>{{ t("ancienPoetry.generating") }}</h3>
+        <p>{{ t("ancienPoetry.generatingDescription") }}</p>
         <div class="progress-bar">
           <div class="progress-fill"></div>
         </div>
@@ -55,7 +55,7 @@
             <div class="input-group">
               <input
                 type="text"
-                placeholder="输入诗人名称..."
+                :placeholder="t('ancienPoetry.searchPlaceholder')"
                 class="search-input"
                 v-model="searchQuery"
                 @keyup.enter="searchPoet"
@@ -66,8 +66,10 @@
                 :disabled="isSearching"
               >
                 <i class="icon" :class="{ loading: isSearching }">🔍</i>
-                <span v-if="isSearching" class="loading-text">生成中</span>
-                <span v-else>生成</span>
+                <span v-if="isSearching" class="loading-text">{{
+                  t("ancienPoetry.generating")
+                }}</span>
+                <span v-else>{{ t("ancienPoetry.generate") }}</span>
               </button>
             </div>
           </div>
@@ -92,15 +94,15 @@
           <!-- 空状态 -->
           <div class="empty-state" v-else-if="!isSearching && hasSearched">
             <div class="empty-icon">📜</div>
-            <h3>未找到相关诗人</h3>
-            <p>请尝试其他诗人名称</p>
+            <h3>{{ t("ancienPoetry.noResults") }}</h3>
+            <p>{{ t("ancienPoetry.tryAnother") }}</p>
           </div>
 
           <!-- 初始状态 -->
           <div class="initial-state" v-else>
             <div class="initial-icon">🎭</div>
-            <h3>输入诗人名称生成生平</h3>
-            <p>支持古代诗人、词人等搜索</p>
+            <h3>{{ t("ancienPoetry.initialHint") }}</h3>
+            <p>{{ t("ancienPoetry.supportDescription") }}</p>
           </div>
         </div>
       </div>
@@ -160,7 +162,7 @@ const searchPoet = async () => {
     await loadPoetData();
   } catch (error) {
     console.error("Error generating poet biography:", error);
-    ElMessage.error("生成诗人生平失败：" + error.message);
+    ElMessage.error(t("ancienPoetry.generateFailed") + error.message);
   } finally {
     isSearching.value = false;
     selectedPoet.value = null;
@@ -285,7 +287,6 @@ onBeforeUnmount(async () => {});
       overflow: hidden;
       box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       min-width: 0;
-
 
       .panel-content {
         padding: 20px;
