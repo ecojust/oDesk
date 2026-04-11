@@ -28,6 +28,9 @@
   - **Travel Plan**: Personalized travel plan generator with multiple visual styles and image types
   - **Movie Finder**: Movie search tool for quickly finding interesting films
   - **Ancien Poetry**: Explore the lives and classic verses of poetry masters, experiencing traditional cultural charm
+  - **Graphical Recipes**: Intelligent recipe generation tool that automatically creates beautifully illustrated recipes based on ingredients, supporting multiple cuisine styles
+  - **Audio Book Creator**: Text-to-speech tool that converts text content into natural and fluent audiobooks
+  - **Text to Image**: AI image generation tool that generates high-quality creative images from text descriptions
 - **Workspace Management**: Create and manage development workspaces with opencode service execution
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
@@ -42,8 +45,12 @@
 </p>
 <p align="center">
   <img src="./preview/skillapps/5.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/6.png" width="45%" style="margin: 5px;">
 </p>
-
+<p align="center">
+  <img src="./preview/skillapps/7.png" width="45%" style="margin: 5px;">
+  <img src="./preview/skillapps/8.png" width="45%" style="margin: 5px;">
+</p>
 ### 2. Static Wallpapers
 
 - Browse local wallpaper list with thumbnail preview
@@ -78,6 +85,9 @@
    - **Travel Plan**: Enter destination, days and other requirements for AI to generate personalized travel plans with multiple visual styles
    - **Movie Finder**: Quickly search movie information and find interesting films
    - **Ancien Poetry**: Explore the lives and classic verses of ancient and modern poetry masters, experiencing traditional cultural charm
+   - **Graphical Recipes**: Enter available ingredients, AI automatically generates detailed recipes with beautiful step-by-step illustrations, supports multiple cuisine selections
+   - **Audio Book Creator**: Import text files or paste content, one-click generation of high-quality audiobooks, supports speech rate and tone adjustment
+   - **Text to Image**: Generate professional creative images through text descriptions, supports multiple art styles, resolution settings and batch generation
 2. **Static Wallpapers**: Browse local wallpapers, download cloud wallpapers, and set slideshow in the "Static Wallpapers" tab
 3. **Shader Wallpapers**: Create, edit, and preview GLSL shaders in the "Shader Wallpapers" tab
 4. **HTML Wallpapers**: Set any webpage as wallpaper with real-time editing preview in the "Web Wallpapers" tab
