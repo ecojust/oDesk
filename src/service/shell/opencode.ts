@@ -235,6 +235,7 @@ export default class Opencode {
             path: filePath,
             url: fileUrl,
             time: item[1],
+            size: item[2],
             type: title.split(".").pop(),
           };
         });
