@@ -70,12 +70,12 @@ const getList = () => {
       color: "#8B5CF6",
     },
     {
-      title: t("skillapps.list.graphicalRecipes.title"),
+      title: t("skillapps.list.songMovieGenerate.title"),
       key: "SongMovieGenerate",
-      description: t("skillapps.list.graphicalRecipes.description"),
-      icon: "🍳",
-      category: t("skillapps.list.graphicalRecipes.category"),
-      color: "#FF9F43",
+      description: t("skillapps.list.songMovieGenerate.description"),
+      icon: "🎵",
+      category: t("skillapps.list.songMovieGenerate.category"),
+      color: "#667eea",
     },
   ];
 };

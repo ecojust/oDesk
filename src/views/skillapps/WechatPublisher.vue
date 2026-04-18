@@ -18,15 +18,15 @@
         <h3>
           {{
             isPolishMode
-              ? t("skillapps.polishingArticles")
-              : t("skillapps.searchingArticles")
+              ? t("wechatPublisher.polishingArticles")
+              : t("wechatPublisher.searchingArticles")
           }}
         </h3>
         <p>
           {{
             isPolishMode
-              ? t("skillapps.aiGeneratingPolish")
-              : t("skillapps.aiGeneratingSearch")
+              ? t("wechatPublisher.aiGeneratingPolish")
+              : t("wechatPublisher.aiGeneratingSearch")
           }}
         </p>
         <div class="progress-bar">

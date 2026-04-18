@@ -107,6 +107,11 @@
         "title": "AI Text to Image",
         "description": "Intelligent text to image generation with storyboard creation, multi-style rendering, batch generation",
         "category": "Multimedia Tools"
+      },
+      "songMovieGenerate": {
+        "title": "Song Video Generator",
+        "description": "AI powered song to music video converter with animated lyrics",
+        "category": "Multimedia Tools"
       }
     },
     "launch": "Launch",
@@ -260,7 +265,10 @@
     "noArticleContent": "No Article Content",
     "pleaseSearchFirst": "Please generate article through search before preview and publish",
     "searchingArticles": "Searching Articles...",
+    "polishingArticles": "Polishing Article...",
     "aiGenerating": "AI is generating article content based on your keywords",
+    "aiGeneratingSearch": "AI is searching and generating article content based on your keywords",
+    "aiGeneratingPolish": "AI is polishing and optimizing your article content",
     "publishingArticle": "Publishing Article...",
     "pushingToWechat": "Pushing article to WeChat Official Account platform",
     "publishSuccess": "Publish Success!",
@@ -369,5 +377,40 @@
     "initialHint": "Enter poet name to generate biography",
     "supportDescription": "Supports ancient poets, lyricists, etc.",
     "generateFailed": "Failed to generate poet biography: "
+  },
+  "songMovieGenerate": {
+    "panelTitle": "Video Configuration",
+    "previewTitle": "Video Preview",
+    "songName": "Song Name",
+    "songNamePlaceholder": "Enter song name",
+    "selectMp3File": "Select MP3 File",
+    "selectAudioPlaceholder": "Select audio file",
+    "uploadMp3": "📁 Upload MP3",
+    "lyricOffset": "Lyric Offset (sec)",
+    "lyricEditor": "Lyric Editor",
+    "lyricPlaceholder": "Enter lyrics content, one line per sentence\nSupports timestamp format: [00:00.00] Lyrics content",
+    "generateVideo": "Generate Video",
+    "generatedVideos": "Generated Videos",
+    "previewPlaceholder": "Video Preview Area",
+    "previewDesc": "Click preview after configuration to see effect",
+    "download": "⬇️ Download",
+    "generatingTitle": "Generating Video",
+    "initializing": "Initializing, please wait...",
+    "videoPlayerTitle": "Video Player",
+    "browserNotSupport": "Your browser does not support video playback",
+    "configSaveSuccess": "Configuration saved successfully",
+    "configSaveFailed": "Failed to save configuration",
+    "lyricSaveSuccess": "Lyrics saved successfully",
+    "lyricSaveFailed": "Failed to save lyrics",
+    "pleaseFillInfo": "Please fill in song name and select audio file",
+    "generateSuccess": "Video generation completed",
+    "generateFailed": "Generation failed, please try again",
+    "downloadSuccess": "Video downloaded",
+    "mp3UploadSuccess": "MP3 file uploaded successfully",
+    "mp3UploadFailed": "MP3 file upload failed, please try again",
+    "onlyMp3Supported": "Only MP3 format audio files are supported",
+    "stepEntries": "Entries",
+    "stepStartTime": "Start Time",
+    "stepTotalDuration": "Total Duration"
   }
 }

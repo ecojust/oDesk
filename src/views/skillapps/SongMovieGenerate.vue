@@ -15,28 +15,32 @@
     <div class="content-section">
       <!-- 左侧配置面板 -->
       <div class="config-panel">
-        <div class="panel-title">视频配置</div>
+        <div class="panel-title">{{ t("songMovieGenerate.panelTitle") }}</div>
 
         <!-- 歌曲名称 -->
         <div class="form-item">
-          <label class="form-label">歌曲名称</label>
+          <label class="form-label">{{
+            t("songMovieGenerate.songName")
+          }}</label>
           <input
             type="text"
             v-model="config.name"
             class="form-input"
-            placeholder="请输入歌曲名称"
+            :placeholder="t('songMovieGenerate.songNamePlaceholder')"
             @change="saveConfig"
           />
         </div>
 
         <!-- MP3文件选择 -->
         <div class="form-item">
-          <label class="form-label">选择MP3文件</label>
+          <label class="form-label">{{
+            t("songMovieGenerate.selectMp3File")
+          }}</label>
           <div class="file-selector">
             <el-select
               v-model="config.music_file"
               class="form-select file-input"
-              placeholder="请选择音频文件"
+              :placeholder="t('songMovieGenerate.selectAudioPlaceholder')"
               @change="saveConfig"
               clearable
             >
@@ -49,14 +53,16 @@
             </el-select>
 
             <button class="select-btn" @click="openMp3FileSelector">
-              📁 上传MP3
+              {{ t("songMovieGenerate.uploadMp3") }}
             </button>
           </div>
         </div>
 
         <!-- 时间偏移 -->
         <div class="form-item">
-          <label class="form-label">歌词偏移 (秒)</label>
+          <label class="form-label">{{
+            t("songMovieGenerate.lyricOffset")
+          }}</label>
           <input
             type="number"
             v-model.number="config.offset"
@@ -69,11 +75,13 @@
 
         <!-- 歌词编辑区域 -->
         <div class="form-item lyric-section">
-          <label class="form-label">歌词编辑</label>
+          <label class="form-label">{{
+            t("songMovieGenerate.lyricEditor")
+          }}</label>
           <textarea
             v-model="lyric"
             class="lyric-editor"
-            placeholder="请输入歌词内容，每行一句&#10;支持带时间轴格式：[00:00.00] 歌词内容"
+            :placeholder="t('songMovieGenerate.lyricPlaceholder')"
             @change="saveLyric"
             rows="12"
           ></textarea>
@@ -81,17 +89,21 @@
 
         <!-- 操作按钮 -->
         <div class="action-group">
-          <button class="primary-btn" @click="generateVideo">生成视频</button>
+          <button class="primary-btn" @click="generateVideo">
+            {{ t("songMovieGenerate.generateVideo") }}
+          </button>
         </div>
       </div>
 
       <!-- 右侧预览区域 -->
       <div class="preview-panel">
-        <div class="panel-title">视频预览</div>
+        <div class="panel-title">{{ t("songMovieGenerate.previewTitle") }}</div>
 
         <!-- 已生成视频列表 -->
         <div class="video-list-section" v-if="mp4list.length > 0">
-          <div class="list-title">已生成视频 ({{ mp4list.length }})</div>
+          <div class="list-title">
+            {{ t("songMovieGenerate.generatedVideos") }} ({{ mp4list.length }})
+          </div>
           <div class="video-list">
             <div class="video-item" v-for="item in mp4list" :key="item.path">
               <div class="video-icon" @click="playVideo(item)">🎬</div>
@@ -104,9 +116,9 @@
               <button
                 class="download-btn"
                 @click.stop="downloadVideo(item)"
-                title="下载视频"
+                :title="t('songMovieGenerate.download')"
               >
-                ⬇️ 下载
+                {{ t("songMovieGenerate.download") }}
               </button>
             </div>
           </div>
@@ -115,8 +127,12 @@
         <div class="preview-area" v-else>
           <div class="preview-placeholder">
             <div class="preview-icon">🎵</div>
-            <div class="preview-text">视频预览区域</div>
-            <div class="preview-desc">配置完成后点击预览查看效果</div>
+            <div class="preview-text">
+              {{ t("songMovieGenerate.previewPlaceholder") }}
+            </div>
+            <div class="preview-desc">
+              {{ t("songMovieGenerate.previewDesc") }}
+            </div>
           </div>
         </div>
       </div>
@@ -126,7 +142,7 @@
   <!-- 进度显示弹窗 -->
   <el-dialog
     v-model="showProgressDialog"
-    title="正在生成视频"
+    :title="t('songMovieGenerate.generatingTitle')"
     width="600px"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
@@ -145,8 +161,11 @@
           <div class="step-content">
             <div class="step-name">{{ step.step }}</div>
             <div class="step-detail">
-              条目: {{ step.entries }} | 开始时间: {{ step.first_start }}s |
-              总时长: {{ step.music_dur }}s
+              {{ t("songMovieGenerate.stepEntries") }}: {{ step.entries }} |
+              {{ t("songMovieGenerate.stepStartTime") }}:
+              {{ step.first_start }}s |
+              {{ t("songMovieGenerate.stepTotalDuration") }}:
+              {{ step.music_dur }}s
             </div>
           </div>
         </div>
@@ -155,7 +174,9 @@
         class="progress-loading"
         v-if="!config.steps || config.steps.length === 0"
       >
-        <div class="loading-text">正在初始化，请稍候...</div>
+        <div class="loading-text">
+          {{ t("songMovieGenerate.initializing") }}
+        </div>
       </div>
     </div>
   </el-dialog>
@@ -163,7 +184,7 @@
   <!-- 视频播放弹窗 -->
   <el-dialog
     v-model="showVideoDialog"
-    :title="currentVideo?.title || '视频播放'"
+    :title="currentVideo?.title || t('songMovieGenerate.videoPlayerTitle')"
     width="80%"
     :close-on-click-modal="false"
     destroy-on-close
@@ -180,7 +201,7 @@
         class="video-player"
         preload="metadata"
       >
-        您的浏览器不支持视频播放
+        {{ t("songMovieGenerate.browserNotSupport") }}
       </video>
     </div>
   </el-dialog>
@@ -258,10 +279,10 @@ const saveConfig = async (showmessage = true) => {
       "config.json",
       JSON.stringify(config.value, null, 2),
     );
-    showmessage && ElMessage.success("配置保存成功");
+    showmessage && ElMessage.success(t("songMovieGenerate.configSaveSuccess"));
   } catch (error) {
     console.error("保存配置失败:", error);
-    ElMessage.error("配置保存失败");
+    ElMessage.error(t("songMovieGenerate.configSaveFailed"));
   }
 };
 

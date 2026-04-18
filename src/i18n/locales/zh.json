@@ -117,6 +117,11 @@
         "title": "AI文生图",
         "description": "智能文本生成图片，支持分镜创作、多风格渲染、批量出图",
         "category": "多媒体工具"
+      },
+      "songMovieGenerate": {
+        "title": "歌曲视频生成器",
+        "description": "AI智能将歌曲转换为带歌词动画的音乐视频",
+        "category": "多媒体工具"
       }
     },
     "launch": "启动",
@@ -270,7 +275,10 @@
     "noArticleContent": "暂无文章内容",
     "pleaseSearchFirst": "请先通过查询生成文章后再进行预览和发布",
     "searchingArticles": "正在搜索文章...",
+    "polishingArticles": "正在润色文章...",
     "aiGenerating": "AI正在根据您的关键词生成文章内容",
+    "aiGeneratingSearch": "AI正在根据您的关键词搜索并生成文章内容",
+    "aiGeneratingPolish": "AI正在润色并优化您的文章内容",
     "publishingArticle": "正在发布文章...",
     "pushingToWechat": "正在将文章推送到微信公众号平台",
     "publishSuccess": "发布成功!",
@@ -447,5 +455,40 @@
     "tryAnother": "请尝试其他关键词",
     "initialHint": "输入关键词搜索电影",
     "supportDescription": "支持电影名称、演员、导演等搜索"
+  },
+  "songMovieGenerate": {
+    "panelTitle": "视频配置",
+    "previewTitle": "视频预览",
+    "songName": "歌曲名称",
+    "songNamePlaceholder": "请输入歌曲名称",
+    "selectMp3File": "选择MP3文件",
+    "selectAudioPlaceholder": "请选择音频文件",
+    "uploadMp3": "📁 上传MP3",
+    "lyricOffset": "歌词偏移 (秒)",
+    "lyricEditor": "歌词编辑",
+    "lyricPlaceholder": "请输入歌词内容，每行一句\n支持带时间轴格式：[00:00.00] 歌词内容",
+    "generateVideo": "生成视频",
+    "generatedVideos": "已生成视频",
+    "previewPlaceholder": "视频预览区域",
+    "previewDesc": "配置完成后点击预览查看效果",
+    "download": "⬇️ 下载",
+    "generatingTitle": "正在生成视频",
+    "initializing": "正在初始化，请稍候...",
+    "videoPlayerTitle": "视频播放",
+    "browserNotSupport": "您的浏览器不支持视频播放",
+    "configSaveSuccess": "配置保存成功",
+    "configSaveFailed": "配置保存失败",
+    "lyricSaveSuccess": "歌词保存成功",
+    "lyricSaveFailed": "保存失败",
+    "pleaseFillInfo": "请填写歌曲名称并选择音频文件",
+    "generateSuccess": "视频生成完成",
+    "generateFailed": "生成失败，请重试",
+    "downloadSuccess": "视频已下载",
+    "mp3UploadSuccess": "MP3文件上传成功",
+    "mp3UploadFailed": "MP3文件上传失败，请重试",
+    "onlyMp3Supported": "只能选择MP3格式的音频文件",
+    "stepEntries": "条目",
+    "stepStartTime": "开始时间",
+    "stepTotalDuration": "总时长"
   }
 }
