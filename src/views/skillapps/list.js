@@ -69,14 +69,14 @@ const getList = () => {
       category: t("skillapps.list.text2Image.category"),
       color: "#8B5CF6",
     },
-    // {
-    //   title: t("skillapps.list.graphicalRecipes.title"),
-    //   key: "app",
-    //   description: t("skillapps.list.graphicalRecipes.description"),
-    //   icon: "🍳",
-    //   category: t("skillapps.list.graphicalRecipes.category"),
-    //   color: "#FF9F43",
-    // },
+    {
+      title: t("skillapps.list.graphicalRecipes.title"),
+      key: "SongMovieGenerate",
+      description: t("skillapps.list.graphicalRecipes.description"),
+      icon: "🍳",
+      category: t("skillapps.list.graphicalRecipes.category"),
+      color: "#FF9F43",
+    },
   ];
 };
 

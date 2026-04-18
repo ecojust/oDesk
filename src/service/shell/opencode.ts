@@ -410,4 +410,23 @@ const audio_book_config = {
   },
 };
 
-export { wechat_config, audio_book_config };
+const songMovieGeneratorconfig = {
+  name: "",
+  lyric_file: "lyric.txt",
+  music_file: "",
+  offset: 1.0,
+  thumb: "thumb2.png",
+  pip: {
+    name: "",
+    size: {
+      width: 300,
+      height: 300,
+    },
+    position: {
+      x: 0,
+      y: 0,
+    },
+  },
+};
+
+export { wechat_config, audio_book_config, songMovieGeneratorconfig };

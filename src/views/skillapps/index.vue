@@ -73,7 +73,7 @@ import MovieFinder from "./MovieFinder.vue";
 import AncienPoetry from "./AncienPoetry.vue";
 import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
-
+import SongMovieGenerate from "./SongMovieGenerate.vue";
 import Text2Image from "./Text2Image.vue";
 
 import app from "./app.vue";
@@ -89,6 +89,7 @@ const components = {
   GraphicalRecipes: GraphicalRecipes,
   AudioBookCreator: AudioBookCreator,
   Text2Image: Text2Image,
+  SongMovieGenerate: SongMovieGenerate,
 };
 
 const activeApp = ref("MusicDownload");
