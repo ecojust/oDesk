@@ -74,6 +74,7 @@ import AncienPoetry from "./AncienPoetry.vue";
 import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
 import SongMovieGenerate from "./SongMovieGenerate.vue";
+
 import Text2Image from "./Text2Image.vue";
 
 import app from "./app.vue";

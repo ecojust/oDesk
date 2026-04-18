@@ -32,20 +32,26 @@
         <!-- MP3文件选择 -->
         <div class="form-item">
           <label class="form-label">选择MP3文件</label>
-          <el-select
-            v-model="config.music_file"
-            class="form-select"
-            placeholder="请选择音频文件"
-            @change="saveConfig"
-            clearable
-          >
-            <el-option
-              v-for="item in mp3list"
-              :key="item.path"
-              :label="item.title"
-              :value="item.title"
-            />
-          </el-select>
+          <div class="file-selector">
+            <el-select
+              v-model="config.music_file"
+              class="form-select file-input"
+              placeholder="请选择音频文件"
+              @change="saveConfig"
+              clearable
+            >
+              <el-option
+                v-for="item in mp3list"
+                :key="item.path"
+                :label="item.title"
+                :value="item.title"
+              />
+            </el-select>
+
+            <button class="select-btn" @click="openMp3FileSelector">
+              📁 上传MP3
+            </button>
+          </div>
         </div>
 
         <!-- 时间偏移 -->
@@ -126,6 +132,7 @@
     :close-on-press-escape="false"
     :destroy-on-close="false"
     center
+    align-center
   >
     <div class="progress-container">
       <div class="progress-steps">
@@ -161,6 +168,8 @@
     :close-on-click-modal="false"
     destroy-on-close
     center
+    align-center
+    modal-class="show-mask"
   >
     <div class="video-player-container">
       <video
@@ -185,6 +194,8 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
+import { open } from "@tauri-apps/plugin-dialog";
+
 const { t } = useI18n();
 
 // 使用公共技能应用组合式函数
@@ -217,6 +228,7 @@ const showProgressDialog = ref(false);
 const currentVideo = ref(null);
 const currentVideoPath = ref("");
 const videoPlayer = ref(null);
+const mp3FileInput = ref(null);
 let progressInterval = null;
 
 const readConfig = async () => {
@@ -373,30 +385,78 @@ const playVideo = (item) => {
 
 // 下载视频
 const downloadVideo = async (item) => {
-  // // 创建a标签实现下载
-  // const link = document.createElement("a");
-  // link.href = item.url;
-  // link.download = item.title;
-  // link.target = "_blank";
-  // document.body.appendChild(link);
-  // link.click();
-  // document.body.removeChild(link);
-  // ElMessage.success(`正在下载: ${item.title}`);
-
   if (item.path) {
     await Opencode.export_workspace_file_with_alias(APPID, {
       filePath: item.path,
       alias: item.title,
     });
     ElMessage.success(t("audioBookCreator.downloadSuccess"));
+  }
+};
 
-    // const link = document.createElement("a");
-    // link.href = videoUrl.value;
-    // link.download = `有声书-${config.value.title || "生成结果"}.mp4`;
-    // document.body.appendChild(link);
-    // link.click();
-    // document.body.removeChild(link);
-    // ElMessage.success("视频开始下载");
+// 打开MP3文件选择框
+
+const openMp3FileSelector = async () => {
+  console.log("selectCoverImage");
+  try {
+    const path = await open({
+      multiple: false,
+      filters: [
+        {
+          name: t("common.image"),
+          extensions: ["mp3"],
+        },
+      ],
+    });
+
+    if (path) {
+      await Opencode.copy_file_to_workspace(APPID, path);
+      getmp3list();
+
+      ElMessage.success(t("audioBookCreator.coverSelected"));
+    }
+  } catch (error) {
+    console.error("选择mp3失败:", error);
+    ElMessage.error(t("audioBookCreator.selectCoverFailed"));
+  }
+};
+
+// 处理MP3文件上传
+const handleMp3Upload = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  // 验证文件类型
+  if (!file.name.toLowerCase().endsWith(".mp3")) {
+    ElMessage.error("只能选择MP3格式的音频文件");
+    return;
+  }
+
+  try {
+    // 读取文件内容
+    const arrayBuffer = await file.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+
+    // 将文件写入工作空间根目录
+    await Opencode.write_workspace_file_binary(APPID, {
+      filePath: file.name,
+      content: Array.from(uint8Array),
+    });
+
+    ElMessage.success(`MP3文件 "${file.name}" 上传成功`);
+
+    // 刷新MP3列表
+    await getmp3list();
+
+    // 自动选择刚上传的文件
+    config.value.music_file = file.name.replace(".mp3", "");
+    await saveConfig(false);
+  } catch (error) {
+    console.error("上传MP3失败:", error);
+    ElMessage.error("MP3文件上传失败，请重试");
+  } finally {
+    // 清空input，允许重复选择同一个文件
+    event.target.value = "";
   }
 };
 
