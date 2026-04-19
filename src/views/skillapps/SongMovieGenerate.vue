@@ -22,13 +22,23 @@
           <label class="form-label">{{
             t("songMovieGenerate.songName")
           }}</label>
-          <input
-            type="text"
-            v-model="config.name"
-            class="form-input"
-            :placeholder="t('songMovieGenerate.songNamePlaceholder')"
-            @change="saveConfig"
-          />
+          <div class="input-with-button">
+            <input
+              type="text"
+              v-model="config.name"
+              class="form-input"
+              :placeholder="t('songMovieGenerate.songNamePlaceholder')"
+              @change="saveConfig"
+              @keyup.enter="handleSongSearch"
+            />
+            <button
+              class="search-btn"
+              @click="handleSongSearch"
+              :title="t('skillapps.search')"
+            >
+              <el-icon><Search /></el-icon>
+            </button>
+          </div>
         </div>
 
         <!-- MP3文件选择 -->
@@ -213,6 +223,7 @@ import { useI18n } from "vue-i18n";
 import Opencode, { songMovieGeneratorconfig } from "@/service/shell/opencode";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { ElMessage } from "element-plus";
+import { Search } from "@element-plus/icons-vue";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import { open } from "@tauri-apps/plugin-dialog";
@@ -341,6 +352,29 @@ const saveLyric = async () => {
 const clearLyric = () => {
   lyric.value = "";
   saveLyric();
+};
+
+const handleSongSearch = async () => {
+  if (!config.value.name) {
+    ElMessage.warning("请填写歌曲名称并选择音频文件");
+    return;
+  }
+
+  try {
+    console.log("Starting video generation...");
+    const answer = await Opencode.send_message(
+      "请使用gequbao-downloader这个skill下载歌曲",
+    );
+    readlyric();
+    getmp3list();
+
+    ElMessage.success("歌曲下载完成");
+  } catch (error) {
+    console.error("下载失败:", error);
+    ElMessage.error(t("audioBookCreator.generateFailed"));
+  } finally {
+    //
+  }
 };
 
 // 生成视频
@@ -555,6 +589,45 @@ onBeforeUnmount(async () => {});
     font-size: 14px;
     font-weight: 500;
     color: #606266;
+  }
+
+  .input-with-button {
+    display: flex;
+    gap: 8px;
+
+    .form-input {
+      flex: 1;
+      height: 42px;
+      padding: 0 14px;
+      border: 1px solid #dcdfe6;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.2s;
+
+      &:focus {
+        outline: none;
+        border-color: #409eff;
+        box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.2);
+      }
+    }
+
+    .search-btn {
+      height: 42px;
+      width: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #409eff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        background: #66b1ff;
+      }
+    }
   }
 
   .form-input {
