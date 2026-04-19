@@ -114,24 +114,30 @@
           <div class="list-title">
             {{ t("songMovieGenerate.generatedVideos") }} ({{ mp4list.length }})
           </div>
-          <div class="video-list">
-            <div class="video-item" v-for="item in mp4list" :key="item.path">
-              <div class="video-icon" @click="playVideo(item)">🎬</div>
-              <div class="video-info" @click="playVideo(item)">
-                <div class="video-name">{{ item.title }}</div>
-                <div class="video-size">
-                  {{ new Date(item.time).toLocaleString() }}
+          <el-scrollbar height="calc(100vh - 340px)">
+            <div class="video-list">
+              <div class="video-item" v-for="item in mp4list" :key="item.path">
+                <div class="video-card" @click="playVideo(item)">
+                  <div class="video-thumbnail">
+                    <div class="play-icon">▶</div>
+                  </div>
+                  <div class="video-card-info">
+                    <div class="video-name">{{ item.title }}</div>
+                    <div class="video-time">
+                      {{ new Date(item.time).toLocaleString() }}
+                    </div>
+                  </div>
                 </div>
+                <button
+                  class="download-btn"
+                  @click.stop="downloadVideo(item)"
+                  :title="t('songMovieGenerate.download')"
+                >
+                  {{ t("songMovieGenerate.download") }}
+                </button>
               </div>
-              <button
-                class="download-btn"
-                @click.stop="downloadVideo(item)"
-                :title="t('songMovieGenerate.download')"
-              >
-                {{ t("songMovieGenerate.download") }}
-              </button>
             </div>
-          </div>
+          </el-scrollbar>
         </div>
 
         <div class="preview-area" v-else>
@@ -820,61 +826,93 @@ onBeforeUnmount(async () => {});
     }
 
     .video-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      max-height: 320px;
-      overflow-y: auto;
-      padding-right: 4px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      padding: 8px 8px 16px 0;
     }
 
     .video-item {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      background: #f5f7fa;
-      border-radius: 8px;
-      cursor: pointer;
+      flex-direction: column;
+      gap: 8px;
       transition: all 0.2s;
 
       &:hover {
-        background: #ecf5ff;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+
+        .video-card {
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
       }
 
-      .video-icon {
-        font-size: 24px;
+      .video-card {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
         cursor: pointer;
-      }
+        transition: all 0.2s;
+        border: 1px solid #ebeef5;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 
-      .video-info {
-        flex: 1;
-        cursor: pointer;
+        .video-thumbnail {
+          height: 120px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
 
-        .video-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: #303133;
-          margin-bottom: 2px;
+          .play-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667eea;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.2s;
+          }
+
+          &:hover .play-icon {
+            transform: scale(1.1);
+            background: #ffffff;
+          }
         }
 
-        .video-size {
-          font-size: 12px;
-          color: #909399;
+        .video-card-info {
+          padding: 12px;
+
+          .video-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #303133;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
+
+          .video-time {
+            font-size: 12px;
+            color: #909399;
+          }
         }
       }
 
       .download-btn {
-        padding: 6px 12px;
+        width: 100%;
+        padding: 8px 12px;
         background: #409eff;
         color: white;
         border: none;
-        border-radius: 6px;
+        border-radius: 8px;
         font-size: 12px;
         cursor: pointer;
         transition: all 0.2s;
-        flex-shrink: 0;
 
         &:hover {
           background: #66b1ff;
