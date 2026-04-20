@@ -97,6 +97,13 @@
           ></textarea>
         </div>
 
+        <!-- 生成说明按钮 -->
+        <div class="description-btn-area" v-if="description">
+          <button class="secondary-btn" @click="showDescription">
+            📝 {{ t("songMovieGenerate.viewDescription", "查看生成说明") }}
+          </button>
+        </div>
+
         <!-- 操作按钮 -->
         <div class="action-group">
           <button class="primary-btn" @click="generateVideo">
@@ -224,7 +231,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, onBeforeUnmount } from "vue";
+import { ref, onMounted, nextTick, onBeforeUnmount, h } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode, { songMovieGeneratorconfig } from "@/service/shell/opencode";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
@@ -312,6 +319,45 @@ const readlyric = async () => {
     await Opencode.write_workspace_file_content(APPID, "lyric.txt", "");
     console.log("lyric", error);
   }
+};
+
+const description = ref("");
+const readDescription = async () => {
+  try {
+    const res = await Opencode.read_workspace_file_content(
+      APPID,
+      "description.txt",
+    );
+    description.value = res;
+  } catch (error) {
+    description.value = "";
+  }
+};
+
+// 显示生成说明
+const showDescription = () => {
+  ElMessage({
+    type: "info",
+    duration: 0,
+    showClose: true,
+    offset: 50,
+    customClass: "description-message",
+    message: h(
+      "div",
+      {
+        style: {
+          whiteSpace: "pre-wrap",
+          lineHeight: "1.8",
+          color: "#606266",
+          fontSize: "14px",
+          maxHeight: "500px",
+          overflowY: "auto",
+          paddingRight: "10px",
+        },
+      },
+      description.value,
+    ),
+  });
 };
 
 const getmp3list = async () => {
@@ -410,6 +456,7 @@ const generateVideo = async () => {
       "请使用song-movie-generater这个skill生成歌曲视频",
     );
     getmp4list();
+    readDescription();
 
     console.log("AI Response:", answer);
     ElMessage.success("视频生成完成");
@@ -528,6 +575,7 @@ onMounted(async () => {
   readlyric();
   getmp3list();
   getmp4list();
+  readDescription();
 });
 
 onBeforeUnmount(async () => {});
@@ -811,6 +859,43 @@ onBeforeUnmount(async () => {});
     .preview-desc {
       font-size: 14px;
       color: #c0c4cc;
+    }
+  }
+
+  .description-btn-area {
+    margin-bottom: 16px;
+
+    .secondary-btn {
+      width: auto;
+      height: 36px;
+      padding: 0 20px;
+      font-size: 13px;
+    }
+  }
+
+  // 生成说明面板样式
+  .description-section {
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #667eea;
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #303133;
+      margin-bottom: 12px;
+    }
+
+    .description-content {
+      white-space: pre-wrap;
+      line-height: 1.8;
+      color: #606266;
+      font-size: 13px;
+      max-height: 180px;
+      overflow-y: auto;
+      padding-right: 8px;
     }
   }
 
