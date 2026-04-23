@@ -169,6 +169,23 @@
           </div>
         </div>
         <div class="panel-content">
+          <!-- 封面预览 -->
+          <div class="thumb-preview">
+            <h4>{{ t("skillapps.wechatPublisher.coverPreview") }}</h4>
+            <div class="thumb-container">
+              <img
+                v-if="config.thumb"
+                :src="config.thumb"
+                alt="cover"
+                class="thumb-image"
+              />
+              <div v-else class="thumb-placeholder">
+                <i class="icon">🖼️</i>
+                <span>{{ t("skillapps.wechatPublisher.noCover") }}</span>
+              </div>
+            </div>
+          </div>
+
           <!-- 搜索模式输入 -->
           <div class="search-container" v-if="!isPolishMode">
             <textarea
@@ -209,23 +226,6 @@
               }}</span>
               <span v-else>{{ t("skillapps.startPolish") }}</span>
             </button>
-          </div>
-
-          <!-- 封面预览 -->
-          <div class="thumb-preview">
-            <h4>{{ t("skillapps.coverPreview") }}</h4>
-            <div class="thumb-container">
-              <img
-                v-if="config.thumb"
-                :src="config.thumb"
-                alt="cover"
-                class="thumb-image"
-              />
-              <div v-else class="thumb-placeholder">
-                <i class="icon">🖼️</i>
-                <span>{{ t("skillapps.noCover") }}</span>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -864,9 +864,12 @@ onMounted(async () => {
         padding: 20px;
         height: calc(100% - 64px);
         overflow-y: auto;
+        display: flex;
+        flex-direction: column;
 
         // 搜索模式容器样式
         .search-container {
+          flex: 1;
           display: flex;
           flex-direction: column;
           height: 100%;
@@ -928,6 +931,7 @@ onMounted(async () => {
 
         // 润色模式容器样式
         .polish-container {
+          flex: 1;
           display: flex;
           flex-direction: column;
           height: 100%;
@@ -1581,25 +1585,27 @@ onMounted(async () => {
 
   /* 封面预览样式 */
   .thumb-preview {
-    margin-top: 20px;
-    padding: 16px;
-    border: 1px solid #eee;
+    flex-shrink: 0;
+    height: 35%;
+    margin-bottom: 16px;
     border-radius: 8px;
     background-color: #fafafa;
-  }
+    overflow: hidden;
+    box-sizing: border-box;
 
-  .thumb-preview h4 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    color: #333;
-    font-size: 14px;
+    h4 {
+      margin: 12px 16px 8px;
+      color: #333;
+      font-size: 14px;
+      font-weight: 600;
+    }
   }
 
   .thumb-container {
     width: 100%;
-    height: 180px;
-    border: 2px dashed #ddd;
-    border-radius: 8px;
+    height: calc(100% - 40px);
+    padding: 12px;
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1609,21 +1615,24 @@ onMounted(async () => {
   .thumb-image {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
   }
 
   .thumb-placeholder {
     text-align: center;
     color: #999;
-  }
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
 
-  .thumb-placeholder .icon {
-    font-size: 32px;
-    margin-bottom: 8px;
-  }
+    .icon {
+      font-size: 32px;
+    }
 
-  .thumb-placeholder span {
-    font-size: 14px;
+    span {
+      font-size: 14px;
+    }
   }
 }
 </style>

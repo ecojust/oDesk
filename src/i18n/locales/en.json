@@ -112,6 +112,10 @@
         "title": "Song Video Generator",
         "description": "AI powered song to music video converter with animated lyrics",
         "category": "Multimedia Tools"
+      },
+      "wechatPublisher": {
+        "coverPreview": "Cover Preview",
+        "noCover": "No cover"
       }
     },
     "launch": "Launch",

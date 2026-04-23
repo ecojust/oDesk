@@ -50,6 +50,12 @@
       <!-- 搜索和结果面板 -->
       <div class="search-panel">
         <div class="panel-content">
+          <!-- 选中预览图 -->
+          <div class="selected-preview" v-if="selectedImage">
+            <button class="close-preview" @click="selectedImage = null">✕</button>
+            <img :src="selectedImage.url" :alt="selectedImage.title" />
+          </div>
+
           <!-- 搜索容器 -->
           <div class="search-container">
             <div class="input-group">
@@ -74,14 +80,14 @@
             </div>
           </div>
 
-          <!-- 结果列表 -->
-          <div class="results-list" v-if="searchResults.length > 0">
-            <div class="image-grid">
+          <div class="scrollable-content">
+            <!-- 结果列表 -->
+            <div class="image-grid" v-if="searchResults.length > 0">
               <div
                 v-for="(result, index) in searchResults"
                 :key="result.id || index"
                 class="image-item"
-                @click="preview(result.url)"
+                @click="preview(result)"
               >
                 <div class="image-preview">
                   <img
@@ -105,20 +111,20 @@
                 </div>
               </div>
             </div>
-          </div>
 
-          <!-- 空状态 -->
-          <div class="empty-state" v-else-if="!isLoading && hasSearched">
-            <div class="empty-icon">👨‍🍳</div>
-            <h3>{{ t("graphicalRecipes.noResults") }}</h3>
-            <p>{{ t("graphicalRecipes.tryAnother") }}</p>
-          </div>
+            <!-- 空状态 -->
+            <div class="empty-state" v-else-if="!isLoading && hasSearched">
+              <div class="empty-icon">👨‍🍳</div>
+              <h3>{{ t("graphicalRecipes.noResults") }}</h3>
+              <p>{{ t("graphicalRecipes.tryAnother") }}</p>
+            </div>
 
-          <!-- 初始状态 -->
-          <div class="initial-state" v-else>
-            <div class="initial-icon">🍽️</div>
-            <h3>{{ t("graphicalRecipes.initialHint") }}</h3>
-            <p>{{ t("graphicalRecipes.supportDescription") }}</p>
+            <!-- 初始状态 -->
+            <div class="initial-state" v-else>
+              <div class="initial-icon">🍽️</div>
+              <h3>{{ t("graphicalRecipes.initialHint") }}</h3>
+              <p>{{ t("graphicalRecipes.supportDescription") }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -161,6 +167,8 @@ const formData = reactive({
   dishName: "",
 });
 
+const selectedImage = ref(null);
+
 const getResults = async () => {
   const files = await Opencode.scan_worksapce_file(APPID, {
     path: "",
@@ -201,12 +209,15 @@ const handleGenerate = async () => {
 };
 
 // 预览
-const preview = (url) => {
-  if (!url) {
+const preview = (result) => {
+  if (!result) {
     return;
   }
-  dialogUrl.value = url;
-  dialogVisible.value = true;
+  if (typeof result === 'string') {
+    selectedImage.value = { url: result };
+  } else {
+    selectedImage.value = result;
+  }
 };
 
 // 关闭预览
@@ -367,10 +378,50 @@ onMounted(async () => {
           }
         }
 
-        // 结果列表
-        .results-list {
+        .selected-preview {
+          flex-shrink: 0;
+          width: 100%;
+          max-height: 35%;
+          overflow: hidden;
+          border-radius: 12px;
+          background: #e9ecef;
+          margin-bottom: 16px;
+          position: relative;
+
+          .close-preview {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: none;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+            transition: background 0.2s;
+
+            &:hover {
+              background: rgba(0, 0, 0, 0.7);
+            }
+          }
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+          }
+        }
+
+        .scrollable-content {
           flex: 1;
           overflow-y: auto;
+          min-height: 0;
 
           &::-webkit-scrollbar {
             width: 6px;
@@ -457,7 +508,6 @@ onMounted(async () => {
         // 空状态和初始状态
         .empty-state,
         .initial-state {
-          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;

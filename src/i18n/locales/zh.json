@@ -122,6 +122,10 @@
         "title": "歌曲视频生成器",
         "description": "AI智能将歌曲转换为带歌词动画的音乐视频",
         "category": "多媒体工具"
+      },
+      "wechatPublisher": {
+        "coverPreview": "封面预览",
+        "noCover": "暂无封面"
       }
     },
     "launch": "启动",
