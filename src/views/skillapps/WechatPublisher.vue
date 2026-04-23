@@ -170,12 +170,12 @@
         </div>
         <div class="panel-content">
           <!-- 封面预览 -->
-          <div class="thumb-preview">
+          <div class="thumb-preview" @click="refreshtThumb">
             <h4>{{ t("wechatPublisher.coverPreview") }}</h4>
             <div class="thumb-container">
               <img
-                v-if="config.thumb"
-                :src="config.thumb"
+                v-if="previewThumb"
+                :src="previewThumb"
                 alt="cover"
                 class="thumb-image"
               />
@@ -277,6 +277,7 @@ import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import styleList from "./WechatPublisherTemplate";
+import { save } from "@tauri-apps/plugin-dialog";
 
 const { t } = useI18n();
 const APPID = "oDesk-wechat-publisher";
@@ -329,7 +330,42 @@ const loadingMoreThemes = ref(false);
 const themePageSize = 10;
 const themeCurrentPage = ref(1);
 
+const previewThumb = ref("");
+
 let isSaving = false;
+
+const refreshtThumb = async () => {
+  try {
+    const searchContent = `
+      用pixabay-image-downloader下载一张图片
+    `;
+    const answer = await Opencode.send_message(searchContent);
+    console.log("AI Response:", answer);
+    await searchFiles();
+  } catch (error) {
+    console.error("Error generating schedule:", error);
+  } finally {
+    //
+  }
+};
+
+const scanpngs = async () => {
+  //
+  const pngs = await Opencode.scan_worksapce_file(APPID, {
+    path: "./pixabay_images/",
+    postfix: "jpg",
+  });
+  if (pngs.length > 0) {
+    const thumb = pngs[0].url;
+    const path = pngs[0].path;
+    previewThumb.value = thumb + "?t=" + new Date().getTime();
+    await Opencode.copy_file_to_workspace(APPID, path, "thumb.jpg");
+    config.value.thumb = "thumb.jpg";
+    saveConfig();
+  }
+
+  console.log("pngs", pngs);
+};
 
 const savePrompt = async () => {
   console.log("savePrompt------");
@@ -525,7 +561,7 @@ const readConfig = async () => {
 
     config.value = JSON.parse(res);
     config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
-    config.value.thumb = config.value.thumb || "";
+    config.value.thumb = config.value.thumb || "thumb.jpg";
     config.value.prompt = config.value.prompt || "";
     question.value = config.value.prompt;
 
@@ -562,9 +598,10 @@ const saveConfig = async (showmessage = true) => {
 
 // 初始化
 onMounted(async () => {
-  // await activeWorkspace();
-  // await readConfig();
-  // await searchFiles();
+  await activeWorkspace();
+  readConfig();
+  searchFiles();
+  scanpngs();
 });
 </script>
 
