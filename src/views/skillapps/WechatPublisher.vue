@@ -341,7 +341,7 @@ const refreshtThumb = async () => {
     `;
     const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
-    await searchFiles();
+    await scanpngs();
   } catch (error) {
     console.error("Error generating schedule:", error);
   } finally {
@@ -1629,6 +1629,41 @@ onMounted(async () => {
     background-color: #fafafa;
     overflow: hidden;
     box-sizing: border-box;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+
+      &::after {
+        opacity: 1;
+        transform: translate(0, 0);
+      }
+    }
+
+    &:active {
+      transform: scale(0.97);
+      transition: transform 0.1s ease;
+    }
+
+    // 刷新提示角标
+    &::after {
+      content: "🔄 点击刷新";
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 12px;
+      color: #667eea;
+      background: rgba(102, 126, 234, 0.1);
+      padding: 4px 8px;
+      border-radius: 12px;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition: all 0.3s ease;
+      pointer-events: none;
+    }
 
     h4 {
       margin: 12px 16px 8px;
@@ -1647,6 +1682,13 @@ onMounted(async () => {
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    border-radius: 8px;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+
+    &:hover {
+      border-color: #667eea;
+    }
   }
 
   .thumb-image {
