@@ -114,6 +114,8 @@
         "category": "Multimedia Tools"
       },
       "wechatPublisher": {
+        "title": "Wechat Publisher",
+        "description": "Generate article and publish",
         "coverPreview": "Cover Preview",
         "noCover": "No cover"
       }

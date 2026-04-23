@@ -171,7 +171,7 @@
         <div class="panel-content">
           <!-- 封面预览 -->
           <div class="thumb-preview">
-            <h4>{{ t("skillapps.wechatPublisher.coverPreview") }}</h4>
+            <h4>{{ t("wechatPublisher.coverPreview") }}</h4>
             <div class="thumb-container">
               <img
                 v-if="config.thumb"
@@ -181,7 +181,7 @@
               />
               <div v-else class="thumb-placeholder">
                 <i class="icon">🖼️</i>
-                <span>{{ t("skillapps.wechatPublisher.noCover") }}</span>
+                <span>{{ t("wechatPublisher.noCover") }}</span>
               </div>
             </div>
           </div>

@@ -124,6 +124,9 @@
         "category": "多媒体工具"
       },
       "wechatPublisher": {
+        "title": "微信发布器",
+        "description": "生成文章并发布",
+        "category": "社交媒体",
         "coverPreview": "封面预览",
         "noCover": "暂无封面"
       }
