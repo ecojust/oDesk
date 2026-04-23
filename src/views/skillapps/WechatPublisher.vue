@@ -210,6 +210,23 @@
               <span v-else>{{ t("skillapps.startPolish") }}</span>
             </button>
           </div>
+
+          <!-- 封面预览 -->
+          <div class="thumb-preview">
+            <h4>{{ t("skillapps.coverPreview") }}</h4>
+            <div class="thumb-container">
+              <img
+                v-if="config.thumb"
+                :src="config.thumb"
+                alt="cover"
+                class="thumb-image"
+              />
+              <div v-else class="thumb-placeholder">
+                <i class="icon">🖼️</i>
+                <span>{{ t("skillapps.noCover") }}</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -279,6 +296,7 @@ const {
   "topic-searcher",
   "wechat-publisher",
   "article-writer",
+  "pixabay-image-downloader",
 ]);
 
 // 响应式数据
@@ -300,6 +318,7 @@ const config = ref({
   },
   wenyanTheme: "default",
   wenyanCustomCss: false,
+  thumb: "",
 });
 
 // 主题相关
@@ -543,9 +562,9 @@ const saveConfig = async (showmessage = true) => {
 
 // 初始化
 onMounted(async () => {
-  await activeWorkspace();
-  await readConfig();
-  await searchFiles();
+  // await activeWorkspace();
+  // await readConfig();
+  // await searchFiles();
 });
 </script>
 
@@ -1558,6 +1577,53 @@ onMounted(async () => {
         }
       }
     }
+  }
+
+  /* 封面预览样式 */
+  .thumb-preview {
+    margin-top: 20px;
+    padding: 16px;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    background-color: #fafafa;
+  }
+
+  .thumb-preview h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 14px;
+  }
+
+  .thumb-container {
+    width: 100%;
+    height: 180px;
+    border: 2px dashed #ddd;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .thumb-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .thumb-placeholder {
+    text-align: center;
+    color: #999;
+  }
+
+  .thumb-placeholder .icon {
+    font-size: 32px;
+    margin-bottom: 8px;
+  }
+
+  .thumb-placeholder span {
+    font-size: 14px;
   }
 }
 </style>
