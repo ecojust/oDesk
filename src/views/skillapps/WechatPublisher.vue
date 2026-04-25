@@ -169,6 +169,18 @@
           </div>
         </div>
         <div class="panel-content">
+          <!-- 文章标题 -->
+          <div class="article-title-section">
+            <h4>{{ t("wechatPublisher.articleTitle") }}</h4>
+            <el-input
+              v-model="articleTitle"
+              :placeholder="t('wechatPublisher.enterArticleTitle')"
+              @change="saveTitle"
+              clearable
+              class="title-input"
+            />
+          </div>
+
           <!-- 封面预览 -->
           <div class="thumb-preview" @click="refreshtThumb">
             <h4>{{ t("wechatPublisher.coverPreview") }}</h4>
@@ -308,6 +320,9 @@ const isPublishing = ref(false);
 // 润色模式相关
 const isPolishMode = ref(false);
 
+// 文章标题
+const articleTitle = ref("");
+
 // 配置相关
 const configDialogVisible = ref(false);
 const showAppId = ref(false);
@@ -370,6 +385,16 @@ const scanpngs = async () => {
 const savePrompt = async () => {
   console.log("savePrompt------");
   config.value.prompt = question.value;
+  if (!isSaving) {
+    isSaving = true;
+    await saveConfig(false);
+    isSaving = false;
+  }
+};
+
+const saveTitle = async () => {
+  console.log("saveTitle------");
+  config.value.title = articleTitle.value;
   if (!isSaving) {
     isSaving = true;
     await saveConfig(false);
@@ -563,7 +588,9 @@ const readConfig = async () => {
     config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
     config.value.thumb = config.value.thumb || "thumb.jpg";
     config.value.prompt = config.value.prompt || "";
+    config.value.title = config.value.title || "";
     question.value = config.value.prompt;
+    articleTitle.value = config.value.title;
 
     console.log("config", config);
   } catch (error) {
@@ -1615,6 +1642,46 @@ onMounted(async () => {
       .results-section {
         .results-card {
           padding: 16px;
+        }
+      }
+    }
+  }
+
+  /* 文章标题样式 */
+  .article-title-section {
+    flex-shrink: 0;
+    margin-bottom: 12px;
+
+    h4 {
+      margin: 0 0 8px 0;
+      color: #333;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .title-input {
+      :deep(.el-input__wrapper) {
+        border-radius: 8px;
+        box-shadow: 0 0 0 1px #e0e0e0 inset;
+        transition: all 0.3s ease;
+
+        &:hover {
+          box-shadow: 0 0 0 1px #667eea inset;
+        }
+
+        &.is-focus {
+          box-shadow:
+            0 0 0 1px #667eea inset,
+            0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+      }
+
+      :deep(.el-input__inner) {
+        font-size: 14px;
+        color: #333;
+
+        &::placeholder {
+          color: #999;
         }
       }
     }
