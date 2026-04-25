@@ -476,6 +476,7 @@
   },
   "audioCut": {
     "title": "音频剪辑",
+    "fadeEffect": "淡入淡出",
     "startTime": "开始时间",
     "endTime": "结束时间",
     "fadeIn": "淡入时长 (秒)",

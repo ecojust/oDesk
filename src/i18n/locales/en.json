@@ -398,6 +398,7 @@
   },
   "audioCut": {
     "title": "Audio Cutter",
+    "fadeEffect": "Fade In/Out",
     "startTime": "Start Time",
     "endTime": "End Time",
     "fadeIn": "Fade In (sec)",

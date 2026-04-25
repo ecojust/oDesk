@@ -43,25 +43,117 @@
             />
           </el-form-item>
 
-          <!-- 淡入时长 -->
-          <el-form-item :label="t('audioCut.fadeIn')">
-            <el-slider
-              v-model="config.fadeIn"
-              :max="5"
-              :step="0.1"
-              show-input
-            />
-          </el-form-item>
+          <!-- 淡入淡出效果 -->
+          <div class="fade-effect-card">
+            <div class="fade-card-header">
+              <svg
+                class="fade-card-icon"
+                viewBox="0 0 24 24"
+                width="14"
+                height="14"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M2 10v4" />
+                <path d="M5 8v8" />
+                <path d="M8 6v12" />
+                <path d="M11 4v16" />
+                <path d="M14 7v10" />
+                <path d="M17 9v6" />
+                <path d="M20 11v2" />
+              </svg>
+              <span class="fade-card-title">{{
+                t("audioCut.fadeEffect") || "淡入淡出"
+              }}</span>
+            </div>
 
-          <!-- 淡出时长 -->
-          <el-form-item :label="t('audioCut.fadeOut')">
-            <el-slider
-              v-model="config.fadeOut"
-              :max="5"
-              :step="0.1"
-              show-input
-            />
-          </el-form-item>
+            <!-- 淡入 -->
+            <div class="fade-row">
+              <div class="fade-row-info">
+                <div class="fade-badge fade-in-badge">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="12"
+                    height="12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 16V8a6 6 0 0 1 6-6h6" />
+                    <path d="m16 2 3 3-3 3" />
+                  </svg>
+                </div>
+                <span class="fade-name">{{ t("audioCut.fadeIn") }}</span>
+                <span class="fade-time">{{ config.fadeIn.toFixed(1) }}s</span>
+              </div>
+              <el-slider
+                v-model="config.fadeIn"
+                :max="5"
+                :step="0.1"
+                :show-tooltip="false"
+              />
+              <div class="fade-presets">
+                <button
+                  v-for="preset in [0, 0.5, 1, 2, 3, 5]"
+                  :key="preset"
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: Math.abs(config.fadeIn - preset) < 0.05 }"
+                  @click="config.fadeIn = preset"
+                >
+                  {{ preset }}s
+                </button>
+              </div>
+            </div>
+
+            <div class="fade-row-divider"></div>
+
+            <!-- 淡出 -->
+            <div class="fade-row">
+              <div class="fade-row-info">
+                <div class="fade-badge fade-out-badge">
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="12"
+                    height="12"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <path d="M4 8v8a6 6 0 0 0 6 6h6" />
+                    <path d="m16 22 3-3-3-3" />
+                  </svg>
+                </div>
+                <span class="fade-name">{{ t("audioCut.fadeOut") }}</span>
+                <span class="fade-time">{{ config.fadeOut.toFixed(1) }}s</span>
+              </div>
+              <el-slider
+                v-model="config.fadeOut"
+                :max="5"
+                :step="0.1"
+                :show-tooltip="false"
+              />
+              <div class="fade-presets">
+                <button
+                  v-for="preset in [0, 0.5, 1, 2, 3, 5]"
+                  :key="preset"
+                  type="button"
+                  class="preset-btn"
+                  :class="{ active: Math.abs(config.fadeOut - preset) < 0.05 }"
+                  @click="config.fadeOut = preset"
+                >
+                  {{ preset }}s
+                </button>
+              </div>
+            </div>
+          </div>
 
           <!-- 输出格式 -->
           <el-form-item :label="t('audioCut.outputFormat')">
@@ -907,6 +999,136 @@ onBeforeUnmount(() => {
       }
       :deep(.el-input__wrapper) {
         border-radius: 8px;
+      }
+    }
+
+    // 淡入淡出效果卡片
+    .fade-effect-card {
+      background: white;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 16px;
+      border: 1px solid #eef0f4;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+
+      .fade-card-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f0f2f5;
+
+        .fade-card-icon {
+          color: #8c9eff;
+        }
+
+        .fade-card-title {
+          font-size: 12px;
+          font-weight: 600;
+          color: #303133;
+        }
+      }
+
+      .fade-row {
+        .fade-row-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 6px;
+
+          .fade-badge {
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &.fade-in-badge {
+              background: #e8f5e9;
+              color: #4caf50;
+            }
+
+            &.fade-out-badge {
+              background: #ffebee;
+              color: #f44336;
+            }
+          }
+
+          .fade-name {
+            font-size: 12px;
+            color: #606266;
+            font-weight: 500;
+            flex: 1;
+          }
+
+          .fade-time {
+            font-size: 12px;
+            color: #303133;
+            font-weight: 600;
+            font-family: "SF Mono", Monaco, monospace;
+            background: #f5f7fa;
+            padding: 2px 8px;
+            border-radius: 6px;
+          }
+        }
+
+        :deep(.el-slider) {
+          margin: 4px 0 8px;
+
+          .el-slider__runway {
+            height: 4px;
+            border-radius: 2px;
+          }
+
+          .el-slider__bar {
+            border-radius: 2px;
+          }
+
+          .el-slider__button-wrapper {
+            .el-slider__button {
+              width: 12px;
+              height: 12px;
+              border-width: 2px;
+            }
+          }
+        }
+
+        .fade-presets {
+          display: flex;
+          gap: 4px;
+          flex-wrap: wrap;
+
+          .preset-btn {
+            border: none;
+            background: #f5f7fa;
+            color: #909399;
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: "SF Mono", Monaco, monospace;
+
+            &:hover {
+              background: #e4e7ed;
+              color: #606266;
+            }
+
+            &.active {
+              background: #409eff;
+              color: white;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .fade-row-divider {
+        height: 1px;
+        background: #f0f2f5;
+        margin: 12px 0;
       }
     }
 
