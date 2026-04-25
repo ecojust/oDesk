@@ -77,6 +77,14 @@ const getList = () => {
       category: t("skillapps.list.songMovieGenerate.category"),
       color: "#667eea",
     },
+    {
+      title: t("skillapps.list.audioCut.title"),
+      key: "AudioCut",
+      description: t("skillapps.list.audioCut.description"),
+      icon: "✂️",
+      category: t("skillapps.list.audioCut.category"),
+      color: "#FF6B6B",
+    },
   ];
 };
 

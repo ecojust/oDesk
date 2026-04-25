@@ -113,6 +113,11 @@
         "description": "AI powered song to music video converter with animated lyrics",
         "category": "Multimedia Tools"
       },
+      "audioCut": {
+        "title": "Audio Cutter",
+        "description": "Select MP3 files for audio cutting, supports waveform visualization and fade in/out",
+        "category": "Multimedia Tools"
+      },
       "wechatPublisher": {
         "title": "Wechat Publisher",
         "description": "Generate article and publish",
@@ -390,6 +395,38 @@
     "initialHint": "Enter poet name to generate biography",
     "supportDescription": "Supports ancient poets, lyricists, etc.",
     "generateFailed": "Failed to generate poet biography: "
+  },
+  "audioCut": {
+    "title": "Audio Cutter",
+    "startTime": "Start Time",
+    "endTime": "End Time",
+    "fadeIn": "Fade In (sec)",
+    "fadeOut": "Fade Out (sec)",
+    "outputFormat": "Output Format",
+    "outputName": "Output Filename",
+    "outputNamePlaceholder": "Enter output filename",
+    "duration": "Duration",
+    "sampleRate": "Sample Rate",
+    "channels": "Channels",
+    "clipDuration": "Clip Duration",
+    "selectFile": "Select Audio File",
+    "chooseMp3": "Select MP3",
+    "clickToSelect": "Click to select audio file",
+    "supportFormat": "Supports MP3, WAV and other formats",
+    "result": "Clip Result",
+    "download": "Download",
+    "noResult": "No clip result yet",
+    "processing": "Processing...",
+    "cutAudio": "Cut Audio",
+    "loadSuccess": "Audio loaded successfully",
+    "loadFailed": "Failed to load audio, please try again",
+    "cutSuccess": "Cut successful",
+    "cutFailed": "Cut failed, please try again",
+    "setStart": "Set as Start",
+    "setEnd": "Set as End",
+    "setStartSuccess": "Start time set to {time}",
+    "setEndSuccess": "End time set to {time}",
+    "downloadSuccess": "File downloaded"
   },
   "songMovieGenerate": {
     "panelTitle": "Video Configuration",

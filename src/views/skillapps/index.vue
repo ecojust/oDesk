@@ -75,6 +75,8 @@ import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
 import SongMovieGenerate from "./SongMovieGenerate.vue";
 
+import AudioCut from "./AudioCut.vue";
+
 import Text2Image from "./Text2Image.vue";
 
 import app from "./app.vue";
@@ -91,6 +93,7 @@ const components = {
   AudioBookCreator: AudioBookCreator,
   Text2Image: Text2Image,
   SongMovieGenerate: SongMovieGenerate,
+  AudioCut: AudioCut,
 };
 
 const activeApp = ref("MusicDownload");

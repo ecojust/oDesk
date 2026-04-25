@@ -123,6 +123,11 @@
         "description": "AI智能将歌曲转换为带歌词动画的音乐视频",
         "category": "多媒体工具"
       },
+      "audioCut": {
+        "title": "音频剪辑",
+        "description": "选择MP3文件进行音频剪辑，支持波形可视化、淡入淡出",
+        "category": "多媒体工具"
+      },
       "wechatPublisher": {
         "title": "微信发布器",
         "description": "生成文章并发布",
@@ -468,6 +473,38 @@
     "tryAnother": "请尝试其他关键词",
     "initialHint": "输入关键词搜索电影",
     "supportDescription": "支持电影名称、演员、导演等搜索"
+  },
+  "audioCut": {
+    "title": "音频剪辑",
+    "startTime": "开始时间",
+    "endTime": "结束时间",
+    "fadeIn": "淡入时长 (秒)",
+    "fadeOut": "淡出时长 (秒)",
+    "outputFormat": "输出格式",
+    "outputName": "输出文件名",
+    "outputNamePlaceholder": "输入输出文件名",
+    "duration": "总时长",
+    "sampleRate": "采样率",
+    "channels": "声道数",
+    "clipDuration": "剪辑时长",
+    "selectFile": "选择音频文件",
+    "chooseMp3": "选择 MP3",
+    "clickToSelect": "点击选择音频文件",
+    "supportFormat": "支持 MP3、WAV 等格式",
+    "result": "剪辑结果",
+    "download": "下载",
+    "noResult": "暂无剪辑结果",
+    "processing": "处理中...",
+    "cutAudio": "剪辑音频",
+    "loadSuccess": "音频加载成功",
+    "loadFailed": "音频加载失败，请重试",
+    "cutSuccess": "剪辑成功",
+    "cutFailed": "剪辑失败，请重试",
+    "setStart": "设为开始",
+    "setEnd": "设为结束",
+    "setStartSuccess": "已设置开始时间为 {time}",
+    "setEndSuccess": "已设置结束时间为 {time}",
+    "downloadSuccess": "文件已下载"
   },
   "songMovieGenerate": {
     "panelTitle": "视频配置",
