@@ -246,9 +246,6 @@
               <span class="time-marker start">{{
                 formatTime(config.startTime)
               }}</span>
-              <span class="time-marker current" v-if="isPlaying">{{
-                formatTime(currentTime)
-              }}</span>
               <span class="time-marker end">{{
                 formatTime(config.endTime)
               }}</span>
@@ -286,14 +283,8 @@
             >
               {{ t("audioCut.setEnd") }}
             </el-button>
-            <el-slider
-              v-model="playbackProgress"
-              :max="100"
-              class="progress-slider"
-              @change="seekTo"
-            />
             <span class="time-display">
-              {{ formatTime(currentTime) }} / {{ formatTime(audioDuration) }}
+              {{ formatTime(currentTime) }}
             </span>
           </div>
         </div>
@@ -534,6 +525,24 @@ const drawWaveform = () => {
 
   // 绘制剪辑区域
   drawClipRegion(ctx, width, height);
+
+  // 绘制当前播放位置线
+  if (audioDuration.value > 0) {
+    const currentX = (currentTime.value / audioDuration.value) * width;
+
+    ctx.beginPath();
+    ctx.moveTo(currentX, 0);
+    ctx.lineTo(currentX, height);
+    ctx.strokeStyle = "#409eff";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 顶部小圆点
+    ctx.beginPath();
+    ctx.arc(currentX, 4, 5, 0, Math.PI * 2);
+    ctx.fillStyle = "#409eff";
+    ctx.fill();
+  }
 };
 
 // 绘制剪辑区域
@@ -593,6 +602,17 @@ const onCanvasMouseDown = (e) => {
     isDragging.value = "start";
   } else if (Math.abs(x - endX) < 10) {
     isDragging.value = "end";
+  } else {
+    // 点击波形图进行 seek
+    const time = (x / width) * audioDuration.value;
+    currentTime.value = Math.max(0, Math.min(time, audioDuration.value));
+    playbackProgress.value = (currentTime.value / audioDuration.value) * 100;
+    if (isPlaying.value) {
+      stopPlayback();
+      startPlayback();
+    } else {
+      drawWaveform();
+    }
   }
 };
 
@@ -637,8 +657,13 @@ const togglePlay = () => {
   }
 };
 
-const startPlayback = () => {
+const startPlayback = async () => {
   if (!audioContext.value || !audioBuffer.value) return;
+
+  // 浏览器自动播放策略：用户交互后需要恢复 AudioContext
+  if (audioContext.value.state === "suspended") {
+    await audioContext.value.resume();
+  }
 
   // 从剪辑区域开始播放
   const startTime = Math.max(currentTime.value, config.value.startTime);
@@ -650,6 +675,7 @@ const startPlayback = () => {
   sourceNode.value.buffer = audioBuffer.value;
 
   gainNode.value = audioContext.value.createGain();
+  gainNode.value.gain.value = 1.0;
 
   sourceNode.value.connect(gainNode.value);
   gainNode.value.connect(audioContext.value.destination);
@@ -668,14 +694,17 @@ const startPlayback = () => {
       playbackProgress.value =
         (config.value.startTime / audioDuration.value) * 100;
     }
+    drawWaveform();
   };
 
   updatePlaybackProgress();
+  drawWaveform();
 };
 
 const stopPlayback = () => {
   if (sourceNode.value) {
     try {
+      sourceNode.value.onended = null;
       sourceNode.value.stop();
     } catch (e) {}
     sourceNode.value = null;
@@ -694,11 +723,15 @@ const updatePlaybackProgress = () => {
   currentTime.value = elapsed;
   playbackProgress.value = (elapsed / audioDuration.value) * 100;
 
+  // 实时重绘波形，更新播放头位置
+  drawWaveform();
+
   if (elapsed >= config.value.endTime) {
     stopPlayback();
     currentTime.value = config.value.startTime;
     playbackProgress.value =
       (config.value.startTime / audioDuration.value) * 100;
+    drawWaveform();
     return;
   }
 
@@ -717,6 +750,7 @@ const seekTo = (val) => {
     currentTime.value = config.value.endTime;
     playbackProgress.value = (config.value.endTime / audioDuration.value) * 100;
   }
+  drawWaveform();
 };
 
 // 设置当前播放位置为开始时间
@@ -1296,15 +1330,12 @@ onBeforeUnmount(() => {
         padding-top: 12px;
         border-top: 1px solid #ebeef5;
 
-        .progress-slider {
-          flex: 1;
-        }
-
         .time-display {
           font-size: 13px;
           color: #606266;
           white-space: nowrap;
           font-variant-numeric: tabular-nums;
+          margin-left: auto;
         }
       }
     }
