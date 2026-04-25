@@ -9,6 +9,16 @@
         :data-app-key="item.key"
         @click="selectApp(item.key)"
       >
+        <span v-if="item.type === 'skill'" class="skill-badge">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" fill="currentColor" />
+          </svg>
+          SKILL
+        </span>
         <div class="app-icon" :style="{ backgroundColor: item.color + '20' }">
           {{ item.icon }}
         </div>
@@ -22,11 +32,6 @@
           </el-tooltip>
 
           <span class="app-category">{{ item.category }}</span>
-        </div>
-        <div class="app-actions">
-          <button class="launch-btn" :style="{ backgroundColor: item.color }">
-            {{ t("skillapps.launch") }}
-          </button>
         </div>
       </div>
     </div>
@@ -327,6 +332,7 @@ onUnmounted(() => {
   }
 
   .app-card {
+    position: relative;
     background: white;
     border: 2px solid transparent;
     border-radius: 16px;
@@ -337,6 +343,7 @@ onUnmounted(() => {
     display: flex;
     align-items: center;
     gap: 16px;
+    overflow: hidden;
 
     &:hover {
       transform: translateY(-4px);
@@ -346,6 +353,30 @@ onUnmounted(() => {
 
     &:active {
       transform: translateY(-2px);
+    }
+
+    .skill-badge {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-size: 9px;
+      font-weight: 700;
+      padding: 2px 5px;
+      border-radius: 6px;
+      letter-spacing: 0.3px;
+      box-shadow: 0 1px 4px rgba(102, 126, 234, 0.4);
+      z-index: 1;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+
+      svg {
+        width: 10px;
+        height: 10px;
+        flex-shrink: 0;
+      }
     }
   }
 
@@ -401,34 +432,6 @@ onUnmounted(() => {
     letter-spacing: 0.5px;
     border: 1px solid #dee2e6;
     white-space: nowrap;
-  }
-
-  .app-actions {
-    display: flex;
-    align-items: center;
-  }
-
-  .launch-btn {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    text-transform: uppercase;
-    font-size: 12px;
-    letter-spacing: 0.5px;
-
-    &:hover {
-      opacity: 0.9;
-      transform: scale(1.05);
-    }
-
-    &:active {
-      transform: scale(0.95);
-    }
   }
 
   .app-preview {
@@ -642,11 +645,6 @@ onUnmounted(() => {
       .app-description {
         font-size: 13px;
       }
-
-      .launch-btn {
-        font-size: 11px;
-        padding: 6px 12px;
-      }
     }
 
     .close-btn {
@@ -711,11 +709,6 @@ onUnmounted(() => {
 
       .app-description {
         font-size: 12px;
-      }
-
-      .launch-btn {
-        font-size: 10px;
-        padding: 5px 10px;
       }
     }
 
