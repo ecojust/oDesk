@@ -1,6 +1,6 @@
 <template>
   <div class="audio-cut">
-    <ServerStatus
+    <!-- <ServerStatus
       :isConnected="isConnected"
       :isConnectting="isConnectting"
       :sessionId="sessionId"
@@ -9,7 +9,7 @@
       @resetSkills="resetSkills"
       @selectSkill="selectSkill"
       @openWorkspace="openWorkspace"
-    />
+    /> -->
 
     <div class="main-container">
       <!-- 左侧配置区 -->
@@ -958,7 +958,7 @@ onBeforeUnmount(() => {
     padding: 16px;
     height: calc(100% - 0px);
     box-sizing: border-box;
-    padding-top: 50px;
+    padding-top: 0px;
     max-width: 1400px;
     margin: 0 auto;
     width: 100%;
