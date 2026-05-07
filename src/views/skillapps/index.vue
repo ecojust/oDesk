@@ -79,6 +79,7 @@ import AncienPoetry from "./AncienPoetry.vue";
 import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
 import SongMovieGenerate from "./SongMovieGenerate.vue";
+import NeteasePlaylistVideoGenerate from "./NeteasePlaylistVideoGenerate.vue";
 
 import AudioCut from "./AudioCut.vue";
 
@@ -98,6 +99,7 @@ const components = {
   AudioBookCreator: AudioBookCreator,
   Text2Image: Text2Image,
   SongMovieGenerate: SongMovieGenerate,
+  NeteasePlaylistVideoGenerate: NeteasePlaylistVideoGenerate,
   AudioCut: AudioCut,
 };
 

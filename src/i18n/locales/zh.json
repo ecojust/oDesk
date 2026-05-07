@@ -123,6 +123,11 @@
         "description": "AI智能将歌曲转换为带歌词动画的音乐视频",
         "category": "多媒体工具"
       },
+      "neteasePlaylistVideoGenerate": {
+        "title": "网易云歌单视频生成器",
+        "description": "输入网易云歌单地址，下载歌曲并生成歌单视频",
+        "category": "多媒体工具"
+      },
       "audioCut": {
         "title": "音频剪辑",
         "description": "选择MP3文件进行音频剪辑，支持波形可视化、淡入淡出",
@@ -541,5 +546,28 @@
     "stepEntries": "条目",
     "stepStartTime": "开始时间",
     "stepTotalDuration": "总时长"
+  },
+  "neteasePlaylistVideoGenerate": {
+    "playlistConfig": "歌单配置",
+    "playlistUrlPlaceholder": "请输入网易云歌单地址",
+    "songList": "歌单歌曲列表",
+    "unknownArtist": "未知歌手",
+    "downloaded": "已下载",
+    "selected": "已选择",
+    "pending": "待下载",
+    "emptySongs": "输入歌单地址后显示歌曲列表",
+    "matchCount": "{count} 个候选",
+    "matchScore": "匹配 {score}",
+    "expandCandidates": "展开候选歌曲",
+    "searchSongs": "搜索歌曲",
+    "downloadSongs": "下载歌曲",
+    "generateVideo": "生成视频",
+    "emptyVideo": "视频预览区域",
+    "browserNotSupport": "您的浏览器不支持视频播放",
+    "pleaseEnterPlaylistUrl": "请输入歌单地址",
+    "searchPending": "搜索歌曲业务待接入",
+    "saveSelectionFailed": "保存候选选择失败",
+    "downloadPending": "下载歌曲业务待接入",
+    "generatePending": "生成视频业务待接入"
   }
 }

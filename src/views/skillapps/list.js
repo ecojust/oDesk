@@ -87,6 +87,17 @@ const getList = () => {
       type: "skill",
     },
     {
+      title: t("skillapps.list.neteasePlaylistVideoGenerate.title"),
+      key: "NeteasePlaylistVideoGenerate",
+      description: t(
+        "skillapps.list.neteasePlaylistVideoGenerate.description",
+      ),
+      icon: "🎶",
+      category: t("skillapps.list.neteasePlaylistVideoGenerate.category"),
+      color: "#D33A31",
+      type: "skill",
+    },
+    {
       title: t("skillapps.list.audioCut.title"),
       key: "AudioCut",
       description: t("skillapps.list.audioCut.description"),

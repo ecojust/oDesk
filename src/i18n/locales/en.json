@@ -113,6 +113,11 @@
         "description": "AI powered song to music video converter with animated lyrics",
         "category": "Multimedia Tools"
       },
+      "neteasePlaylistVideoGenerate": {
+        "title": "NetEase Playlist Video Generator",
+        "description": "Enter a NetEase playlist URL, download songs, and generate a playlist video",
+        "category": "Multimedia Tools"
+      },
       "audioCut": {
         "title": "Audio Cutter",
         "description": "Select MP3 files for audio cutting, supports waveform visualization and fade in/out",
@@ -463,5 +468,28 @@
     "stepEntries": "Entries",
     "stepStartTime": "Start Time",
     "stepTotalDuration": "Total Duration"
+  },
+  "neteasePlaylistVideoGenerate": {
+    "playlistConfig": "Playlist Configuration",
+    "playlistUrlPlaceholder": "Enter NetEase Cloud Music playlist URL",
+    "songList": "Playlist Songs",
+    "unknownArtist": "Unknown Artist",
+    "downloaded": "Downloaded",
+    "selected": "Selected",
+    "pending": "Pending",
+    "emptySongs": "Songs will appear after entering a playlist URL",
+    "matchCount": "{count} matches",
+    "matchScore": "Score {score}",
+    "expandCandidates": "Expand Candidates",
+    "searchSongs": "Search Songs",
+    "downloadSongs": "Download Songs",
+    "generateVideo": "Generate Video",
+    "emptyVideo": "Video preview area",
+    "browserNotSupport": "Your browser does not support video playback",
+    "pleaseEnterPlaylistUrl": "Please enter a playlist URL",
+    "searchPending": "Song search workflow is pending",
+    "saveSelectionFailed": "Failed to save candidate selection",
+    "downloadPending": "Song download workflow is pending",
+    "generatePending": "Video generation workflow is pending"
   }
 }
