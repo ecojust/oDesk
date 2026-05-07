@@ -170,6 +170,7 @@
             type="primary"
             class="download-button"
             :loading="isDownloading"
+            :disabled="isGenerating"
             @click="downloadSongs"
           >
             <el-icon><Download /></el-icon>
@@ -184,6 +185,7 @@
             type="primary"
             class="generate-button"
             :loading="isGenerating"
+            :disabled="isDownloading"
             @click="generateVideo"
           >
             <el-icon><VideoPlay /></el-icon>
@@ -191,21 +193,47 @@
           </el-button>
         </div>
 
-        <div class="video-preview-section">
-          <video
-            v-if="videoUrl"
-            :src="videoUrl"
-            controls
-            class="video-player"
-            preload="metadata"
-          >
-            {{ t("neteasePlaylistVideoGenerate.browserNotSupport") }}
-          </video>
+        <div class="video-content">
+          <div class="video-preview-section">
+            <video
+              v-if="videoUrl"
+              :src="videoUrl"
+              controls
+              class="video-player"
+              preload="metadata"
+            >
+              {{ t("neteasePlaylistVideoGenerate.browserNotSupport") }}
+            </video>
 
-          <div v-else class="video-placeholder">
-            <el-icon class="video-placeholder-icon"><VideoPlay /></el-icon>
-            <div class="video-placeholder-title">
-              {{ t("neteasePlaylistVideoGenerate.emptyVideo") }}
+            <div v-else class="video-placeholder">
+              <el-icon class="video-placeholder-icon"><VideoPlay /></el-icon>
+              <div class="video-placeholder-title">
+                {{ t("neteasePlaylistVideoGenerate.emptyVideo") }}
+              </div>
+            </div>
+          </div>
+
+          <div v-if="videoList.length" class="generated-video-section">
+            <div class="section-bar">
+              <span>{{
+                t("neteasePlaylistVideoGenerate.generatedVideos")
+              }}</span>
+              <span class="song-count">{{ videoList.length }}</span>
+            </div>
+            <div class="generated-video-list">
+              <button
+                v-for="video in videoList"
+                :key="video.path"
+                type="button"
+                class="generated-video-item"
+                :class="{ active: video.url === videoUrl }"
+                @click="playVideo(video)"
+              >
+                <el-icon><VideoPlay /></el-icon>
+                <span class="generated-video-name" :title="video.title">
+                  {{ video.title }}
+                </span>
+              </button>
             </div>
           </div>
         </div>
@@ -236,6 +264,7 @@ const DEFAULT_CONFIG = {
 };
 
 const playlistSongs = ref([]);
+const videoList = ref([]);
 const videoUrl = ref("");
 const isSearching = ref(false);
 const isDownloading = ref(false);
@@ -306,19 +335,66 @@ const downloadSongs = async () => {
     return;
   }
 
-  const answer = await Opencode.send_message(
-    `请使用playlist-downloader这个skill，下载所选歌曲`,
-  );
+  if (isDownloading.value) return;
 
-  ElMessage.info(t("neteasePlaylistVideoGenerate.downloadPending"));
+  isDownloading.value = true;
+  try {
+    const answer = await Opencode.send_message(
+      `请使用playlist-downloader这个skill，下载所选歌曲`,
+    );
+    console.log("AI Response:", answer);
+    ElMessage.success(t("neteasePlaylistVideoGenerate.downloadComplete"));
+  } catch (error) {
+    console.error("Failed to download songs:", error);
+    ElMessage.error(t("neteasePlaylistVideoGenerate.downloadFailed"));
+  } finally {
+    isDownloading.value = false;
+  }
 };
 
 const generateVideo = async () => {
-  ElMessage.info(t("neteasePlaylistVideoGenerate.generatePending"));
+  if (isGenerating.value) return;
 
-  const answer = await Opencode.send_message(
-    `请使用mp3-list-to-video这个skill，使用默认参数生成菜单高亮视频`,
-  );
+  isGenerating.value = true;
+  try {
+    const answer = await Opencode.send_message(
+      `请使用mp3-list-to-video这个skill，使用默认参数生成菜单高亮视频`,
+    );
+    console.log("AI Response:", answer);
+    ElMessage.success(t("neteasePlaylistVideoGenerate.generateComplete"));
+
+    getvideos();
+  } catch (error) {
+    console.error("Failed to generate video:", error);
+    ElMessage.error(t("neteasePlaylistVideoGenerate.generateFailed"));
+  } finally {
+    isGenerating.value = false;
+  }
+};
+
+const getvideos = async () => {
+  try {
+    const videos = await Opencode.scan_worksapce_file(APPID, {
+      path: "",
+      postfix: "mp4",
+    });
+
+    if (videos && videos.length > 0) {
+      videoList.value = videos;
+      // playVideo(videos[0]);
+    } else {
+      videoList.value = [];
+      videoUrl.value = "";
+    }
+  } catch (videoError) {
+    console.error("扫描视频文件失败:", videoError);
+    videoList.value = [];
+    videoUrl.value = "";
+  }
+};
+
+const playVideo = (video) => {
+  videoUrl.value = video?.url || "";
 };
 
 const getSongKey = (song, index) =>
@@ -428,14 +504,17 @@ onMounted(async () => {
   await activeWorkspace();
   await readConfig(DEFAULT_CONFIG);
   fetchPlaylistSongs();
+  getvideos();
 });
 
 defineExpose({
   config,
   playlistSongs,
+  videoList,
   videoUrl,
   setPlaylistSongs,
   setVideoUrl,
+  getvideos,
   searchPlaylistSongs,
   downloadSongs,
   generateVideo,
@@ -710,6 +789,13 @@ defineExpose({
     justify-content: center;
   }
 
+  .video-content {
+    min-height: 0;
+    display: grid;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 14px;
+  }
+
   .video-player {
     width: 100%;
     height: 100%;
@@ -739,6 +825,45 @@ defineExpose({
   .video-placeholder-title {
     font-size: 15px;
     font-weight: 600;
+  }
+
+  .generated-video-section {
+    min-height: 0;
+  }
+
+  .generated-video-list {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+
+  .generated-video-item {
+    height: 36px;
+    max-width: 220px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 12px;
+    border: 1px solid #dcdfe6;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #606266;
+    cursor: pointer;
+    font-size: 13px;
+    flex: 0 0 auto;
+
+    &.active {
+      color: #d33a31;
+      border-color: #d33a31;
+      background: #fef0f0;
+    }
+  }
+
+  .generated-video-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

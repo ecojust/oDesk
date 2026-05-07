@@ -562,12 +562,17 @@
     "searchSongs": "搜索歌曲",
     "downloadSongs": "下载歌曲",
     "generateVideo": "生成视频",
+    "generatedVideos": "已生成视频",
     "emptyVideo": "视频预览区域",
     "browserNotSupport": "您的浏览器不支持视频播放",
     "pleaseEnterPlaylistUrl": "请输入歌单地址",
     "searchPending": "搜索歌曲业务待接入",
     "saveSelectionFailed": "保存候选选择失败",
     "downloadPending": "下载歌曲业务待接入",
-    "generatePending": "生成视频业务待接入"
+    "downloadComplete": "歌曲下载完成",
+    "downloadFailed": "歌曲下载失败，请重试",
+    "generatePending": "生成视频业务待接入",
+    "generateComplete": "视频生成完成",
+    "generateFailed": "视频生成失败，请重试"
   }
 }

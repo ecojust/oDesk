@@ -484,12 +484,17 @@
     "searchSongs": "Search Songs",
     "downloadSongs": "Download Songs",
     "generateVideo": "Generate Video",
+    "generatedVideos": "Generated Videos",
     "emptyVideo": "Video preview area",
     "browserNotSupport": "Your browser does not support video playback",
     "pleaseEnterPlaylistUrl": "Please enter a playlist URL",
     "searchPending": "Song search workflow is pending",
     "saveSelectionFailed": "Failed to save candidate selection",
     "downloadPending": "Song download workflow is pending",
-    "generatePending": "Video generation workflow is pending"
+    "downloadComplete": "Songs downloaded",
+    "downloadFailed": "Failed to download songs, please try again",
+    "generatePending": "Video generation workflow is pending",
+    "generateComplete": "Video generation completed",
+    "generateFailed": "Failed to generate video, please try again"
   }
 }
