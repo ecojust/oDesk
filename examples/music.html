@@ -146,15 +146,35 @@ https://cdn.jsdelivr.net/npm/aplayer@1.10.1/dist/APlayer.min.js
       }
     };
 
+    const getDefaultModel = async () => {
+      try {
+        const response = await invoke("read_opencode_model");
+        const modelConfig = JSON.parse(response?.data || response || "{}");
+        const model = modelConfig.favorite?.[0] || modelConfig.recent?.[0];
+
+        return {
+          providerID: model?.providerID || "opencode",
+          modelID: model?.modelID || "big-pickle",
+        };
+      } catch (error) {
+        console.warn("Failed to read opencode model config:", error);
+        return {
+          providerID: "opencode",
+          modelID: "big-pickle",
+        };
+      }
+    };
+
     const sessionMessage = async (message) => {
       try {
+        const model = await getDefaultModel();
         const response = await invoke("postBody", {
           url: `http://127.0.0.1:4096/session/${sessionId}/message`,
           data: {
             agent: "build",
             model: {
-              modelID: "big-pickle",
-              providerID: "opencode",
+              modelID: model.modelID,
+              providerID: model.providerID,
             },
             parts: [
               {

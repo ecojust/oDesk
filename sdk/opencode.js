@@ -19,12 +19,43 @@ const createSession = async (baseUrl = "http://127.0.0.1:4096") => {
   }
 };
 
+const defaultModel = {
+  providerID: "opencode",
+  modelID: "big-pickle",
+};
+
+const readOpencodeModel = async () => {
+  if (typeof invoke !== "function") {
+    return defaultModel;
+  }
+
+  try {
+    const response = await invoke("read_opencode_model");
+    const modelConfig = JSON.parse(response?.data || response || "{}");
+    const model =
+      modelConfig.favorite?.[0] || modelConfig.recent?.[0] || defaultModel;
+
+    return {
+      providerID: model.providerID || defaultModel.providerID,
+      modelID: model.modelID || defaultModel.modelID,
+    };
+  } catch (error) {
+    console.warn("Failed to read opencode model config:", error);
+    return defaultModel;
+  }
+};
+
 const sessionMessage = async (
   sessionId,
   message,
-  baseUrl = "http://127.0.0.1:4096",
+  options = {},
 ) => {
   try {
+    const normalizedOptions =
+      typeof options === "string" ? { baseUrl: options } : options;
+    const baseUrl = normalizedOptions.baseUrl || "http://127.0.0.1:4096";
+    const resolvedModel = normalizedOptions.model || (await readOpencodeModel());
+
     const response = await fetch(`${baseUrl}/session/${sessionId}/message`, {
       method: "POST",
       headers: {
@@ -33,8 +64,8 @@ const sessionMessage = async (
       body: JSON.stringify({
         agent: "build",
         model: {
-          modelID: "big-pickle",
-          providerID: "opencode",
+          modelID: resolvedModel.modelID,
+          providerID: resolvedModel.providerID,
         },
         parts: [
           {

@@ -182,6 +182,7 @@ const handleInvoke = async (id, method, payload) => {
     switch (method) {
       case "get_system_stats":
       case "open_executable":
+      case "read_opencode_model":
         const result = await invoke(method, payload || {});
         // 返回结果给 iframe
         sendToIframe({

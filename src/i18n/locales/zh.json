@@ -54,6 +54,22 @@
       "usageStep1_1": "1. 请于 https://www.nodejs.com.cn/download.html 下载node，windows系统建议下载msi后缀版本，这样不需要手动配置环境变量",
       "usageStep1_2": "2. cmd 执行 npm i -g opencode-ai"
     },
+    "modelSettings": {
+      "title": "模型设置",
+      "model": "模型",
+      "modelPlaceholder": "请选择模型",
+      "noModels": "未读取到模型列表",
+      "recent": "最近",
+      "favorite": "收藏",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "请输入 API Key",
+      "lockApiKey": "锁定 API Key",
+      "unlockApiKey": "解锁 API Key",
+      "modelPath": "模型列表：~/.local/state/opencode/model.json",
+      "loadAuthFailed": "读取 opencode 模型或认证失败",
+      "saveSuccess": "模型设置已保存",
+      "saveFailed": "模型设置保存失败"
+    },
     "viewLogs": "查看日志",
     "systemLogs": "系统日志",
     "selectDate": "选择日期",

@@ -67,10 +67,101 @@
 
     <div class="top-right-controls">
       <LanguageSwitcher />
-      <el-icon class="about-button" @click="showAboutDialog"
-        ><InfoFilled
-      /></el-icon>
+      <el-icon
+        class="control-button"
+        :title="t('stage.modelSettings.title')"
+        @click="showModelSettingsDialog"
+      >
+        <Setting />
+      </el-icon>
+      <el-icon
+        class="about-button"
+        :title="t('stage.about.button')"
+        @click="showAboutDialog"
+      >
+        <InfoFilled />
+      </el-icon>
     </div>
+
+    <!-- 模型设置对话框 -->
+    <el-dialog
+      v-model="modelSettingsDialogVisible"
+      width="460px"
+      center
+      :show-close="true"
+      :title="t('stage.modelSettings.title')"
+    >
+      <el-form
+        class="model-settings-form"
+        :model="modelSettings"
+        label-position="top"
+      >
+        <el-form-item :label="t('stage.modelSettings.model')">
+          <el-select
+            v-model="selectedModelKey"
+            :placeholder="t('stage.modelSettings.modelPlaceholder')"
+            filterable
+            :empty-text="t('stage.modelSettings.noModels')"
+            @change="handleModelChange"
+          >
+            <el-option
+              v-for="model in modelOptions"
+              :key="getModelOptionKey(model)"
+              :label="`${model.providerID}/${model.modelID}`"
+              :value="getModelOptionKey(model)"
+            >
+              <span>{{ model.providerID }}/{{ model.modelID }}</span>
+              <span class="model-option-source">
+                {{ t(`stage.modelSettings.${model.source}`) }}
+              </span>
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item :label="t('stage.modelSettings.apiKey')">
+          <el-input
+            v-model="modelSettings.apiKey"
+            :placeholder="t('stage.modelSettings.apiKeyPlaceholder')"
+            type="text"
+            :disabled="apiKeyLocked"
+            :clearable="!apiKeyLocked"
+          >
+            <template #suffix>
+              <el-icon
+                class="api-key-lock"
+                :title="
+                  apiKeyLocked
+                    ? t('stage.modelSettings.unlockApiKey')
+                    : t('stage.modelSettings.lockApiKey')
+                "
+                @click.stop="toggleApiKeyLock"
+              >
+                <Lock v-if="apiKeyLocked" />
+                <Unlock v-else />
+              </el-icon>
+            </template>
+          </el-input>
+        </el-form-item>
+        <!-- <p class="model-settings-current">
+          {{ modelSettings.providerID }}/{{ modelSettings.modelID }}
+        </p> -->
+        <p class="model-settings-path">
+          {{ t("stage.modelSettings.modelPath") }}
+        </p>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <!-- <el-button @click="resetModelSettings">
+            {{ t("common.reset") }}
+          </el-button>
+          <el-button @click="modelSettingsDialogVisible = false">
+            {{ t("common.cancel") }}
+          </el-button> -->
+          <el-button type="primary" @click="saveModelSettingsForm">
+            {{ t("common.save") }}
+          </el-button>
+        </div>
+      </template>
+    </el-dialog>
 
     <!-- 关于对话框 -->
     <el-dialog
@@ -161,10 +252,28 @@ import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
 import LanguageSwitcher from "../components/LanguageSwitcher.vue";
 
 import SKILL from "./skillapps/index.vue";
-import { InfoFilled, Document, Refresh } from "@element-plus/icons-vue";
+import {
+  Setting,
+  InfoFilled,
+  Document,
+  Refresh,
+  Lock,
+  Unlock,
+} from "@element-plus/icons-vue";
+import { ElMessage } from "element-plus";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 import System from "@/service/shell/system";
+import {
+  DEFAULT_MODEL_SETTINGS,
+  getModelOptionKey,
+  loadModelOptions,
+  loadModelSettings,
+  loadModelSettingsWithAuth,
+  loadOpencodeAuth,
+  parseModelOptionKey,
+  saveModelSettings,
+} from "@/service/modelSettings";
 
 import { BUILD_INFO } from "../build";
 
@@ -173,15 +282,91 @@ const { t } = useI18n();
 const activeTab = ref("skillapps");
 
 const aboutDialogVisible = ref(false);
+const modelSettingsDialogVisible = ref(false);
 const logDialogVisible = ref(false);
 const logContent = ref("");
 const logDates = ref([]);
 const selectedDate = ref("");
+const modelSettings = ref(loadModelSettings());
+const modelOptions = ref([]);
+const selectedModelKey = ref(getModelOptionKey(modelSettings.value));
+const apiKeyLocked = ref(true);
 
 const buildTime = ref("2026-03-20 21:21:00");
 
 const showAboutDialog = () => {
   aboutDialogVisible.value = true;
+};
+
+const showModelSettingsDialog = async () => {
+  try {
+    const [settings, options] = await Promise.all([
+      loadModelSettingsWithAuth(),
+      loadModelOptions(),
+    ]);
+
+    modelSettings.value = settings;
+    modelOptions.value = options;
+    selectedModelKey.value = getModelOptionKey(settings);
+    apiKeyLocked.value = true;
+  } catch (e) {
+    console.error("加载模型认证失败:", e);
+    modelSettings.value = loadModelSettings();
+    ElMessage.error(t("stage.modelSettings.loadAuthFailed"));
+  }
+  modelSettingsDialogVisible.value = true;
+};
+
+const resetModelSettings = () => {
+  const defaultModel = modelOptions.value[0] || DEFAULT_MODEL_SETTINGS;
+
+  modelSettings.value = {
+    ...DEFAULT_MODEL_SETTINGS,
+    providerID: defaultModel.providerID,
+    modelID: defaultModel.modelID,
+  };
+  selectedModelKey.value = getModelOptionKey(modelSettings.value);
+  apiKeyLocked.value = true;
+};
+
+const toggleApiKeyLock = () => {
+  apiKeyLocked.value = !apiKeyLocked.value;
+};
+
+const handleModelChange = async (modelKey) => {
+  const selectedModel = parseModelOptionKey(modelKey);
+  modelSettings.value = {
+    ...modelSettings.value,
+    providerID: selectedModel.providerID,
+    modelID: selectedModel.modelID,
+  };
+
+  try {
+    const auth = await loadOpencodeAuth();
+    modelSettings.value.apiKey = auth[selectedModel.providerID]?.key || "";
+    apiKeyLocked.value = true;
+  } catch (e) {
+    console.error("加载模型认证失败:", e);
+    modelSettings.value.apiKey = "";
+  }
+};
+
+const saveModelSettingsForm = async () => {
+  try {
+    await saveModelSettings({
+      providerID:
+        modelSettings.value.providerID.trim() ||
+        DEFAULT_MODEL_SETTINGS.providerID,
+      modelID:
+        modelSettings.value.modelID.trim() || DEFAULT_MODEL_SETTINGS.modelID,
+      apiKey: apiKeyLocked.value ? "" : modelSettings.value.apiKey.trim(),
+    });
+    modelSettingsDialogVisible.value = false;
+    ElMessage.success(t("stage.modelSettings.saveSuccess"));
+  } catch (e) {
+    console.error("保存模型设置失败:", e);
+    ElMessage.error(t("stage.modelSettings.saveFailed"));
+  }
 };
 
 const showLogDialog = async () => {
@@ -354,16 +539,56 @@ const testKillOpenServe = async () => {
     display: flex;
     align-items: center;
     gap: 4px;
+    .control-button,
     .about-button {
       color: rgba(0, 0, 0, 0.6);
       transition: all 0.3s ease;
       margin: 0 8px 0 4px;
       cursor: pointer;
     }
+    .control-button:hover,
     .about-button:hover {
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
     }
+  }
+
+  .model-settings-form {
+    padding: 8px 0;
+
+    :deep(.el-select) {
+      width: 100%;
+    }
+  }
+
+  .model-option-source {
+    float: right;
+    margin-left: 12px;
+    color: #909399;
+    font-size: 12px;
+  }
+
+  .api-key-lock {
+    cursor: pointer;
+    color: #606266;
+  }
+
+  .api-key-lock:hover {
+    color: #409eff;
+  }
+
+  .model-settings-current,
+  .model-settings-path {
+    margin: 4px 0 0;
+    color: #909399;
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .dialog-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
   }
 
   .about-content {

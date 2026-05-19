@@ -1,6 +1,7 @@
 // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 mod config;
 mod fetch;
+mod opencode_auth;
 pub mod fs_helper;
 mod tool;
 mod wallpaper_animation;
@@ -12,6 +13,7 @@ mod workspace;
 use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{export_file, open_folder, read_file};
+use opencode_auth::{read_opencode_auth, read_opencode_model, set_opencode_auth_provider};
 use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
 
 use workspace::{
@@ -59,6 +61,10 @@ pub fn run() {
             //config
             read_config,
             set_config,
+            // opencode auth
+            read_opencode_auth,
+            read_opencode_model,
+            set_opencode_auth_provider,
             // wallpaper_static
             set_static_wallpaper_from_url,
             set_static_wallpaper_from_path,

@@ -53,7 +53,28 @@
       "usageSubtitle1": "Skill App Installation",
       "usageStep1_1": "1. Download node from https://www.nodejs.com.cn/download.html. For Windows, it's recommended to download the msi version to avoid manual environment variable configuration",
       "usageStep1_2": "2. Run npm i -g opencode-ai in cmd"
-    }
+    },
+    "modelSettings": {
+      "title": "Model Settings",
+      "model": "Model",
+      "modelPlaceholder": "Select a model",
+      "noModels": "No models found",
+      "recent": "Recent",
+      "favorite": "Favorite",
+      "apiKey": "API Key",
+      "apiKeyPlaceholder": "Enter API Key",
+      "lockApiKey": "Lock API Key",
+      "unlockApiKey": "Unlock API Key",
+      "modelPath": "Model list: ~/.local/state/opencode/model.json",
+      "loadAuthFailed": "Failed to read opencode models or auth",
+      "saveSuccess": "Model settings saved",
+      "saveFailed": "Failed to save model settings"
+    },
+    "viewLogs": "View Logs",
+    "systemLogs": "System Logs",
+    "selectDate": "Select Date",
+    "refresh": "Refresh",
+    "loadLogsFailed": "Load logs failed: "
   },
   "wallpaper": {
     "static": {

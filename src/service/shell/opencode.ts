@@ -2,6 +2,7 @@ import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import RequestService from "@/utils/request";
 import { sleep, getFileName } from "@/utils/util";
+import { resolveModelSettings } from "@/service/modelSettings";
 
 export default class Opencode {
   static worksapce: string = "";
@@ -29,13 +30,15 @@ export default class Opencode {
   }
 
   static async send_message(message: string) {
+    const modelSettings = await resolveModelSettings();
+
     const result = await RequestService.postBody({
       url: `http://127.0.0.1:4096/session/${Opencode.sessionId}/message`,
       data: {
         agent: "build",
         model: {
-          modelID: "big-pickle",
-          providerID: "opencode",
+          modelID: modelSettings.modelID,
+          providerID: modelSettings.providerID,
         },
         parts: [
           {
