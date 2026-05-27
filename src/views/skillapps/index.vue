@@ -80,6 +80,7 @@ import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
 import SongMovieGenerate from "./SongMovieGenerate.vue";
 import NeteasePlaylistVideoGenerate from "./NeteasePlaylistVideoGenerate.vue";
+import BilibiliVideoManager from "./BilibiliVideoManager.vue";
 
 import AudioCut from "./AudioCut.vue";
 
@@ -100,6 +101,7 @@ const components = {
   Text2Image: Text2Image,
   SongMovieGenerate: SongMovieGenerate,
   NeteasePlaylistVideoGenerate: NeteasePlaylistVideoGenerate,
+  BilibiliVideoManager: BilibiliVideoManager,
   AudioCut: AudioCut,
 };
 

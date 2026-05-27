@@ -98,6 +98,15 @@ const getList = () => {
       type: "skill",
     },
     {
+      title: t("skillapps.list.bilibiliVideoManager.title"),
+      key: "BilibiliVideoManager",
+      description: t("skillapps.list.bilibiliVideoManager.description"),
+      icon: "📺",
+      category: t("skillapps.list.bilibiliVideoManager.category"),
+      color: "#FB7299",
+      type: "offline",
+    },
+    {
       title: t("skillapps.list.audioCut.title"),
       key: "AudioCut",
       description: t("skillapps.list.audioCut.description"),

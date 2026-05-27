@@ -56,6 +56,14 @@
                   : t("skillsDialog.disconnected")
               }}
             </span>
+
+            <button
+              class="debug-btn"
+              @click="$emit('openWorkspace')"
+              title="打开工作空间目录"
+            >
+              📂
+            </button>
           </div>
 
           <div class="detail-item">
@@ -70,13 +78,6 @@
           <div class="skills-list-header">
             {{ t("skillsDialog.availableSkills") }}
             <div class="header-actions">
-              <button
-                class="debug-btn"
-                @click="$emit('openWorkspace')"
-                title="打开工作空间目录"
-              >
-                📂
-              </button>
               <button
                 class="reset-skills-btn"
                 @click="$emit('resetSkills')"
