@@ -598,7 +598,7 @@
   },
   "bilibiliVideoManager": {
     "searchTitle": "视频搜索",
-    "searchSubtitle": "输入关键词后查看候选结果，并将目标视频加入下载队列。",
+    "searchSubtitle": "输入关键词后查看候选结果，并将目标视频直接下载到 downloads 文件夹。",
     "searchPlaceholder": "请输入视频关键词、BV号或UP主名称",
     "searchScope": "搜索范围",
     "scopeAll": "综合",

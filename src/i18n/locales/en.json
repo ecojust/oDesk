@@ -525,7 +525,7 @@
   },
   "bilibiliVideoManager": {
     "searchTitle": "Video Search",
-    "searchSubtitle": "Search for candidate videos and add target items into the download queue.",
+    "searchSubtitle": "Search for candidate videos and download selected videos directly to the downloads folder.",
     "searchPlaceholder": "Search by keyword, BV ID, or creator name",
     "searchScope": "Search Scope",
     "scopeAll": "All",
