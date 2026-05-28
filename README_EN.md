@@ -68,14 +68,6 @@
 ## 📄 Usage
 
 1. **Skill Apps**: Access various skill apps in the "SKILL-APPS" tab
-   - **Schedule Manager**: Enter employee count, month, and shift requirements for AI to generate optimal schedules, exportable to Excel
-   - **Wechat Publisher**: Configure WeChat public account AppID and AppSecret, search articles by keywords, AI generates content for one-click publishing
-   - **Travel Plan**: Enter destination, days and other requirements for AI to generate personalized travel plans with multiple visual styles
-   - **Movie Finder**: Quickly search movie information and find interesting films
-   - **Ancien Poetry**: Explore the lives and classic verses of ancient and modern poetry masters, experiencing traditional cultural charm
-   - **Graphical Recipes**: Enter available ingredients, AI automatically generates detailed recipes with beautiful step-by-step illustrations, supports multiple cuisine selections
-   - **Audio Book Creator**: Import text files or paste content, one-click generation of high-quality audiobooks, supports speech rate and tone adjustment
-   - **Text to Image**: Generate professional creative images through text descriptions, supports multiple art styles, resolution settings and batch generation
 2. **Static Wallpapers**: Browse local wallpapers, download cloud wallpapers, and set slideshow in the "Static Wallpapers" tab
 3. **Shader Wallpapers**: Create, edit, and preview GLSL shaders in the "Shader Wallpapers" tab
 4. **HTML Wallpapers**: Set any webpage as wallpaper with real-time editing preview in the "Web Wallpapers" tab
