@@ -35,23 +35,6 @@
 - **技能扩展**：支持通过技能包扩展应用功能，可导入导出技能配置
 - **实时连接**：工作区状态实时监控，支持会话管理和文件操作
 
-<p align="center">
-  <img src="./preview/skillapps/1.png" width="45%" style="margin: 5px;">
-  <img src="./preview/skillapps/2.png" width="45%" style="margin: 5px;">
-</p>
-<p align="center">
-  <img src="./preview/skillapps/3.png" width="45%" style="margin: 5px;">
-  <img src="./preview/skillapps/4.png" width="45%" style="margin: 5px;">
-</p>
-<p align="center">
-  <img src="./preview/skillapps/5.png" width="45%" style="margin: 5px;">
-  <img src="./preview/skillapps/6.png" width="45%" style="margin: 5px;">
-</p>
-<p align="center">
-  <img src="./preview/skillapps/7.png" width="45%" style="margin: 5px;">
-  <img src="./preview/skillapps/8.png" width="45%" style="margin: 5px;">
-</p>
-
 ### 2. 静态壁纸
 
 - 浏览本地壁纸列表，支持缩略图预览

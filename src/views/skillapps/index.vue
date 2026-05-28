@@ -5,7 +5,8 @@
         v-for="item in appList"
         :key="item.key"
         class="app-card"
-        :style="{ borderColor: item.color }"
+        :class="{ 'has-cover': Boolean(item.thumb) }"
+        :style="getCardStyle(item)"
         :data-app-key="item.key"
         @click="selectApp(item.key)"
       >
@@ -109,6 +110,11 @@ const activeApp = ref("MusicDownload");
 const appList = computed(() => getList());
 const selectedApp = ref(null);
 const isDialogOpen = ref(false);
+
+const getCardStyle = (item) => ({
+  borderColor: item.color,
+  "--cover-image": item.thumb ? `url(${item.thumb})` : "none",
+});
 
 const activeComponent = computed(() => components[activeApp.value] || null);
 
@@ -338,6 +344,7 @@ onUnmounted(() => {
   .app-card {
     position: relative;
     background: white;
+    background-image: none;
     border: 2px solid transparent;
     border-radius: 16px;
     padding: 20px;
@@ -357,6 +364,32 @@ onUnmounted(() => {
 
     &:active {
       transform: translateY(-2px);
+    }
+
+    &.has-cover {
+      background-image:
+        linear-gradient(rgba(25, 32, 54, 0.55), rgba(25, 32, 54, 0.72)),
+        var(--cover-image);
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      color: white;
+
+      .app-title,
+      .app-description {
+        color: white;
+      }
+
+      .app-category {
+        background: rgba(255, 255, 255, 0.16);
+        border-color: rgba(255, 255, 255, 0.24);
+        color: white;
+      }
+
+      .app-icon {
+        background-color: rgba(255, 255, 255, 0.16);
+        backdrop-filter: blur(2px);
+      }
     }
 
     .skill-badge {
