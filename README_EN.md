@@ -31,6 +31,10 @@
   - **Graphical Recipes**: Intelligent recipe generation tool that automatically creates beautifully illustrated recipes based on ingredients, supporting multiple cuisine styles
   - **Audio Book Creator**: Text-to-speech tool that converts text content into natural and fluent audiobooks
   - **Text to Image**: AI image generation tool that generates high-quality creative images from text descriptions
+  - **Song Video Generator**: AI-powered song-to-music-video conversion with animated lyrics, ideal for promotional clips and social sharing
+  - **NetEase Playlist Video Generator**: Enter a NetEase playlist URL, download songs, and generate a playlist video
+  - **Bilibili Video Manager**: Search Bilibili videos, manage download queues, and package collections for easy content organization
+  - **Audio Cutter**: Cut MP3 audio files with waveform visualization, fade-in/out, and other editing features
 - **Workspace Management**: Create and manage development workspaces with opencode service execution
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
