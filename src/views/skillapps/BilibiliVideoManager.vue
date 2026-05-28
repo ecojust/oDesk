@@ -31,10 +31,16 @@
             size="large"
             clearable
             :placeholder="t('bilibiliVideoManager.searchPlaceholder')"
+            :disabled="isGlobalLoading"
             @keyup.enter="handleSearch"
           >
             <template #append>
-              <el-button class="primary-action" @click="handleSearch">
+              <el-button
+                class="primary-action"
+                :loading="isGlobalLoading"
+                :disabled="isGlobalLoading"
+                @click="handleSearch"
+              >
                 <el-icon><Search /></el-icon>
               </el-button>
             </template>
@@ -56,19 +62,11 @@
             :class="{ active: selectedVideo?.id === video.id }"
             @click="selectedVideo = video"
           >
-            <div class="result-cover">
-              <img :src="video.cover" :alt="video.title" />
-              <div class="duration-badge">{{ video.duration }}</div>
-            </div>
-
             <div class="result-content">
               <div class="result-topline">
                 <div class="result-title" :title="video.title">
                   {{ video.title }}
                 </div>
-                <el-tag size="small" effect="plain">
-                  {{ video.quality }}
-                </el-tag>
               </div>
 
               <div class="result-meta">
@@ -82,13 +80,15 @@
               </div>
 
               <div class="result-actions">
-                <el-button text @click.stop="previewVideo(video)">
+                <!-- <el-button text @click.stop="previewVideo(video)">
                   <el-icon><VideoPlay /></el-icon>
                   <span>{{ t("bilibiliVideoManager.preview") }}</span>
-                </el-button>
+                </el-button> -->
                 <el-button
                   type="primary"
                   plain
+                  :loading="isGlobalLoading"
+                  :disabled="isGlobalLoading"
                   @click.stop="startDownload(video)"
                 >
                   <el-icon><Download /></el-icon>
@@ -113,37 +113,91 @@
           <div class="queue-badge">{{ downloadedFiles.length }}</div>
         </div>
 
-        <div class="queue-list">
+        <div class="download-rotation-view">
           <el-empty
             v-if="!downloadedFiles.length"
             :description="t('bilibiliVideoManager.downloadResultEmpty')"
             :image-size="88"
           />
 
-          <div
-            v-for="(item, index) in downloadedFiles"
-            :key="item.id"
-            class="queue-item"
-          >
-            <div class="queue-index">{{ index + 1 }}</div>
-            <div class="queue-main">
-              <div class="queue-title-row">
-                <div class="queue-title" :title="item.title">
-                  {{ item.title }}
+          <div v-else class="download-rotation-stage">
+            <div class="rotation-ring">
+              <div
+                v-for="(item, index) in downloadedFiles"
+                :key="item.id"
+                class="download-orb"
+                :class="{ active: index === activeDownloadIndex }"
+                :style="getDownloadOrbStyle(index)"
+                @click.stop="selectDownloadOrb(item, index)"
+              >
+                <div class="orb-shell">
+                  <div class="orb-rank">{{ index + 1 }}</div>
+                  <div class="orb-title" :title="item.title">
+                    {{ item.title }}
+                  </div>
+                  <div class="orb-meta">
+                    {{ item.type?.toUpperCase() || "MP4" }}
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
 
-              <div class="queue-meta">
-                <span>{{ item.modifiedAt }}</span>
-                <span>{{ item.type?.toUpperCase() }}</span>
+          <div v-if="currentDownloadItem" class="rotation-player-card">
+            <div class="rotation-player-header">
+              <div class="rotation-player-topline">
+                <div class="rotation-player-title">
+                  <el-tooltip
+                    :content="currentDownloadItem.title"
+                    placement="top"
+                  >
+                    {{ currentDownloadItem.title.substring(0, 20) }}
+                  </el-tooltip>
+                </div>
+
+                <div class="rotation-player-meta-inline">
+                  <span class="rotation-player-count">
+                    {{ activeDownloadIndex + 1 }} / {{ downloadedFiles.length }}
+                  </span>
+                  <span class="rotation-player-caption">
+                    {{ currentDownloadItem.modifiedAt }} ·
+                    {{ currentDownloadItem.type?.toUpperCase() || "MP4" }}
+                  </span>
+                  <span class="rotation-summary-badge">当前</span>
+                </div>
               </div>
             </div>
 
-            <div class="queue-actions">
-              <el-button text @click="previewDownloaded(item)">
-                <el-icon><Link /></el-icon>
-                <span>{{ t("bilibiliVideoManager.openFile") }}</span>
+            <div class="rotation-controls">
+              <el-button text @click.stop="moveDownloadCarousel(-1)">
+                <el-icon><ArrowLeft /></el-icon>
               </el-button>
+
+              <div class="rotation-dots">
+                <span
+                  v-for="(item, index) in downloadedFiles"
+                  :key="item.id"
+                  class="rotation-dot"
+                  :class="{ active: index === activeDownloadIndex }"
+                  @click.stop="goToDownload(index)"
+                ></span>
+              </div>
+
+              <el-button text @click.stop="moveDownloadCarousel(1)">
+                <el-icon><ArrowRight /></el-icon>
+              </el-button>
+            </div>
+
+            <div class="rotation-player-frame">
+              <video
+                :key="currentDownloadItem.id"
+                class="rotation-player"
+                :src="currentDownloadItem.url || currentDownloadItem.path"
+                controls
+                autoplay
+                playsinline
+                preload="metadata"
+              ></video>
             </div>
           </div>
         </div>
@@ -181,13 +235,15 @@
 import { computed, onMounted, ref } from "vue";
 import { useI18n } from "vue-i18n";
 import {
+  ArrowLeft,
+  ArrowRight,
   Download,
   FolderOpened,
   Link,
   Search,
   VideoPlay,
 } from "@element-plus/icons-vue";
-import { ElMessage } from "element-plus";
+import { ElLoading, ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import Opencode from "@/service/shell/opencode";
 import ServerStatus from "@/components/ServerStatus.vue";
@@ -212,50 +268,42 @@ const resultSort = ref("relevance");
 const resultFilter = ref("");
 const selectedVideo = ref(null);
 const previewVisible = ref(false);
+const isGlobalLoading = ref(false);
 const searchTimestamp = ref("");
 const searchTotal = ref(0);
 
-const DEFAULT_SEARCH_RESULTS = [
-  {
-    id: "BV1A",
-    title: "黑神话悟空 全流程实机演示 4K",
-    description: "高码率流程演示，适合做长视频下载和素材合集。",
-    author: "游戏实况档案馆",
-    views: "128.4万播放",
-    publishAt: "2026-05-21",
-    duration: "28:46",
-    quality: "1080P",
-    url: "https://www.bilibili.com/video/BV1A",
-    cover: "https://picsum.photos/seed/bili-1/320/180",
-    format: "mp4",
-  },
-  {
-    id: "BV1B",
-    title: "黑神话悟空 角色剧情解析合集",
-    description: "剧情拆解与角色线梳理，适合打包成专题合集。",
-    author: "剧情放映室",
-    views: "86.7万播放",
-    publishAt: "2026-05-18",
-    duration: "16:22",
-    quality: "4K",
-    url: "https://www.bilibili.com/video/BV1B",
-    cover: "https://picsum.photos/seed/bili-2/320/180",
-    format: "mp4",
-  },
-  {
-    id: "BV1C",
-    title: "黑神话悟空 BOSS 战混剪",
-    description: "适合单独下载后加入精选包。",
-    author: "动作游戏观察所",
-    views: "42.9万播放",
-    publishAt: "2026-05-24",
-    duration: "08:55",
-    quality: "720P",
-    url: "https://www.bilibili.com/video/BV1C",
-    cover: "https://picsum.photos/seed/bili-3/320/180",
-    format: "mp4",
-  },
-];
+let loadingInstance = null;
+
+const startGlobalLoading = (text) => {
+  stopGlobalLoading();
+  loadingInstance = ElLoading.service({
+    lock: true,
+    text,
+    background: "rgba(15, 23, 42, 0.42)",
+  });
+  isGlobalLoading.value = true;
+};
+
+const stopGlobalLoading = () => {
+  if (loadingInstance) {
+    loadingInstance.close();
+    loadingInstance = null;
+  }
+  isGlobalLoading.value = false;
+};
+
+const DEFAULT_SEARCH_RESULTS = [];
+
+const sanitizeFileName = (fileName) => {
+  const sanitized = String(fileName || "")
+    .trim()
+    .replace(/[<>:"/\\|?*\x00-\x1F]+/g, "_")
+    .replace(/\s+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  return sanitized || "download";
+};
 
 const searchResults = ref(DEFAULT_SEARCH_RESULTS);
 
@@ -274,6 +322,12 @@ const sortOptions = computed(() => [
 ]);
 
 const downloadedFiles = ref([]);
+const activeDownloadIndex = ref(0);
+
+const currentDownloadItem = computed(() => {
+  if (!downloadedFiles.value.length) return null;
+  return downloadedFiles.value[activeDownloadIndex.value] || null;
+});
 
 const normalizeDownloadedFile = (item) => ({
   id: item.path || item.title || "",
@@ -284,6 +338,43 @@ const normalizeDownloadedFile = (item) => ({
   type: item.type || "",
 });
 
+const moveDownloadCarousel = (direction) => {
+  if (!downloadedFiles.value.length) return;
+
+  const nextIndex =
+    (activeDownloadIndex.value + direction + downloadedFiles.value.length) %
+    downloadedFiles.value.length;
+  activeDownloadIndex.value = nextIndex;
+};
+
+const goToDownload = (index) => {
+  if (!downloadedFiles.value.length) return;
+  activeDownloadIndex.value =
+    (index + downloadedFiles.value.length) % downloadedFiles.value.length;
+};
+
+const selectDownloadOrb = (item, index) => {
+  activeDownloadIndex.value = index;
+  previewDownloaded(item);
+};
+
+const getDownloadOrbStyle = (index) => {
+  const total = downloadedFiles.value.length;
+  if (!total) return {};
+
+  const radius = 132;
+  const step = 360 / total;
+  const isActive = index === activeDownloadIndex.value;
+  const offset = index - activeDownloadIndex.value;
+  const angle = isActive ? 0 : offset * step;
+
+  return {
+    "--orb-angle": `${angle}deg`,
+    "--orb-radius": `${isActive ? 0 : radius}px`,
+    "--orb-scale": isActive ? "1.08" : "0.82",
+  };
+};
+
 const loadDownloadedFiles = async () => {
   try {
     const files = await Opencode.scan_worksapce_file(APPID, {
@@ -293,6 +384,15 @@ const loadDownloadedFiles = async () => {
     downloadedFiles.value = Array.isArray(files)
       ? files.map(normalizeDownloadedFile)
       : [];
+
+    if (downloadedFiles.value.length) {
+      activeDownloadIndex.value = Math.min(
+        activeDownloadIndex.value,
+        downloadedFiles.value.length - 1,
+      );
+    } else {
+      activeDownloadIndex.value = 0;
+    }
   } catch (error) {
     console.error("Failed to load downloaded files:", error);
     ElMessage.warning(t("bilibiliVideoManager.scanDownloadFailed"));
@@ -300,33 +400,36 @@ const loadDownloadedFiles = async () => {
 };
 
 const startDownload = async (video) => {
-  const filename = `${video.id || video.title || "video"}.mp4`.replace(
-    /[\\/:*?"<>|]/g,
-    "-",
-  );
-  const exists = downloadedFiles.value.some((item) => item.title === filename);
-  if (exists) {
-    ElMessage.warning(t("bilibiliVideoManager.downloadExists"));
-    return;
-  }
+  if (isGlobalLoading.value) return;
 
   try {
-    await Opencode.write_workspace_file_content(
-      APPID,
-      `downloads/${filename}`,
-      "",
+    startGlobalLoading("下载中...");
+    console.log("Start download for video:", video.url);
+
+    const downloadFileName = `${sanitizeFileName(searchQuery.value)}.mp4`;
+
+    const answer = await Opencode.send_message(
+      `请使用bilibili-video-search-and-download这个skill，下载 ${video.url}, 文件名叫${downloadFileName}`,
     );
-    ElMessage.success(t("bilibiliVideoManager.downloadStarted"));
+    console.log("AI Response:", answer);
     await loadDownloadedFiles();
   } catch (error) {
-    console.error("Download start failed:", error);
+    console.error("Download failed:", error);
     ElMessage.error(t("bilibiliVideoManager.downloadStartFailed"));
+  } finally {
+    stopGlobalLoading();
   }
 };
 
 const previewDownloaded = (item) => {
-  if (item.url) {
-    window.open(item.url, "_blank");
+  if (!item) return;
+
+  const targetIndex = downloadedFiles.value.findIndex(
+    (downloadedItem) => downloadedItem.id === item.id,
+  );
+
+  if (targetIndex >= 0) {
+    activeDownloadIndex.value = targetIndex;
   }
 };
 
@@ -397,7 +500,22 @@ const loadSearchResults = async () => {
 };
 
 const handleSearch = async () => {
-  await loadSearchResults();
+  if (isGlobalLoading.value) return;
+
+  try {
+    startGlobalLoading("搜索中...");
+    const answer = await Opencode.send_message(
+      `请使用bilibili-video-search-and-download这个skill，搜索${searchQuery.value}`,
+    );
+    console.log("AI Response:", answer);
+
+    await loadSearchResults();
+  } catch (error) {
+    console.error("Search failed:", error);
+    ElMessage.warning(t("bilibiliVideoManager.searchLoadFailed"));
+  } finally {
+    stopGlobalLoading();
+  }
 };
 
 const previewVideo = (video) => {
@@ -535,7 +653,7 @@ onMounted(async () => {
   .collection-list {
     min-height: 0;
     overflow: auto;
-    padding-right: 4px;
+    padding: 4px;
   }
 
   .result-list {
@@ -544,11 +662,11 @@ onMounted(async () => {
   }
 
   .result-item {
-    display: grid;
-    grid-template-columns: 164px minmax(0, 1fr);
-    gap: 14px;
-    padding: 12px;
-    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 14px 15px;
+    border-radius: 10px;
     border: 1px solid #e5e7eb;
     background: #ffffff;
     transition:
@@ -559,37 +677,9 @@ onMounted(async () => {
 
     &:hover,
     &.active {
-      border-color: #fb7185;
       transform: translateY(-1px);
-      box-shadow: 0 10px 24px rgba(244, 63, 94, 0.12);
+      box-shadow: 0 0 4px 4px rgba(244, 63, 94, 0.12) inset;
     }
-  }
-
-  .result-cover {
-    position: relative;
-    aspect-ratio: 16 / 9;
-    border-radius: 6px;
-    overflow: hidden;
-    background: #f3f4f6;
-
-    img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-  }
-
-  .duration-badge {
-    position: absolute;
-    right: 8px;
-    bottom: 8px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    background: rgba(17, 24, 39, 0.78);
-    color: #ffffff;
-    font-size: 12px;
-    font-weight: 600;
   }
 
   .result-content,
@@ -693,6 +783,17 @@ onMounted(async () => {
     border-radius: 8px;
     border: 1px solid #e5e7eb;
     background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+    cursor: pointer;
+    transition:
+      border-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:hover {
+      border-color: #fb7185;
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(244, 63, 94, 0.12);
+    }
   }
 
   .queue-index {
@@ -716,6 +817,336 @@ onMounted(async () => {
     display: flex;
     flex-direction: column;
     gap: 6px;
+  }
+
+  .download-rotation-view {
+    height: 100%;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .download-rotation-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 26px;
+    border: 1px solid rgba(251, 113, 133, 0.16);
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(251, 113, 133, 0.14),
+        transparent 32%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.94),
+        rgba(248, 250, 252, 0.85)
+      );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.72),
+      0 10px 26px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .rotation-ring {
+    position: relative;
+    width: 320px;
+    height: 320px;
+    border-radius: 50%;
+  }
+
+  .download-orb {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 118px;
+    height: 118px;
+    margin: -59px 0 0 -59px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    box-shadow:
+      0 12px 30px rgba(15, 23, 42, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    transform: translate(-50%, -50%) rotate(var(--orb-angle, 0deg))
+      translateY(calc(var(--orb-radius, 132px) * -1))
+      rotate(calc(var(--orb-angle, 0deg) * -1)) scale(var(--orb-scale, 0.82));
+    transition:
+      transform 0.35s ease,
+      box-shadow 0.35s ease,
+      border-color 0.35s ease;
+    cursor: pointer;
+    z-index: 1;
+    background:
+      radial-gradient(
+        circle at 30% 25%,
+        rgba(255, 255, 255, 0.98),
+        rgba(255, 255, 255, 0.72) 18%,
+        rgba(255, 255, 255, 0.16) 26%
+      ),
+      linear-gradient(180deg, rgba(14, 116, 144, 0.92), rgba(17, 24, 39, 0.94));
+
+    &.active {
+      z-index: 3;
+      box-shadow:
+        0 16px 38px rgba(251, 113, 133, 0.26),
+        inset 0 1px 0 rgba(255, 255, 255, 0.28);
+      border-color: rgba(255, 255, 255, 0.52);
+    }
+  }
+
+  .orb-shell {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px;
+    box-sizing: border-box;
+    text-align: center;
+    color: #fff;
+    background:
+      radial-gradient(
+        circle at center,
+        rgba(255, 255, 255, 0.2),
+        transparent 38%
+      ),
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.1),
+        rgba(255, 255, 255, 0.04)
+      );
+    backdrop-filter: blur(0.6px);
+  }
+
+  .orb-rank {
+    width: 18px;
+    height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.24);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
+
+  .orb-title {
+    font-size: 10px;
+    line-height: 1.2;
+    font-weight: 700;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .orb-meta {
+    font-size: 8px;
+    line-height: 1.2;
+    color: rgba(255, 255, 255, 0.84);
+    text-transform: uppercase;
+  }
+
+  .rotation-summary {
+    display: grid;
+    gap: 10px;
+    padding: 16px;
+    border-radius: 16px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(255, 255, 255, 0.82);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+  }
+
+  .rotation-summary-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .rotation-summary-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 8px;
+    height: 22px;
+    border-radius: 999px;
+    background: #fff1f2;
+    color: #be123c;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rotation-summary-count {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 700;
+  }
+
+  .rotation-summary-title {
+    font-size: 15px;
+    line-height: 1.4;
+    font-weight: 800;
+    color: #111827;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .rotation-summary-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    color: #6b7280;
+    font-size: 12px;
+  }
+
+  .rotation-controls {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .rotation-dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex: 1;
+  }
+
+  .rotation-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: rgba(148, 163, 184, 0.5);
+    cursor: pointer;
+    transition:
+      transform 0.2s ease,
+      background 0.2s ease;
+
+    &.active {
+      transform: scale(1.35);
+      background: #fb7185;
+    }
+  }
+
+  .rotation-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+  }
+
+  .rotation-player-card {
+    flex: 0 0 260px;
+    width: 100%;
+    min-width: 0;
+    height: 260px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(148, 163, 184, 0.18);
+    background: rgba(15, 23, 42, 0.96);
+    box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+    overflow: hidden;
+  }
+
+  .rotation-player-header {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .rotation-player-topline {
+    min-width: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .rotation-player-title {
+    min-width: 0;
+    max-width: 100%;
+    flex: 1 1 auto;
+    display: block;
+    font-size: 15px;
+    line-height: 1.35;
+    font-weight: 800;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .rotation-player-meta-inline {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: nowrap;
+    white-space: nowrap;
+  }
+
+  .rotation-player-count {
+    color: #f8fafc;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .rotation-player-caption {
+    font-size: 11px;
+    color: rgba(248, 250, 252, 0.66);
+  }
+
+  .rotation-player-frame {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .rotation-player {
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: 12px;
+    background: #000;
+    object-fit: contain;
+    display: block;
   }
 
   .collection-form {
@@ -804,6 +1235,37 @@ onMounted(async () => {
       font-size: 14px;
       line-height: 1.7;
       color: #4b5563;
+    }
+  }
+
+  .download-preview-dialog {
+    display: grid;
+    grid-template-columns: minmax(260px, 1.2fr) minmax(220px, 0.8fr);
+    gap: 18px;
+    align-items: start;
+  }
+
+  .download-preview-player-wrap {
+    border-radius: 10px;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .download-preview-player {
+    display: block;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background: #000;
+  }
+
+  .download-preview-info {
+    min-width: 0;
+
+    h3 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.4;
+      color: #111827;
     }
   }
 

@@ -89,9 +89,7 @@ const getList = () => {
     {
       title: t("skillapps.list.neteasePlaylistVideoGenerate.title"),
       key: "NeteasePlaylistVideoGenerate",
-      description: t(
-        "skillapps.list.neteasePlaylistVideoGenerate.description",
-      ),
+      description: t("skillapps.list.neteasePlaylistVideoGenerate.description"),
       icon: "🎶",
       category: t("skillapps.list.neteasePlaylistVideoGenerate.category"),
       color: "#D33A31",
@@ -104,7 +102,7 @@ const getList = () => {
       icon: "📺",
       category: t("skillapps.list.bilibiliVideoManager.category"),
       color: "#FB7299",
-      type: "offline",
+      type: "skill",
     },
     {
       title: t("skillapps.list.audioCut.title"),
