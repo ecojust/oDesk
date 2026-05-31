@@ -17,11 +17,14 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-14" # for macOS builds.
+          - platform: "macos-15" # Apple Silicon (M1 and later).
+            rust_target: "aarch64-apple-darwin"
             args: "--target aarch64-apple-darwin"
-          - platform: "macos-latest" # for Intel based macs.
+          - platform: "macos-15-intel" # Intel based Macs.
+            rust_target: "x86_64-apple-darwin"
             args: "--target x86_64-apple-darwin"
           - platform: "windows-latest"
+            rust_target: ""
             args: ""
 
     runs-on: ${{ matrix.platform }}
@@ -35,14 +38,9 @@ jobs:
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
 
-      # 为 aarch64 / x86_64 构建分别安装目标架构
-      - name: Install ARM Apple target
-        if: matrix.args == '--target aarch64-apple-darwin'
-        run: rustup target add aarch64-apple-darwin
-
-      - name: Install x86 Apple target
-        if: matrix.args == '--target x86_64-apple-darwin'
-        run: rustup target add x86_64-apple-darwin
+      - name: Install Rust target
+        if: matrix.rust_target != ''
+        run: rustup target add ${{ matrix.rust_target }}
 
       # Rust cache
       - name: Rust cache
@@ -64,7 +62,7 @@ jobs:
 
       # Build the app
       - name: Build the app
-        uses: tauri-apps/tauri-action@v0
+        uses: tauri-apps/tauri-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -73,4 +71,6 @@ jobs:
           releaseBody: "See the assets to download and install this version."
           releaseDraft: true
           prerelease: false
+          tauriScript: yarn tauri
+          releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][ext]"
           args: ${{ matrix.args }}
