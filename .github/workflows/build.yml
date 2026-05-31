@@ -62,7 +62,7 @@ jobs:
 
       # Build the app
       - name: Build the app
-        uses: tauri-apps/tauri-action@v1
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -72,5 +72,5 @@ jobs:
           releaseDraft: true
           prerelease: false
           tauriScript: yarn tauri
-          releaseAssetNamePattern: "[name]_[version]_[platform]_[arch][ext]"
+          assetNamePattern: "[name]_[version]_[platform]_[arch][ext]"
           args: ${{ matrix.args }}
