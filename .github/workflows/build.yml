@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-14-arm64" # for Arm based macs (M1/M2/M5).
+          - platform: "macos-14" # for macOS builds.
             args: "--target aarch64-apple-darwin"
           - platform: "macos-latest" # for Intel based macs.
             args: "--target x86_64-apple-darwin"
@@ -35,7 +35,11 @@ jobs:
       - name: Rust setup
         uses: dtolnay/rust-toolchain@stable
 
-      # 为Intel Mac安装目标架构 (仅在对应平台执行)
+      # 为 aarch64 / x86_64 构建分别安装目标架构
+      - name: Install ARM Apple target
+        if: matrix.args == '--target aarch64-apple-darwin'
+        run: rustup target add aarch64-apple-darwin
+
       - name: Install x86 Apple target
         if: matrix.args == '--target x86_64-apple-darwin'
         run: rustup target add x86_64-apple-darwin
