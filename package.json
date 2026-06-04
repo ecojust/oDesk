@@ -1,14 +1,14 @@
 {
   "name": "oDesk",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build-info": "node scripts/update-build-info.js",
     "build": "vue-tsc --noEmit && vite build",
     "preview": "vite preview",
-    "tauri": "yarn run build-info && tauri",
+    "tauri": "tauri",
     "logo": "cargo tauri icon ./logo.png",
     "4dev": "yarn run build-info && yarn tauri dev"
   },

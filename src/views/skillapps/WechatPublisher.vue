@@ -245,7 +245,12 @@
       <!-- 右侧HTML预览 -->
       <div class="html-panel">
         <div class="panel-header">
-          <h3>{{ t("skillapps.articlePreview") }}</h3>
+          <div class="preview-title">
+            <h3>{{ t("skillapps.articlePreview") }}</h3>
+            <span v-if="htmlPreview" class="word-count">
+              {{ t("skillapps.articleWordCount", { count: articleTextCount }) }}
+            </span>
+          </div>
           <button
             class="publish-btn"
             :class="{ loading: isPublishing }"
@@ -281,7 +286,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode, { wechat_config } from "@/service/shell/opencode";
 import { Search, Edit, Setting } from "@element-plus/icons-vue";
@@ -544,6 +549,24 @@ const handlePolish = async () => {
 };
 
 const htmlPreview = ref("");
+
+const getVisibleText = (html) => {
+  if (!html) return "";
+
+  if (typeof DOMParser === "undefined") {
+    return html.replace(/<[^>]*>/g, "");
+  }
+
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  doc
+    .querySelectorAll("script, style, noscript, template")
+    .forEach((node) => node.remove());
+  return doc.body?.textContent || "";
+};
+
+const articleTextCount = computed(() =>
+  getVisibleText(htmlPreview.value).replace(/\s/g, "").length,
+);
 
 const searchFiles = async () => {
   const searchs = await Opencode.scan_worksapce_file(APPID, {
@@ -1075,12 +1098,32 @@ onMounted(async () => {
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 16px;
+
+        .preview-title {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
+        }
 
         h3 {
           margin: 0;
           font-size: 18px;
           font-weight: 700;
           color: #333;
+          white-space: nowrap;
+        }
+
+        .word-count {
+          color: #6c757d;
+          background: #eef1f4;
+          border-radius: 999px;
+          padding: 3px 8px;
+          font-size: 12px;
+          font-weight: 600;
+          line-height: 1.4;
+          white-space: nowrap;
         }
 
         .publish-btn {
