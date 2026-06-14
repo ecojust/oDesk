@@ -273,11 +273,11 @@ export default class Opencode {
 
     let lastRecord:
       | {
-        status: string;
-        text: string;
-        header: HTMLDivElement;
-        body: HTMLDivElement;
-      }
+          status: string;
+          text: string;
+          header: HTMLDivElement;
+          body: HTMLDivElement;
+        }
       | undefined;
 
     const messageWindow: MessageWindow = {

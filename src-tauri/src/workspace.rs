@@ -4,6 +4,7 @@ use crate::{
         read_folder_files, read_folder_files_with_message, read_folder_folders, unzip_file_to_path,
     },
     tool::log,
+    AppState,
 };
 use tauri::{AppHandle, Manager};
 
@@ -81,11 +82,21 @@ pub async fn unzip_skill_to_workspace(
 
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
-pub async fn kill_existing_opencode_processes() -> Result<(), String> {
+pub async fn kill_existing_opencode_processes(
+    app: tauri::AppHandle,
+) -> Result<(), String> {
     log("kill_existing_opencode_processes-----".to_string())
         .await
         .unwrap();
 
+    // 先尝试优雅终止 sidecar 托管的子进程
+    if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
+        if let Some(child) = guard.take() {
+            let _ = child.kill();
+        }
+    }
+
+    // 再通过系统命令清理残留进程
     #[cfg(target_os = "windows")]
     let output = Command::new("taskkill")
         .args(["/F", "/IM", "opencode.exe"])
@@ -381,13 +392,8 @@ pub async fn execute_opencode_serve(
         .await
         .unwrap();
 
-    use tokio::process::Command;
     let base_dir = get_appdata_dir()?;
     let target_workspace = base_dir.join("workspaces").join(workspace);
-
-    // if let Err(e) = kill_existing_opencode_processes() {
-    //     eprintln!("Warning: Failed to kill existing opencode processes: {}", e);
-    // }
 
     log(format!(
         "folder: {}",
@@ -396,49 +402,72 @@ pub async fn execute_opencode_serve(
     .await
     .unwrap();
 
-    //  opencode serve - 强制加载用户完整环境变量 (解决GUI应用PATH缺失问题)
-    tokio::spawn(async move {
-        #[cfg(target_os = "windows")]
-        let output = Command::new("cmd")
-            .args(["/C", "opencode serve"])
-            .creation_flags(0x08000000) // CREATE_NO_WINDOW
-            .current_dir(&target_workspace)
-            .output()
-            .await;
+    let cmd = app
+        .shell()
+        .sidecar("opencode")
+        .map_err(|e| format!("sidecar 加载失败：{e}"))?
+        .args([
+            "serve",
+            "--port",
+            "4096",
+            "--print-logs",
+            "--cors",
+            "http://127.0.0.1:1420",
+            "--cors",
+            "http://localhost:1420",
+            "--cors",
+            "tauri://localhost",
+            "--cors",
+            "http://tauri.localhost",
+            "--cors",
+            "https://tauri.localhost",
+        ])
+        .current_dir(&target_workspace);
 
-        #[cfg(not(target_os = "windows"))]
-        let output = Command::new("zsh")
-            .args(["-l", "-i", "-c", "opencode serve"])
-            .env(
-                "PATH",
-                format!(
-                    "/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:{}/.cargo/bin:{}/.local/bin",
-                    std::env::var("HOME").unwrap_or_default(),
-                    std::env::var("HOME").unwrap_or_default()
-                ),
-            )
-            .current_dir(&target_workspace)
-            .output()
-            .await;
+    let (mut rx, child) = cmd.spawn().map_err(|e| format!("启动失败：{e}"))?;
 
-        match output {
-            Ok(output) => {
-                let log_content = format!(
-                    "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
-                    String::from_utf8_lossy(&output.stdout),
-                    String::from_utf8_lossy(&output.stderr),
-                    output.status
-                );
-                log(log_content).await.unwrap();
+    // Store child handle in AppState for cleanup
+    if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
+        *guard = Some(child);
+    }
+
+    // Spawn log watcher
+    let log_dir = dirs::data_dir()
+        .unwrap_or_else(|| PathBuf::from("."))
+        .join("oDesk");
+    let _ = fs::create_dir_all(&log_dir);
+    let log_path = log_dir.join("opencode-server.log");
+
+    tauri::async_runtime::spawn(async move {
+        use std::io::Write;
+        let mut log_file = fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_path)
+            .ok();
+        loop {
+            match rx.recv().await {
+                Some(CommandEvent::Stdout(bytes)) => {
+                    if let Some(ref mut f) = log_file {
+                        let _ = writeln!(f, "[serve] {}", String::from_utf8_lossy(&bytes));
+                    }
+                }
+                Some(CommandEvent::Stderr(bytes)) => {
+                    if let Some(ref mut f) = log_file {
+                        let _ = writeln!(f, "[serve:err] {}", String::from_utf8_lossy(&bytes));
+                    }
+                }
+                Some(CommandEvent::Terminated(_)) | Some(CommandEvent::Error(_)) | None => break,
+                _ => {}
             }
-            Err(e) => {
-                let log_content = format!("ERROR:{}\n", e);
-                log(log_content).await.unwrap();
-            }
+        }
+        // Clear child handle on process exit
+        if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
+            *guard = None;
         }
     });
 
-    Ok(format!("opencode serve started successfully in "))
+    Ok("opencode serve started successfully".to_string())
 }
 
 #[tauri::command]

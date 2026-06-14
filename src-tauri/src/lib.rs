@@ -14,7 +14,12 @@ use config::{read_config, set_config};
 use fetch::{fetch_json, fetch_request};
 use fs_helper::{export_file, open_folder, read_file};
 use opencode_auth::{read_opencode_auth, read_opencode_model, set_opencode_auth_provider};
+use std::sync::{Arc, Mutex};
 use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
+
+pub struct AppState {
+    pub opencode_child: Arc<Mutex<Option<tauri_plugin_shell::process::CommandChild>>>,
+}
 
 use workspace::{
     copy_file_to_workspace, create_workspace, delete_workspace_file, delete_workspace_folder,
@@ -38,6 +43,9 @@ use wallpaper_static::{
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
+        .manage(AppState {
+            opencode_child: Arc::new(Mutex::new(None)),
+        })
         .setup(|_app| {
             // 自动创建动态壁纸窗口
             // match create_animation_window(&app.handle()) {
