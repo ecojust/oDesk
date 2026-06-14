@@ -65,6 +65,11 @@
 - Fullscreen preview mode
 - Save and delete HTML wallpapers
 
+## Package Notes
+
+- **Mac M-series chips**: Download may show "damaged" alert due to missing code signing. Run `sudo xattr -cr /Applications/oDesk.app` in terminal to remove the quarantine attribute and run normally
+- **Mac Intel chips**: Works normally, but compatibility warnings appear when running on M-series chips; Intel support on M-series will be phased out
+
 ## 📄 Usage
 
 1. **Skill Apps**: Access various skill apps in the "SKILL-APPS" tab
