@@ -52,7 +52,13 @@
       "usage": "Usage Instructions",
       "usageSubtitle1": "Skill App Installation",
       "usageStep1_1": "1. Download node from https://www.nodejs.com.cn/download.html. For Windows, it's recommended to download the msi version to avoid manual environment variable configuration",
-      "usageStep1_2": "2. Run npm i -g opencode-ai in cmd"
+      "usageStep1_2": "2. Run npm i -g opencode-ai in cmd",
+      "runtimeDependencies": "Runtime Environment",
+      "runtimeChecking": "Checking runtime environment...",
+      "runtimeCheckFailed": "Runtime check failed",
+      "runtimeInstalled": "Installed",
+      "runtimeMissing": "Missing",
+      "runtimeVersionUnknown": "Unknown version"
     },
     "modelSettings": {
       "title": "Model Settings",
@@ -165,6 +171,12 @@
     "resetSkillsSuccess": "Skills reset successfully!",
     "resetSkillsFailed": "Reset skills failed: ",
     "restartSkillApp": "Please restart the skill app to apply changes",
+    "runtimeMissing": "Please install before launching skill apps: {dependencies}",
+    "runtimeCheckFailed": "Runtime check failed. Please make sure Node.js and Python are installed and available in PATH",
+    "runtimeInstallTitle": "Install Runtime Environment",
+    "runtimeInstallMessage": "{dependencies} is missing. Start the installation assistant now?",
+    "runtimeInstallConfirm": "Start Install",
+    "runtimeInstallOpenFailed": "Failed to start installation assistant",
     "configSaveSuccess": "Configuration saved successfully",
     "configSaveFailed": "Configuration save failed: ",
     "configSettings": "Configuration Settings",

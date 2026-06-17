@@ -52,7 +52,13 @@
       "usage": "使用说明",
       "usageSubtitle1": "Skill应用安装",
       "usageStep1_1": "1. 请于 https://www.nodejs.com.cn/download.html 下载node，windows系统建议下载msi后缀版本，这样不需要手动配置环境变量",
-      "usageStep1_2": "2. cmd 执行 npm i -g opencode-ai"
+      "usageStep1_2": "2. cmd 执行 npm i -g opencode-ai",
+      "runtimeDependencies": "运行环境",
+      "runtimeChecking": "正在检测运行环境...",
+      "runtimeCheckFailed": "运行环境检测失败",
+      "runtimeInstalled": "已安装",
+      "runtimeMissing": "未安装",
+      "runtimeVersionUnknown": "版本未知"
     },
     "modelSettings": {
       "title": "模型设置",
@@ -170,6 +176,12 @@
     "resetSkillsSuccess": "技能重置成功!",
     "resetSkillsFailed": "重置技能失败: ",
     "restartSkillApp": "请重启skill应用以使更改生效",
+    "runtimeMissing": "启动技能应用前请先安装：{dependencies}",
+    "runtimeCheckFailed": "运行环境检测失败，请确认 Node.js 和 Python 已安装并配置到环境变量",
+    "runtimeInstallTitle": "安装运行环境",
+    "runtimeInstallMessage": "检测到缺少 {dependencies}，是否现在启动安装助手？",
+    "runtimeInstallConfirm": "启动安装",
+    "runtimeInstallOpenFailed": "启动安装助手失败",
     "configSaveSuccess": "配置保存成功",
     "configSaveFailed": "配置保存失败: ",
     "configSettings": "配置设置",

@@ -15,7 +15,9 @@ use fetch::{fetch_json, fetch_request};
 use fs_helper::{export_file, open_folder, read_file};
 use opencode_auth::{read_opencode_auth, read_opencode_model, set_opencode_auth_provider};
 use std::sync::{Arc, Mutex};
-use tool::{get_log_dates, get_system_stats, log, open_executable, read_logs};
+use tool::{
+    check_runtime_dependencies, get_log_dates, get_system_stats, log, open_executable, read_logs,
+};
 
 pub struct AppState {
     pub opencode_child: Arc<Mutex<Option<tauri_plugin_shell::process::CommandChild>>>,
@@ -95,6 +97,7 @@ pub fn run() {
             destroy_animation_wallpaper,
             // tool
             get_system_stats,
+            check_runtime_dependencies,
             open_executable,
             log,
             read_logs,

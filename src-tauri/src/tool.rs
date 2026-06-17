@@ -14,6 +14,99 @@ pub struct SystemStats {
     pub memory_usage_percent: f32,
 }
 
+#[derive(Serialize, Deserialize)]
+pub struct RuntimeDependencyStatus {
+    pub name: String,
+    pub installed: bool,
+    pub command: Option<String>,
+    pub version: Option<String>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct RuntimeDependencies {
+    pub node: RuntimeDependencyStatus,
+    pub python: RuntimeDependencyStatus,
+}
+
+fn normalize_version_output(output: &[u8], fallback: &[u8]) -> Option<String> {
+    let text = String::from_utf8_lossy(output).trim().to_string();
+    if !text.is_empty() {
+        return Some(text);
+    }
+
+    let fallback_text = String::from_utf8_lossy(fallback).trim().to_string();
+    if fallback_text.is_empty() {
+        None
+    } else {
+        Some(fallback_text)
+    }
+}
+
+fn command_version(command: &str) -> Option<String> {
+    let output = Command::new(command).arg("--version").output().ok()?;
+
+    if output.status.success() {
+        normalize_version_output(&output.stdout, &output.stderr)
+    } else {
+        None
+    }
+}
+
+#[cfg(target_os = "windows")]
+fn shell_command_version(command: &str) -> Option<String> {
+    let output = Command::new("cmd")
+        .args(["/C", &format!("{command} --version")])
+        .output()
+        .ok()?;
+
+    if output.status.success() {
+        normalize_version_output(&output.stdout, &output.stderr)
+    } else {
+        None
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn shell_command_version(command: &str) -> Option<String> {
+    let shell = std::env::var("SHELL").unwrap_or_else(|_| "/bin/sh".to_string());
+    let script = format!("command -v {command} >/dev/null 2>&1 && {command} --version");
+    let output = Command::new(shell).args(["-lc", &script]).output().ok()?;
+
+    if output.status.success() {
+        normalize_version_output(&output.stdout, &output.stderr)
+    } else {
+        None
+    }
+}
+
+fn dependency_status(name: &str, commands: &[&str]) -> RuntimeDependencyStatus {
+    for command in commands {
+        if let Some(version) = command_version(command).or_else(|| shell_command_version(command)) {
+            return RuntimeDependencyStatus {
+                name: name.to_string(),
+                installed: true,
+                command: Some((*command).to_string()),
+                version: Some(version),
+            };
+        }
+    }
+
+    RuntimeDependencyStatus {
+        name: name.to_string(),
+        installed: false,
+        command: None,
+        version: None,
+    }
+}
+
+#[tauri::command]
+pub fn check_runtime_dependencies() -> Result<RuntimeDependencies, String> {
+    Ok(RuntimeDependencies {
+        node: dependency_status("Node.js", &["node"]),
+        python: dependency_status("Python", &["python3", "python", "py"]),
+    })
+}
+
 #[tauri::command]
 pub async fn log(newline: String) -> Result<(), String> {
     let base_dir = get_appdata_dir()?;

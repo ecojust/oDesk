@@ -144,9 +144,9 @@
         <!-- <p class="model-settings-current">
           {{ modelSettings.providerID }}/{{ modelSettings.modelID }}
         </p> -->
-        <p class="model-settings-path">
+        <!-- <p class="model-settings-path">
           {{ t("stage.modelSettings.modelPath") }}
-        </p>
+        </p> -->
       </el-form>
       <template #footer>
         <div class="dialog-footer">
@@ -183,15 +183,50 @@
         <p class="build-number">
           {{ $t("stage.about.buildNumber") }}: {{ build_info.buildNumber }}
         </p>
-        <div class="usage-section">
-          <h3 class="usage-title">{{ $t("stage.about.usage") }}</h3>
-          <div class="usage-subsection">
-            <h4 class="usage-subtitle">
-              {{ $t("stage.about.usageSubtitle1") }}
-            </h4>
-            <div class="usage-steps">
-              <p>{{ $t("stage.about.usageStep1_1") }}</p>
-              <p>{{ $t("stage.about.usageStep1_2") }}</p>
+
+        <div class="runtime-section">
+          <h3 class="runtime-title">
+            {{ $t("stage.about.runtimeDependencies") }}
+          </h3>
+          <div
+            v-if="isRuntimeDependencyChecking"
+            class="runtime-status runtime-muted"
+          >
+            {{ $t("stage.about.runtimeChecking") }}
+          </div>
+          <div
+            v-else-if="runtimeDependencyCheckFailed"
+            class="runtime-status runtime-error"
+          >
+            {{ $t("stage.about.runtimeCheckFailed") }}
+          </div>
+          <div v-else class="runtime-list">
+            <div
+              v-for="item in runtimeDependencyRows"
+              :key="item.key"
+              class="runtime-item"
+            >
+              <div class="runtime-name">{{ item.name }}</div>
+              <div class="runtime-meta">
+                <el-tag
+                  :type="item.installed ? 'success' : 'danger'"
+                  effect="plain"
+                  size="small"
+                >
+                  {{
+                    item.installed
+                      ? $t("stage.about.runtimeInstalled")
+                      : $t("stage.about.runtimeMissing")
+                  }}
+                </el-tag>
+                <span class="runtime-version">
+                  {{
+                    item.installed
+                      ? item.version || $t("stage.about.runtimeVersionUnknown")
+                      : "-"
+                  }}
+                </span>
+              </div>
             </div>
           </div>
         </div>
@@ -263,6 +298,7 @@ import {
 import { ElMessage } from "element-plus";
 import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
+import { checkRuntimeDependencies } from "@/utils/util";
 import System from "@/service/shell/system";
 import {
   DEFAULT_MODEL_SETTINGS,
@@ -287,6 +323,9 @@ const logDialogVisible = ref(false);
 const logContent = ref("");
 const logDates = ref([]);
 const selectedDate = ref("");
+const isRuntimeDependencyChecking = ref(false);
+const runtimeDependencyCheckFailed = ref(false);
+const runtimeDependencyRows = ref([]);
 const modelSettings = ref(loadModelSettings());
 const modelOptions = ref([]);
 const selectedModelKey = ref(getModelOptionKey(modelSettings.value));
@@ -294,8 +333,40 @@ const apiKeyLocked = ref(true);
 
 const buildTime = ref("2026-03-20 21:21:00");
 
+const getRuntimeDependencyRows = (dependencies = {}) => [
+  {
+    key: "node",
+    name: "Node.js",
+    installed: Boolean(dependencies.node?.installed),
+    version: dependencies.node?.version || "",
+  },
+  {
+    key: "python",
+    name: "Python",
+    installed: Boolean(dependencies.python?.installed),
+    version: dependencies.python?.version || "",
+  },
+];
+
+const loadRuntimeDependencies = async () => {
+  isRuntimeDependencyChecking.value = true;
+  runtimeDependencyCheckFailed.value = false;
+
+  const result = await checkRuntimeDependencies();
+
+  if (result.error) {
+    runtimeDependencyRows.value = getRuntimeDependencyRows();
+    runtimeDependencyCheckFailed.value = true;
+  } else {
+    runtimeDependencyRows.value = getRuntimeDependencyRows(result.dependencies);
+  }
+
+  isRuntimeDependencyChecking.value = false;
+};
+
 const showAboutDialog = () => {
   aboutDialogVisible.value = true;
+  loadRuntimeDependencies();
 };
 
 const showModelSettingsDialog = async () => {
@@ -655,6 +726,59 @@ const testKillOpenServe = async () => {
             }
           }
         }
+      }
+    }
+    .runtime-section {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #ebeef5;
+      text-align: left;
+      .runtime-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #303133;
+        margin: 0 0 12px 0;
+      }
+      .runtime-status {
+        font-size: 13px;
+        line-height: 1.8;
+      }
+      .runtime-muted {
+        color: #909399;
+      }
+      .runtime-error {
+        color: #f56c6c;
+      }
+      .runtime-list {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .runtime-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 8px 10px;
+        border: 1px solid #ebeef5;
+        border-radius: 6px;
+        background: #fafafa;
+      }
+      .runtime-name {
+        color: #303133;
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .runtime-meta {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .runtime-version {
+        min-width: 72px;
+        color: #606266;
+        font-size: 12px;
+        text-align: right;
       }
     }
     .log-section {

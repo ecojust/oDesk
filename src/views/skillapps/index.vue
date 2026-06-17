@@ -70,6 +70,11 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import { useI18n } from "vue-i18n";
+import { ElMessage, ElMessageBox } from "element-plus";
+import {
+  checkRuntimeDependencies,
+  startRuntimeInstallAssistant,
+} from "@/utils/util";
 import getList from "./list";
 
 import ScheduleManager from "./ScheduleManager.vue";
@@ -110,6 +115,7 @@ const activeApp = ref("MusicDownload");
 const appList = computed(() => getList());
 const selectedApp = ref(null);
 const isDialogOpen = ref(false);
+const isCheckingRuntime = ref(false);
 
 const getCardStyle = (item) => ({
   borderColor: item.color,
@@ -118,12 +124,9 @@ const getCardStyle = (item) => ({
 
 const activeComponent = computed(() => components[activeApp.value] || null);
 
-const selectApp = (appKey) => {
-  activeApp.value = appKey;
-  selectedApp.value = appList.value.find((app) => app.key === appKey);
-  isDialogOpen.value = true;
+const getDependencySeparator = () => (locale.value === "en" ? ", " : "、");
 
-  // 添加微交互效果
+const showCardFeedback = (appKey) => {
   const appCard = document.querySelector(`[data-app-key="${appKey}"]`);
   if (appCard) {
     appCard.style.transform = "scale(0.95)";
@@ -131,6 +134,65 @@ const selectApp = (appKey) => {
       appCard.style.transform = "translateY(-4px)";
     }, 150);
   }
+};
+
+const askInstallRuntimeDependencies = async (missingDependencies) => {
+  const dependencies = missingDependencies.join(getDependencySeparator());
+
+  try {
+    await ElMessageBox.confirm(
+      t("skillapps.runtimeInstallMessage", { dependencies }),
+      t("skillapps.runtimeInstallTitle"),
+      {
+        confirmButtonText: t("skillapps.runtimeInstallConfirm"),
+        cancelButtonText: t("common.cancel"),
+        type: "warning",
+      },
+    );
+
+    await startRuntimeInstallAssistant();
+  } catch (error) {
+    if (error !== "cancel" && error !== "close") {
+      console.error("Failed to start runtime installer:", error);
+      ElMessage.error(t("skillapps.runtimeInstallOpenFailed"));
+    }
+  }
+};
+
+const selectApp = async (appKey) => {
+  if (isCheckingRuntime.value) {
+    return;
+  }
+
+  const appItem = appList.value.find((app) => app.key === appKey);
+  if (!appItem) {
+    return;
+  }
+
+  isCheckingRuntime.value = true;
+  const runtimeCheck = await checkRuntimeDependencies();
+  isCheckingRuntime.value = false;
+
+  if (runtimeCheck.missing.length) {
+    ElMessage.warning(
+      t("skillapps.runtimeMissing", {
+        dependencies: runtimeCheck.missing.join(getDependencySeparator()),
+      }),
+    );
+    await askInstallRuntimeDependencies(runtimeCheck.missing);
+    return;
+  }
+
+  if (!runtimeCheck.ready) {
+    ElMessage.error(t("skillapps.runtimeCheckFailed"));
+    return;
+  }
+
+  activeApp.value = appKey;
+  selectedApp.value = appItem;
+  isDialogOpen.value = true;
+
+  showCardFeedback(appKey);
 };
 
 const closeDialog = () => {
