@@ -303,7 +303,10 @@ const searchPlaylistSongs = async () => {
   try {
     await saveConfig(false);
     const answer = await Opencode.send_message(
-      `请使用playlist-candidate-generator这个skill，获取歌单${config.value.playlist_url}中的歌曲列表`,
+      `请使用playlist-candidate-generator这个skill，获取歌单${config.value.playlist_url}中的歌曲列表.
+      并为里面的歌去生成可选择的歌曲下载候选
+      
+      `,
     );
     console.log("AI Response:", answer);
 

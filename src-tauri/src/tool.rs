@@ -2,9 +2,16 @@ use crate::fs_helper::get_appdata_dir;
 use chrono::{Datelike, Local};
 use serde::{Deserialize, Serialize};
 use std::process::Command;
+
+#[cfg(target_os = "windows")]
+use std::os::windows::process::CommandExt;
+
 use sysinfo::System;
 use tauri::Manager;
 use tokio::fs;
+
+#[cfg(target_os = "windows")]
+const CREATE_NO_WINDOW: u32 = 0x08000000;
 
 #[derive(Serialize, Deserialize)]
 pub struct SystemStats {
@@ -43,6 +50,13 @@ fn normalize_version_output(output: &[u8], fallback: &[u8]) -> Option<String> {
 }
 
 fn command_version(command: &str) -> Option<String> {
+    #[cfg(target_os = "windows")]
+    let output = Command::new(command)
+        .arg("--version")
+        .creation_flags(CREATE_NO_WINDOW)
+        .output()
+        .ok()?;
+    #[cfg(not(target_os = "windows"))]
     let output = Command::new(command).arg("--version").output().ok()?;
 
     if output.status.success() {
@@ -56,6 +70,7 @@ fn command_version(command: &str) -> Option<String> {
 fn shell_command_version(command: &str) -> Option<String> {
     let output = Command::new("cmd")
         .args(["/C", &format!("{command} --version")])
+        .creation_flags(CREATE_NO_WINDOW)
         .output()
         .ok()?;
 
