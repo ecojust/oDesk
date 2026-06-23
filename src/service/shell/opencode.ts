@@ -792,6 +792,7 @@ const wechat_config = {
   wenyanTheme: "default",
   wenyanCustomCss: false,
   thumb: "", //"ai"
+  polishMode: false,
 };
 
 const audio_book_config = {

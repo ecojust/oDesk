@@ -36,20 +36,28 @@
     </div>
 
     <!-- 发布配置 -->
-    <el-dialog v-model="configDialogVisible" title="发布配置">
-      <div class="config-section">
-        <div class="config-header">
-          {{ t("skillapps.configSettings") }}
-        </div>
-        <div class="config-form">
+    <el-dialog
+      v-model="configDialogVisible"
+      title="发布配置"
+      width="620px"
+      top="5vh"
+    >
+      <div class="config-body">
+        <div class="config-group">
+          <div class="config-group-title">
+            <el-icon><Key /></el-icon>
+            <span>公众号凭证</span>
+          </div>
           <div class="config-item">
-            <label>{{ t("wechatPublisher.appid") }}:</label>
+            <label>{{ t("wechatPublisher.appid") }}</label>
             <el-input
               :type="showAppId ? 'text' : 'password'"
               v-model="config.wechat.appid"
               :placeholder="t('wechatPublisher.pleaseEnterAppid')"
-              class="config-input"
             >
+              <template #prefix>
+                <el-icon><User /></el-icon>
+              </template>
               <template #suffix>
                 <el-icon
                   class="password-eye-icon"
@@ -62,13 +70,15 @@
             </el-input>
           </div>
           <div class="config-item">
-            <label>{{ t("wechatPublisher.appsecret") }}:</label>
+            <label>{{ t("wechatPublisher.appsecret") }}</label>
             <el-input
               :type="showAppSecret ? 'text' : 'password'"
               v-model="config.wechat.appsecret"
               :placeholder="t('wechatPublisher.pleaseEnterAppsecret')"
-              class="config-input"
             >
+              <template #prefix>
+                <el-icon><Lock /></el-icon>
+              </template>
               <template #suffix>
                 <el-icon
                   class="password-eye-icon"
@@ -80,59 +90,60 @@
               </template>
             </el-input>
           </div>
-          <div class="config-item">
-            <label>{{ t("wechatPublisher.layoutTheme") }}:</label>
-            <div class="theme-list-container">
-              <!-- <div class="theme-search">
-                <input
-                  type="text"
-                  v-model="themeSearchQuery"
-                  :placeholder="t('skillapps.searchTheme')"
-                  class="theme-search-input"
+        </div>
+
+        <el-divider />
+
+        <div class="config-group">
+          <div class="config-group-title">
+            <el-icon><Brush /></el-icon>
+            <span>{{ t("wechatPublisher.layoutTheme") }}</span>
+          </div>
+          <div
+            class="theme-grid"
+            ref="themeListRef"
+            @scroll="handleThemeScroll"
+          >
+            <div
+              v-for="theme in visibleThemes"
+              :key="theme.name"
+              class="theme-card"
+              :class="{ active: config.wenyanTheme === theme.key }"
+              @click="selectTheme(theme)"
+            >
+              <div class="theme-card-preview">
+                <img
+                  :src="theme.preview"
+                  :alt="theme.description"
+                  @error="handleImageError"
                 />
-              </div> -->
-              <div
-                class="theme-list"
-                ref="themeListRef"
-                @scroll="handleThemeScroll"
-              >
                 <div
-                  v-for="theme in visibleThemes"
-                  :key="theme.name"
-                  class="theme-item"
-                  :class="{
-                    active: config.wenyanTheme === theme.key,
-                  }"
-                  @click="selectTheme(theme)"
+                  v-if="config.wenyanTheme === theme.key"
+                  class="theme-card-check"
                 >
-                  <div class="theme-preview-image">
-                    <img
-                      :src="theme.preview"
-                      :alt="theme.description"
-                      @error="handleImageError"
-                    />
-                  </div>
-                  <div class="theme-info">
-                    <div class="theme-name">{{ theme.description }}</div>
-                    <div class="theme-file">{{ theme.name }}</div>
-                  </div>
-                </div>
-                <div v-if="loadingMoreThemes" class="theme-loading">
-                  <span>{{ t("skillapps.loading") }}</span>
+                  ✓
                 </div>
               </div>
+              <div class="theme-card-name">{{ theme.description }}</div>
             </div>
-          </div>
-          <div class="config-actions">
-            <el-button @click="configDialogVisible = false">
-              {{ t("common.cancel") }}
-            </el-button>
-            <el-button type="primary" @click="saveConfig">
-              {{ t("skillapps.save") }}
-            </el-button>
+            <div v-if="loadingMoreThemes" class="theme-loading">
+              <el-icon class="is-loading"><Loading /></el-icon>
+              <span>{{ t("skillapps.loading") }}</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <template #footer>
+        <div class="config-footer">
+          <el-button @click="configDialogVisible = false">
+            {{ t("common.cancel") }}
+          </el-button>
+          <el-button type="primary" @click="saveConfig">
+            {{ t("skillapps.save") }}
+          </el-button>
+        </div>
+      </template>
     </el-dialog>
 
     <!-- 中间内容区域 -->
@@ -148,96 +159,97 @@
               size="small"
               @click="openConfigDialog"
             >
-              {{ t("skillapps.configSettings") }}
+              发布配置
             </el-button>
-          </div>
-          <!-- 模式切换开关 -->
-          <div class="mode-switch">
-            <span class="mode-label" :class="{ active: !isPolishMode }">{{
-              t("skillapps.searchMode")
-            }}</span>
-            <el-switch
-              v-model="isPolishMode"
-              active-color="#764ba2"
-              inactive-color="#667eea"
-              :active-action-icon="Edit"
-              :inactive-action-icon="Search"
-            />
-            <span class="mode-label" :class="{ active: isPolishMode }">{{
-              t("skillapps.polishMode")
-            }}</span>
           </div>
         </div>
         <div class="panel-content">
-          <!-- 文章标题 -->
-          <div class="article-title-section">
-            <h4>{{ t("wechatPublisher.articleTitle") }}</h4>
-            <el-input
-              v-model="articleTitle"
-              :placeholder="t('wechatPublisher.enterArticleTitle')"
-              @change="saveTitle"
-              clearable
-              class="title-input"
-            />
-          </div>
-
-          <!-- 封面预览 -->
-          <div class="thumb-preview" @click="refreshtThumb">
-            <h4>{{ t("wechatPublisher.coverPreview") }}</h4>
-            <div class="thumb-container">
-              <img
-                v-if="previewThumb"
-                :src="previewThumb"
-                alt="cover"
-                class="thumb-image"
+          <!-- 紧凑封面+标题栏 -->
+          <div class="cover-bar">
+            <div class="cover-thumb" @click="refreshtThumb">
+              <img v-if="previewThumb" :src="previewThumb" alt="cover" />
+              <div v-else class="cover-thumb-placeholder">🖼️</div>
+            </div>
+            <div class="cover-meta">
+              <el-input
+                v-model="articleTitle"
+                placeholder="选填，留空则自动生成"
+                @change="saveTitle"
+                clearable
               />
-              <div v-else class="thumb-placeholder">
-                <i class="icon">🖼️</i>
-                <span>{{ t("wechatPublisher.noCover") }}</span>
+              <div class="cover-actions">
+                <button class="cover-action-btn" @click.stop="selectLocalCover">
+                  📁 从本地选择
+                </button>
+                <button class="cover-action-btn refresh" @click="refreshtThumb">
+                  🔄 {{ t("skillapps.refresh") }}
+                </button>
               </div>
             </div>
           </div>
 
           <!-- 搜索模式输入 -->
-          <div class="search-container" v-if="!isPolishMode">
+          <div class="search-container" v-show="!isPolishMode">
             <textarea
               @input="savePrompt"
               class="search-textarea"
               v-model="question"
               :placeholder="t('skillapps.enterSearchContent')"
             ></textarea>
-            <button
-              class="search-btn"
-              @click="handleSearch"
-              :disabled="isLoading || !question.trim()"
-            >
-              <i class="icon" :class="{ loading: isLoading }">🔍</i>
-              <span v-if="isLoading" class="loading-text">{{
-                t("skillapps.searching")
-              }}</span>
-              <span v-else>{{ t("skillapps.search") }}</span>
-            </button>
+            <div class="action-bar">
+              <button
+                class="search-btn"
+                @click="handleSearch"
+                :disabled="isLoading || !question.trim()"
+              >
+                <i class="icon" :class="{ loading: isLoading }">🔍</i>
+                <span v-if="isLoading" class="loading-text">{{
+                  t("skillapps.searching")
+                }}</span>
+                <span v-else>{{ t("skillapps.search") }}</span>
+              </button>
+              <div class="mode-switch">
+                <el-switch
+                  v-model="isPolishMode"
+                  active-color="#764ba2"
+                  inactive-color="#667eea"
+                  :active-action-icon="Edit"
+                  :inactive-action-icon="Search"
+                />
+              </div>
+            </div>
           </div>
 
           <!-- 润色模式输入 -->
-          <div class="polish-container" v-else>
+          <div class="polish-container" v-show="isPolishMode">
             <textarea
               @input="savePrompt"
               class="polish-textarea"
               v-model="question"
               :placeholder="t('skillapps.enterPolishContent')"
             ></textarea>
-            <button
-              class="polish-btn"
-              @click="handlePolish"
-              :disabled="isLoading || !question.trim()"
-            >
-              <i class="icon" :class="{ loading: isLoading }">✨</i>
-              <span v-if="isLoading" class="loading-text">{{
-                t("skillapps.polishing")
-              }}</span>
-              <span v-else>{{ t("skillapps.startPolish") }}</span>
-            </button>
+            <div class="action-bar">
+              <button
+                class="polish-btn"
+                @click="handlePolish"
+                :disabled="isLoading || !question.trim()"
+              >
+                <i class="icon" :class="{ loading: isLoading }">✨</i>
+                <span v-if="isLoading" class="loading-text">{{
+                  t("skillapps.polishing")
+                }}</span>
+                <span v-else>{{ t("skillapps.startPolish") }}</span>
+              </button>
+              <div class="mode-switch">
+                <el-switch
+                  v-model="isPolishMode"
+                  active-color="#764ba2"
+                  inactive-color="#667eea"
+                  :active-action-icon="Edit"
+                  :inactive-action-icon="Search"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -289,12 +301,21 @@
 import { ref, computed, onMounted, watch } from "vue";
 import { useI18n } from "vue-i18n";
 import Opencode, { wechat_config } from "@/service/shell/opencode";
-import { Search, Edit, Setting } from "@element-plus/icons-vue";
+import {
+  Search,
+  Edit,
+  Setting,
+  Key,
+  User,
+  Lock,
+  Brush,
+  Loading,
+} from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import styleList from "./WechatPublisherTemplate";
-import { save } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 
 const { t } = useI18n();
 const APPID = "oDesk-wechat-publisher";
@@ -340,6 +361,7 @@ const config = ref({
   wenyanTheme: "default",
   wenyanCustomCss: false,
   thumb: "",
+  polishMode: false,
 });
 
 // 主题相关
@@ -347,7 +369,7 @@ const themeSearchQuery = ref("");
 const themeListRef = ref(null);
 const visibleThemes = ref([]);
 const loadingMoreThemes = ref(false);
-const themePageSize = 10;
+const themePageSize = 15;
 const themeCurrentPage = ref(1);
 
 const previewThumb = ref("");
@@ -369,22 +391,63 @@ const refreshtThumb = async () => {
   }
 };
 
+const refreshCoverPreview = () => {
+  previewThumb.value = previewThumb.value + "?t=" + new Date().getTime();
+  config.value.thumb = "thumb.jpg";
+  saveConfig(false);
+};
+
+const loadThumbPreview = async () => {
+  previewThumb.value = "";
+  const files = await Opencode.scan_worksapce_file(APPID, {
+    path: "",
+    postfix: "jpg",
+  });
+  const thumb = files.find((f) => f.title === "thumb.jpg");
+  if (thumb) {
+    previewThumb.value = thumb.url;
+    refreshCoverPreview();
+  }
+};
+
 const scanpngs = async () => {
-  //
+  await loadThumbPreview();
+  if (previewThumb.value) return;
+
   const pngs = await Opencode.scan_worksapce_file(APPID, {
     path: "./pixabay_images/",
     postfix: "jpg",
   });
   if (pngs.length > 0) {
-    const thumb = pngs[0].url;
-    const path = pngs[0].path;
-    previewThumb.value = thumb + "?t=" + new Date().getTime();
-    await Opencode.copy_file_to_workspace(APPID, path, "thumb.jpg");
-    config.value.thumb = "thumb.jpg";
-    saveConfig();
+    previewThumb.value = pngs[0].url;
+    await Opencode.copy_file_to_workspace(APPID, pngs[0].path, "thumb.jpg");
+    refreshCoverPreview();
   }
 
   console.log("pngs", pngs);
+};
+
+const selectLocalCover = async () => {
+  try {
+    const path = await open({
+      multiple: false,
+      filters: [
+        {
+          name: "图片",
+          extensions: ["png", "jpg", "jpeg", "webp", "gif"],
+        },
+      ],
+    });
+
+    if (path) {
+      await Opencode.copy_file_to_workspace(APPID, path, "thumb.jpg");
+      await loadThumbPreview();
+      ElMessage.success("已选择本地封面");
+    }
+  } catch (error) {
+    console.error("选择图片失败:", error);
+    ElMessage.error("选择图片失败");
+  }
 };
 
 const savePrompt = async () => {
@@ -478,6 +541,12 @@ watch(themeSearchQuery, () => {
   initThemeList();
 });
 
+// 监听模式切换，自动保存到配置
+watch(isPolishMode, (val) => {
+  config.value.polishMode = val;
+  saveConfig(false);
+});
+
 // 初始化主题列表
 initThemeList();
 
@@ -533,7 +602,7 @@ const handlePolish = async () => {
     const polishPrompt = `
     ${question.value}
 
-    上面是用户想要发布的文章内容，请使用article-writer这个skill，根据上述内容进行润色，提升文章质量和可读性，要求内容通顺、结构清晰、语言生动，适合在微信公众号发布。请按照article-writer这个skill的要求来润色，不要发布。
+    上面是用户想要发布的文章内容，请使用article-writer这个skill，根据上述内容进行润色，如果有不正确的地方，也一并修正一下，提升文章质量和可读性，要求内容通顺、结构清晰、语言生动，适合在微信公众号发布。请按照article-writer这个skill的要求来润色，不要发布。
 
     `;
     const answer = await Opencode.send_message(polishPrompt);
@@ -564,8 +633,8 @@ const getVisibleText = (html) => {
   return doc.body?.textContent || "";
 };
 
-const articleTextCount = computed(() =>
-  getVisibleText(htmlPreview.value).replace(/\s/g, "").length,
+const articleTextCount = computed(
+  () => getVisibleText(htmlPreview.value).replace(/\s/g, "").length,
 );
 
 const searchFiles = async () => {
@@ -613,8 +682,10 @@ const readConfig = async () => {
     config.value.thumb = config.value.thumb || "thumb.jpg";
     config.value.prompt = config.value.prompt || "";
     config.value.title = config.value.title || "";
+    config.value.polishMode = config.value.polishMode || false;
     question.value = config.value.prompt;
     articleTitle.value = config.value.title;
+    isPolishMode.value = config.value.polishMode;
 
     console.log("config", config);
   } catch (error) {
@@ -650,7 +721,7 @@ const saveConfig = async (showmessage = true) => {
 // 初始化
 onMounted(async () => {
   await activeWorkspace();
-  readConfig();
+  await readConfig();
   searchFiles();
   scanpngs();
 });
@@ -897,7 +968,6 @@ onMounted(async () => {
         border-bottom: 2px solid #e9ecef;
         display: flex;
         align-items: center;
-        justify-content: space-between;
 
         .header-left {
           display: flex;
@@ -927,23 +997,61 @@ onMounted(async () => {
             }
           }
         }
+      }
 
-        // 模式切换开关样式
+      .action-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 12px;
+
         .mode-switch {
           display: flex;
           align-items: center;
+        }
+
+        .search-btn,
+        .polish-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           gap: 8px;
+          padding: 12px 24px;
+          color: white;
+          border: none;
+          border-radius: 12px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 600;
+          transition: all 0.3s ease;
 
-          .mode-label {
-            font-size: 12px;
-            font-weight: 500;
-            color: #999;
-            transition: all 0.3s ease;
+          &:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            background: #ccc;
+          }
+        }
 
-            &.active {
-              color: #333;
-              font-weight: 600;
-            }
+        .search-btn {
+          background: linear-gradient(135deg, #667eea, #5a6fd8);
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
+          }
+        }
+
+        .polish-btn {
+          background: linear-gradient(135deg, #764ba2, #667eea);
+          box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
+
+          &:hover:not(:disabled) {
+            background: linear-gradient(135deg, #6a4190, #5a6fd8);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
           }
         }
       }
@@ -985,36 +1093,6 @@ onMounted(async () => {
               color: #999;
             }
           }
-
-          .search-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #667eea, #5a6fd8);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-
-            &:hover:not(:disabled) {
-              background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
-              transform: translateY(-1px);
-              box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
-            }
-
-            &:disabled {
-              opacity: 0.7;
-              cursor: not-allowed;
-              background: #ccc;
-            }
-          }
         }
 
         // 润色模式容器样式
@@ -1045,36 +1123,6 @@ onMounted(async () => {
 
             &::placeholder {
               color: #999;
-            }
-          }
-
-          .polish-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-top: 16px;
-            padding: 12px 24px;
-            background: linear-gradient(135deg, #764ba2, #667eea);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
-
-            &:hover:not(:disabled) {
-              background: linear-gradient(135deg, #6a4190, #5a6fd8);
-              transform: translateY(-1px);
-              box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
-            }
-
-            &:disabled {
-              opacity: 0.7;
-              cursor: not-allowed;
-              background: #ccc;
             }
           }
         }
@@ -1526,151 +1574,164 @@ onMounted(async () => {
     }
   }
 
-  .config-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid #e9ecef;
-  }
+  .config-body {
+    padding-top: 8px;
 
-  .theme-list-container {
-    width: 100%;
-
-    .theme-search {
-      margin-bottom: 12px;
-
-      .theme-search-input {
-        width: 100%;
-        padding: 8px 12px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        outline: none;
+    .config-group {
+      .config-group-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
         font-size: 14px;
-        transition: all 0.3s ease;
-        box-sizing: border-box;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 16px;
 
-        &:focus {
-          border-color: #667eea;
-          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        .el-icon {
+          font-size: 16px;
+          color: #667eea;
+        }
+      }
+
+      .config-item {
+        margin-bottom: 16px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+
+        label {
+          display: block;
+          font-size: 13px;
+          font-weight: 500;
+          color: #555;
+          margin-bottom: 6px;
         }
       }
     }
 
-    .theme-list {
-      height: 400px;
-      overflow-y: auto;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      background: white;
+    .theme-grid {
       display: flex;
       flex-wrap: wrap;
       gap: 12px;
-      padding: 12px;
-      align-content: flex-start;
+      max-height: 340px;
+      overflow-y: auto;
+      padding: 4px 2px;
 
-      .theme-item {
-        position: relative;
-        width: calc(25% - 9px);
-        height: 150px;
-        border-radius: 8px;
+      &::-webkit-scrollbar {
+        width: 4px;
+      }
+
+      &::-webkit-scrollbar-thumb {
+        background: #d0d5dd;
+        border-radius: 2px;
+      }
+
+      .theme-card {
+        width: calc(33.33% - 8px);
+        border-radius: 12px;
         overflow: hidden;
         cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px solid #e8eaed;
+        background: white;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
         &:hover {
           transform: translateY(-3px);
-          box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+          box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+          border-color: #d0d5dd;
         }
 
         &.active {
-          box-shadow:
-            0 0 0 2px #667eea,
-            0 6px 16px rgba(102, 126, 234, 0.3);
+          border-color: #667eea;
+          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
 
-          &::after {
-            content: "✓";
+          .theme-card-preview {
+            &::after {
+              content: "";
+              position: absolute;
+              inset: 0;
+              background: rgba(102, 126, 234, 0.08);
+              pointer-events: none;
+            }
+          }
+        }
+
+        .theme-card-preview {
+          position: relative;
+          width: 100%;
+          aspect-ratio: 16 / 10;
+          overflow: hidden;
+          background: #f0f2f5;
+
+          img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.4s ease;
+          }
+
+          &:hover img {
+            transform: scale(1.05);
+          }
+
+          .theme-card-check {
             position: absolute;
             top: 6px;
             right: 6px;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
             background: linear-gradient(135deg, #667eea, #764ba2);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 12px;
+            font-size: 13px;
             font-weight: bold;
-            z-index: 10;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+            animation: scaleIn 0.2s ease;
+          }
+
+          @keyframes scaleIn {
+            from {
+              transform: scale(0);
+            }
+            to {
+              transform: scale(1);
+            }
           }
         }
 
-        .theme-preview-image {
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, #667eea, #764ba2);
-
-          img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-          }
-
-          .theme-placeholder {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
-          }
-        }
-
-        .theme-info {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 8px;
-          background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-          color: white;
-
-          .theme-name {
-            font-size: 11px;
-            font-weight: 600;
-            color: white;
-            margin-bottom: 2px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
-
-          .theme-file {
-            font-size: 10px;
-            color: rgba(255, 255, 255, 0.8);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-          }
+        .theme-card-name {
+          padding: 10px 10px 9px;
+          font-size: 12px;
+          font-weight: 500;
+          color: #333;
+          text-align: center;
+          border-top: 1px solid #f0f2f5;
         }
       }
 
       .theme-loading {
-        grid-column: span 2;
-        padding: 20px;
+        width: 100%;
+        padding: 28px;
         text-align: center;
         color: #999;
-        font-size: 14px;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
       }
     }
+  }
+
+  .config-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
   }
 
   @media (max-width: 768px) {
@@ -1691,21 +1752,56 @@ onMounted(async () => {
     }
   }
 
-  /* 文章标题样式 */
-  .article-title-section {
+  /* 紧凑封面+标题栏 */
+  .cover-bar {
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
     margin-bottom: 12px;
+    border-radius: 10px;
+    background: #f8f9fa;
+    border: 1px solid #eee;
 
-    h4 {
-      margin: 0 0 8px 0;
-      color: #333;
-      font-size: 14px;
-      font-weight: 600;
+    .cover-thumb {
+      flex-shrink: 0;
+      width: 80px;
+      height: 56px;
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      background: #e8eaed;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+
+      &:hover {
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+      }
+
+      img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+
+      .cover-thumb-placeholder {
+        font-size: 22px;
+        opacity: 0.5;
+      }
     }
 
-    .title-input {
+    .cover-meta {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+
       :deep(.el-input__wrapper) {
-        border-radius: 8px;
+        border-radius: 6px;
         box-shadow: 0 0 0 1px #e0e0e0 inset;
         transition: all 0.3s ease;
 
@@ -1721,107 +1817,46 @@ onMounted(async () => {
       }
 
       :deep(.el-input__inner) {
-        font-size: 14px;
+        font-size: 13px;
         color: #333;
 
         &::placeholder {
           color: #999;
         }
       }
-    }
-  }
 
-  /* 封面预览样式 */
-  .thumb-preview {
-    flex-shrink: 0;
-    height: 35%;
-    margin-bottom: 16px;
-    border-radius: 8px;
-    background-color: #fafafa;
-    overflow: hidden;
-    box-sizing: border-box;
-    cursor: pointer;
-    position: relative;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      .cover-actions {
+        display: flex;
+        gap: 8px;
 
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        .cover-action-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 10px;
+          border: 1px solid #e0e0e0;
+          border-radius: 6px;
+          background: white;
+          color: #666;
+          font-size: 12px;
+          cursor: pointer;
+          transition: all 0.2s ease;
 
-      &::after {
-        opacity: 1;
-        transform: translate(0, 0);
+          &:hover {
+            border-color: #667eea;
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+          }
+
+          &.refresh {
+            &:hover {
+              border-color: #764ba2;
+              color: #764ba2;
+              background: rgba(118, 75, 162, 0.05);
+            }
+          }
+        }
       }
-    }
-
-    &:active {
-      transform: scale(0.97);
-      transition: transform 0.1s ease;
-    }
-
-    // 刷新提示角标
-    &::after {
-      content: "🔄 点击刷新";
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 12px;
-      color: #667eea;
-      background: rgba(102, 126, 234, 0.1);
-      padding: 4px 8px;
-      border-radius: 12px;
-      opacity: 0;
-      transform: translateY(-4px);
-      transition: all 0.3s ease;
-      pointer-events: none;
-    }
-
-    h4 {
-      margin: 12px 16px 8px;
-      color: #333;
-      font-size: 14px;
-      font-weight: 600;
-    }
-  }
-
-  .thumb-container {
-    width: 100%;
-    height: calc(100% - 40px);
-    padding: 12px;
-    box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    border-radius: 8px;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-
-    &:hover {
-      border-color: #667eea;
-    }
-  }
-
-  .thumb-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-  }
-
-  .thumb-placeholder {
-    text-align: center;
-    color: #999;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-
-    .icon {
-      font-size: 32px;
-    }
-
-    span {
-      font-size: 14px;
     }
   }
 }

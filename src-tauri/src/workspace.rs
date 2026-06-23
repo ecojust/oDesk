@@ -82,42 +82,48 @@ pub async fn unzip_skill_to_workspace(
 
 /// 杀死所有正在运行的 opencode 进程（跨平台）
 #[tauri::command]
-pub async fn kill_existing_opencode_processes(
-    app: tauri::AppHandle,
-) -> Result<(), String> {
+pub async fn kill_existing_opencode_processes(app: tauri::AppHandle) -> Result<(), String> {
     log("kill_existing_opencode_processes-----".to_string())
         .await
         .unwrap();
 
-    // 先尝试优雅终止 sidecar 托管的子进程
-    if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
+    // 终止 sidecar 托管的子进程
+    let killed = if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
         if let Some(child) = guard.take() {
             let _ = child.kill();
+            true
+        } else {
+            false
         }
-    }
+    } else {
+        false
+    };
 
-    // 再通过系统命令清理残留进程
-    #[cfg(target_os = "windows")]
-    let output = Command::new("taskkill")
-        .args(["/F", "/IM", "opencode.exe"])
-        .output()
-        .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
+    log(format!("kill_existing_opencode_processes - sidecar child killed: {killed}"))
+        .await
+        .unwrap();
 
-    #[cfg(not(target_os = "windows"))]
-    let output = Command::new("pkill")
-        .arg("-f")
-        .arg("opencode")
-        .output()
-        .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
-
-    // 打印日志
-    let log_content = format!(
-        "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
-        String::from_utf8_lossy(&output.stdout),
-        String::from_utf8_lossy(&output.stderr),
-        output.status
-    );
-    log(log_content).await.unwrap();
+    // 原系统级清理代码（保留）
+    // #[cfg(target_os = "windows")]
+    // let output = Command::new("taskkill")
+    //     .args(["/F", "/IM", "opencode.exe"])
+    //     .output()
+    //     .map_err(|e| format!("Failed to kill opencode processes:：{}", e))?;
+    //
+    // #[cfg(not(target_os = "windows"))]
+    // let output = Command::new("pkill")
+    //     .arg("-f")
+    //     .arg("opencode")
+    //     .output()
+    //     .map_err(|e| format!("Failed to kill opencode processes: {}", e))?;
+    //
+    // let log_content = format!(
+    //     "STDOUT:{}\nSTDERR:{}\nSTATUS: {}\n",
+    //     String::from_utf8_lossy(&output.stdout),
+    //     String::from_utf8_lossy(&output.stderr),
+    //     output.status
+    // );
+    // log(log_content).await.unwrap();
 
     Ok(())
 }
