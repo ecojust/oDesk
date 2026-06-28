@@ -8,7 +8,7 @@ use crate::{
 };
 use tauri::{AppHandle, Manager};
 
-use std::{fs, io::Read, path::PathBuf, process::Command};
+use std::{fs, io::Read, net::TcpListener, path::PathBuf, process::Command};
 
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
@@ -86,6 +86,11 @@ pub async fn kill_existing_opencode_processes(app: tauri::AppHandle) -> Result<(
     log("kill_existing_opencode_processes-----".to_string())
         .await
         .unwrap();
+
+    // Clear stored port
+    if let Ok(mut guard) = app.state::<AppState>().opencode_port.lock() {
+        *guard = None;
+    }
 
     // 终止 sidecar 托管的子进程
     let killed = if let Ok(mut guard) = app.state::<AppState>().opencode_child.lock() {
@@ -393,7 +398,7 @@ pub fn delete_workspace_skill(workspace: String, skill: String) -> Result<String
 pub async fn execute_opencode_serve(
     app: tauri::AppHandle,
     workspace: String,
-) -> Result<String, String> {
+) -> Result<u16, String> {
     log(" - -------------execute_opencode_serve - -----------".to_string())
         .await
         .unwrap();
@@ -408,6 +413,15 @@ pub async fn execute_opencode_serve(
     .await
     .unwrap();
 
+    // Find an available port
+    let port = find_available_port()?;
+
+    // Store port in AppState
+    if let Ok(mut guard) = app.state::<AppState>().opencode_port.lock() {
+        *guard = Some(port);
+    }
+
+    let port_str = port.to_string();
     let cmd = app
         .shell()
         .sidecar("opencode")
@@ -415,7 +429,7 @@ pub async fn execute_opencode_serve(
         .args([
             "serve",
             "--port",
-            "4096",
+            &port_str,
             "--print-logs",
             "--cors",
             "http://127.0.0.1:1420",
@@ -473,7 +487,59 @@ pub async fn execute_opencode_serve(
         }
     });
 
-    Ok("opencode serve started successfully".to_string())
+    Ok(port)
+}
+
+fn find_available_port() -> Result<u16, String> {
+    let listener =
+        TcpListener::bind("127.0.0.1:0").map_err(|e| format!("无法获取可用端口：{e}"))?;
+    let port = listener
+        .local_addr()
+        .map_err(|e| format!("无法获取端口信息：{e}"))?
+        .port();
+    drop(listener);
+    Ok(port)
+}
+
+#[tauri::command]
+pub async fn get_opencode_version(app: tauri::AppHandle) -> Result<String, String> {
+    let cmd = app
+        .shell()
+        .sidecar("opencode")
+        .map_err(|e| format!("sidecar 加载失败：{e}"))?
+        .args(["--version"]);
+
+    let (mut rx, _child) = cmd.spawn().map_err(|e| format!("执行失败：{e}"))?;
+
+    let mut version = String::new();
+    use tokio::time::{timeout, Duration};
+    let result = timeout(Duration::from_secs(5), async {
+        loop {
+            match rx.recv().await {
+                Some(CommandEvent::Stdout(bytes)) => {
+                    version.push_str(&String::from_utf8_lossy(&bytes));
+                }
+                Some(CommandEvent::Stderr(bytes)) => {
+                    version.push_str(&String::from_utf8_lossy(&bytes));
+                }
+                Some(CommandEvent::Terminated(_)) | None => break,
+                _ => {}
+            }
+        }
+    })
+    .await;
+
+    match result {
+        Ok(_) => {
+            let v = version.trim().to_string();
+            if v.is_empty() {
+                Err("无法获取 opencode 版本".to_string())
+            } else {
+                Ok(v)
+            }
+        }
+        Err(_) => Err("获取 opencode 版本超时".to_string()),
+    }
 }
 
 #[tauri::command]

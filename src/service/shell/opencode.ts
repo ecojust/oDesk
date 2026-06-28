@@ -1,8 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 import { convertFileSrc } from "@tauri-apps/api/core";
+import { ref } from "vue";
 import RequestService from "@/utils/request";
 import { sleep, getFileName } from "@/utils/util";
 import { resolveModelSettings } from "@/service/modelSettings";
+
+export const opencodePort = ref(4096);
+export const opencodeVersion = ref("");
 
 export type SendMessageOptions = {
   onThinking?: (text: string, part: any) => void;
@@ -86,7 +90,7 @@ export default class Opencode {
       : Promise.resolve();
     const eventPromise = shouldSubscribeEvents
       ? RequestService.subscribeSse({
-          url: "http://127.0.0.1:4096/event",
+          url: `http://127.0.0.1:${opencodePort.value}/event`,
           signal: abortController.signal,
           onOpen: markEventReady,
           onEvent: (event) => {
@@ -111,7 +115,7 @@ export default class Opencode {
       await Promise.race([eventReady, sleep(1000)]);
 
       const result = await RequestService.postBody({
-        url: `http://127.0.0.1:4096/session/${Opencode.sessionId}/message`,
+        url: `http://127.0.0.1:${opencodePort.value}/session/${Opencode.sessionId}/message`,
         data: {
           agent: "build",
           model: {
@@ -466,7 +470,7 @@ export default class Opencode {
     try {
       console.log("new_session-------");
       const result = await RequestService.postBody({
-        url: "http://127.0.0.1:4096/session",
+        url: `http://127.0.0.1:${opencodePort.value}/session`,
       });
       Opencode.sessionId = result.id || "";
     } catch (error) {
@@ -537,13 +541,26 @@ export default class Opencode {
   static async execute_opencode_serve(workspace: string) {
     try {
       Opencode.worksapce = "";
-      const result = await invoke("execute_opencode_serve", { workspace });
+      const port: number = await invoke("execute_opencode_serve", {
+        workspace,
+      });
+      opencodePort.value = port;
       Opencode.worksapce = workspace;
-      console.log(result);
-      return result;
+      console.log("opencode serve started on port:", port);
+      Opencode.fetch_opencode_version();
+      return port;
     } catch (e) {
       console.log("Failed to start opencode serve: ", e);
       throw e;
+    }
+  }
+
+  static async fetch_opencode_version() {
+    try {
+      const version: string = await invoke("get_opencode_version");
+      opencodeVersion.value = version;
+    } catch (e) {
+      console.log("Failed to get opencode version: ", e);
     }
   }
 

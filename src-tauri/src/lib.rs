@@ -21,14 +21,16 @@ use tool::{
 
 pub struct AppState {
     pub opencode_child: Arc<Mutex<Option<tauri_plugin_shell::process::CommandChild>>>,
+    pub opencode_port: Arc<Mutex<Option<u16>>>,
 }
 
 use workspace::{
     copy_file_to_workspace, create_workspace, delete_workspace_file, delete_workspace_folder,
     delete_workspace_skill, execute_opencode_serve, export_workspace_file,
-    export_workspace_file_with_alias, export_workspace_skill, kill_existing_opencode_processes,
-    open_workspace, read_workspace_file_content, scan_worksapce_file, scan_worksapce_folder,
-    unzip_skill_to_workspace, workspace_file_insert_text, write_workspace_file_content,
+    export_workspace_file_with_alias, export_workspace_skill, get_opencode_version,
+    kill_existing_opencode_processes, open_workspace, read_workspace_file_content,
+    scan_worksapce_file, scan_worksapce_folder, unzip_skill_to_workspace,
+    workspace_file_insert_text, write_workspace_file_content,
 };
 
 use wallpaper_animation::{create_animation_wallpaper, destroy_animation_wallpaper};
@@ -47,6 +49,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(AppState {
             opencode_child: Arc::new(Mutex::new(None)),
+            opencode_port: Arc::new(Mutex::new(None)),
         })
         .setup(|_app| {
             // 自动创建动态壁纸窗口
@@ -106,6 +109,7 @@ pub fn run() {
             create_workspace,
             open_workspace,
             execute_opencode_serve,
+            get_opencode_version,
             workspace_file_insert_text,
             kill_existing_opencode_processes,
             scan_worksapce_file,

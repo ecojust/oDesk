@@ -184,6 +184,10 @@
           {{ $t("stage.about.buildNumber") }}: {{ build_info.buildNumber }}
         </p>
 
+        <p class="opencode-version" v-if="opencodeVersion">
+          opencode: {{ opencodeVersion }}
+        </p>
+
         <div class="runtime-section">
           <h3 class="runtime-title">
             {{ $t("stage.about.runtimeDependencies") }}
@@ -296,7 +300,7 @@ import {
   Unlock,
 } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import Opencode from "@/service/shell/opencode";
+import Opencode, { opencodeVersion } from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 import { checkRuntimeDependencies } from "@/utils/util";
 import System from "@/service/shell/system";
@@ -367,6 +371,7 @@ const loadRuntimeDependencies = async () => {
 const showAboutDialog = () => {
   aboutDialogVisible.value = true;
   loadRuntimeDependencies();
+  Opencode.fetch_opencode_version();
 };
 
 const showModelSettingsDialog = async () => {

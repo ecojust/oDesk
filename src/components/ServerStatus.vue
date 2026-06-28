@@ -5,6 +5,7 @@
       <div class="indicator-content">
         <div class="indicator-icon">✅</div>
         <span class="indicator-text">{{ t("serverStatus.connected") }}</span>
+        <span class="port-text">:{{ opencodePort }}</span>
         <button class="skills-manage-btn" @click="openSkillsDialog">💻</button>
       </div>
     </div>
@@ -115,6 +116,7 @@
 <script setup>
 import { ref } from "vue";
 import { useI18n } from "vue-i18n";
+import { opencodePort } from "@/service/shell/opencode";
 const { t } = useI18n();
 
 defineProps({
@@ -186,6 +188,12 @@ const handleSkillsDialogClose = () => {
 
       .indicator-text {
         color: #333;
+      }
+
+      .port-text {
+        color: #888;
+        font-size: 10px;
+        font-family: "SF Mono", Monaco, monospace;
       }
 
       .skills-manage-btn {
