@@ -600,9 +600,8 @@ const handlePolish = async () => {
     await clearDraft();
 
     const polishPrompt = `
-    ${question.value}
-
-    上面是用户想要发布的文章内容，请使用article-writer这个skill，根据上述内容进行润色，如果有不正确的地方，也一并修正一下，提升文章质量和可读性，要求内容通顺、结构清晰、语言生动，适合在微信公众号发布。请按照article-writer这个skill的要求来润色，不要发布。
+    config.json文件中的prompt属性是用户想要发布的文章内容；
+    请使用article-writer这个skill，根据上述内容进行润色，如果有不正确的地方，也一并修正一下，提升文章质量和可读性，要求内容通顺、结构清晰、语言生动，适合在微信公众号发布。请按照article-writer这个skill的要求来润色，不要发布。
 
     `;
     const answer = await Opencode.send_message(polishPrompt);
