@@ -125,6 +125,16 @@ const getList = () => {
       color: "#FF6B6B",
       type: "offline",
     },
+    {
+      title: t("skillapps.list.dataSearch.title"),
+      key: "DataSearch",
+      description: t("skillapps.list.dataSearch.description"),
+      thumb: "/preview/apps/5.png",
+      icon: "🔍",
+      category: t("skillapps.list.dataSearch.category"),
+      color: "#2E86AB",
+      type: "skill",
+    },
   ];
 };
 

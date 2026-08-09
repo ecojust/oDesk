@@ -155,6 +155,11 @@
         "description": "Select MP3 files for audio cutting, supports waveform visualization and fade in/out",
         "category": "Multimedia Tools"
       },
+      "dataSearch": {
+        "title": "Data Search",
+        "description": "Search and structure any data with agent-generated JSON",
+        "category": "Data Tools"
+      },
       "wechatPublisher": {
         "title": "Wechat Publisher",
         "description": "Generate article and publish",
@@ -439,6 +444,21 @@
     "initialHint": "Enter poet name to generate biography",
     "supportDescription": "Supports ancient poets, lyricists, etc.",
     "generateFailed": "Failed to generate poet biography: "
+  },
+  "dataSearch": {
+    "generating": "Searching data",
+    "generatingDescription": "AI is collecting and structuring data for you...",
+    "searchPlaceholder": "Enter data requirement, e.g., top 10 cities by GDP",
+    "generatingStatus": "Searching",
+    "generate": "Search",
+    "parseFailed": "Failed to parse data",
+    "emptyData": "The agent returned empty data",
+    "noResults": "No data found",
+    "tryAnother": "Please try another data requirement",
+    "total": "Total rows",
+    "initialHint": "Enter a data requirement to search",
+    "supportDescription": "Supports searching and structuring data such as rankings, statistics, industry comparisons",
+    "generateFailed": "Data search failed: "
   },
   "audioCut": {
     "title": "Audio Cutter",

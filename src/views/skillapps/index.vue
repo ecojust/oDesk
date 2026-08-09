@@ -84,6 +84,7 @@ import MovieFinder from "./MovieFinder.vue";
 import AncienPoetry from "./AncienPoetry.vue";
 import GraphicalRecipes from "./GraphicalRecipes.vue";
 import AudioBookCreator from "./AudioBookCreator.vue";
+import DataSearch from "./DataSearch.vue";
 import SongMovieGenerate from "./SongMovieGenerate.vue";
 import NeteasePlaylistVideoGenerate from "./NeteasePlaylistVideoGenerate.vue";
 import BilibiliVideoManager from "./BilibiliVideoManager.vue";
@@ -104,6 +105,7 @@ const components = {
   AncienPoetry: AncienPoetry,
   GraphicalRecipes: GraphicalRecipes,
   AudioBookCreator: AudioBookCreator,
+  DataSearch: DataSearch,
   Text2Image: Text2Image,
   SongMovieGenerate: SongMovieGenerate,
   NeteasePlaylistVideoGenerate: NeteasePlaylistVideoGenerate,

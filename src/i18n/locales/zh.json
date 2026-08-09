@@ -160,6 +160,11 @@
         "description": "选择MP3文件进行音频剪辑，支持波形可视化、淡入淡出",
         "category": "多媒体工具"
       },
+      "dataSearch": {
+        "title": "数据搜索",
+        "description": "搜索并结构化任意数据，Agent以JSON格式返回结果",
+        "category": "数据工具"
+      },
       "wechatPublisher": {
         "title": "微信发布器",
         "description": "生成文章并发布",
@@ -444,6 +449,21 @@
     "initialHint": "输入诗人名称生成生平",
     "supportDescription": "支持古代诗人、词人等搜索",
     "generateFailed": "生成诗人生平失败："
+  },
+  "dataSearch": {
+    "generating": "正在搜索数据",
+    "generatingDescription": "AI正在为您收集并整理结构化数据...",
+    "searchPlaceholder": "输入数据需求，如：GDP前10的城市",
+    "generatingStatus": "搜索中",
+    "generate": "搜索",
+    "parseFailed": "数据解析失败",
+    "emptyData": "Agent返回了空数据",
+    "noResults": "未找到相关数据",
+    "tryAnother": "请尝试其他数据需求",
+    "total": "共",
+    "initialHint": "输入数据需求进行搜索",
+    "supportDescription": "支持排行榜、统计数据、行业对比等数据的搜索与结构化",
+    "generateFailed": "数据搜索失败："
   },
   "audioBookCreator": {
     "panelTitle": "有声书设置",
