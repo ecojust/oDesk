@@ -455,6 +455,8 @@
     "emptyData": "The agent returned empty data",
     "noResults": "No data found",
     "tryAnother": "Please try another data requirement",
+    "mask": "Mask this column",
+    "unmask": "Unmask this column",
     "total": "Total rows",
     "initialHint": "Enter a data requirement to search",
     "supportDescription": "Supports searching and structuring data such as rankings, statistics, industry comparisons",

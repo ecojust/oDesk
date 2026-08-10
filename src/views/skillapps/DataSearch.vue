@@ -83,7 +83,31 @@
                   min-width="120"
                   show-overflow-tooltip
                   sortable
-                />
+                >
+                  <template #header>
+                    <div class="column-header">
+                      <span class="column-label">{{ col }}</span>
+                      <el-button
+                        class="mask-btn"
+                        :class="{ 'is-masked': isMasked(colIndex) }"
+                        size="small"
+                        :title="
+                          isMasked(colIndex)
+                            ? t('dataSearch.unmask')
+                            : t('dataSearch.mask')
+                        "
+                        @click="toggleMask(colIndex)"
+                      >
+                        <span v-if="isMasked(colIndex)">👁️</span>
+                        <span v-else>🙈</span>
+                      </el-button>
+                    </div>
+                  </template>
+                  <template #default="{ row }">
+                    <span class="masked-text" v-if="isMasked(colIndex)">***</span>
+                    <span v-else>{{ row[colIndex] }}</span>
+                  </template>
+                </el-table-column>
               </el-table>
             </div>
           </div>
@@ -138,6 +162,19 @@ const resultMeta = ref({});
 const dataError = ref("");
 const isSearching = ref(false);
 const hasSearched = ref(false);
+const maskedColumns = ref(new Set());
+
+const isMasked = (colIndex) => maskedColumns.value.has(colIndex);
+
+const toggleMask = (colIndex) => {
+  const set = new Set(maskedColumns.value);
+  if (set.has(colIndex)) {
+    set.delete(colIndex);
+  } else {
+    set.add(colIndex);
+  }
+  maskedColumns.value = set;
+};
 
 const buildPrompt = (query) => `
 用户有一个数据搜索需求：${query}
@@ -414,6 +451,38 @@ onBeforeUnmount(async () => {});
 
               .el-table__header th {
                 font-weight: 600;
+              }
+
+              .column-header {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                justify-content: space-between;
+
+                .column-label {
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  max-width: 140px;
+                }
+
+                .mask-btn {
+                  padding: 2px 6px;
+                  font-size: 12px;
+                  flex: 0 0 auto;
+
+                  &.is-masked {
+                    background: rgba(46, 134, 171, 0.15);
+                    border-color: rgba(46, 134, 171, 0.4);
+                    color: #2e86aa;
+                  }
+                }
+              }
+
+              .masked-text {
+                color: #c0392b;
+                font-weight: 700;
+                letter-spacing: 1px;
               }
             }
           }

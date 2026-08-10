@@ -460,6 +460,8 @@
     "emptyData": "Agent返回了空数据",
     "noResults": "未找到相关数据",
     "tryAnother": "请尝试其他数据需求",
+    "mask": "隐藏该列数据",
+    "unmask": "显示该列数据",
     "total": "共",
     "initialHint": "输入数据需求进行搜索",
     "supportDescription": "支持排行榜、统计数据、行业对比等数据的搜索与结构化",
