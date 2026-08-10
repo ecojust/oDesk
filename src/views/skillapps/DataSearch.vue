@@ -82,6 +82,7 @@
                   :label="col"
                   min-width="120"
                   show-overflow-tooltip
+                  sortable
                 />
               </el-table>
             </div>
@@ -183,7 +184,10 @@ const searchData = async () => {
 const loadResult = async () => {
   dataError.value = "";
   try {
-    const content = await Opencode.read_workspace_file_content(APPID, "list.json");
+    const content = await Opencode.read_workspace_file_content(
+      APPID,
+      "list.json",
+    );
     const data = JSON.parse(content);
     const fields = data.fields || [];
     const rows = data.rows || [];
