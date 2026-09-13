@@ -77,7 +77,7 @@ async function main() {
   }
 
   const [osName, archName, extName] = info;
-  const version = "1.17.18";
+  const version = "1.18.30";
   console.log(`[sidecar] opencode version: v${version}`);
   await downloadAndExtract(osName, archName, extName, version, dest);
   console.log(`[sidecar] downloaded and installed opencode v${version}`);
