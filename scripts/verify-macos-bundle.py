@@ -262,7 +262,7 @@ def verify_image(image, config, architecture, evidence):
             evidence.run("ditto", apps[0], installed)
             for phase, app in (("mounted", apps[0]), ("installed", installed)):
                 executable, sidecar = verify_app(app, config, architecture, evidence)
-                profile = directory / phase
+                profile = directory / f"profile-{phase}"
                 profile.mkdir()
                 with isolated_state(profile, config["identifier"]) as environment:
                     check_sidecar(sidecar, profile, environment, evidence, phase)
@@ -277,6 +277,28 @@ def verify_image(image, config, architecture, evidence):
                     # check if normal detachment was not possible.
                     evidence.run("hdiutil", "detach", "-force", mount)
                     raise
+
+
+
+def success_summary(report):
+    """Compact, non-sensitive CI evidence that remains accessible in annotations."""
+    return {
+        "target": report["target"],
+        "host_macos": report["host_macos"],
+        "version": report["version"],
+        "dmg_sha256": report["dmg"]["sha256"],
+        "complete_bundle_signatures": sum(check.get("complete_bundle_signature") is True for check in report["checks"]),
+        "gui": [
+            {key: check[key] for key in ("phase", "app_startup_seconds", "normal_exit_code")}
+            for check in report["checks"] if "normal_exit_code" in check
+        ],
+        "opencode": [
+            {key: check[key] for key in ("phase", "opencode_version", "opencode_health", "model_requests")}
+            for check in report["checks"] if "opencode_health" in check
+        ],
+        "notarization_verified": False,
+        "gatekeeper_approval_verified": False,
+    }
 
 
 def main():
@@ -300,6 +322,10 @@ def main():
         verify_image(images[0], config, TARGETS[args.target], evidence)
         evidence.report["status"] = "passed"
         print("DMG signatures and native startup passed. Apple notarization and Gatekeeper approval were NOT verified.", flush=True)
+        if os.environ.get("GITHUB_ACTIONS"):
+            summary = json.dumps(success_summary(evidence.report), separators=(",", ":"))
+            summary = summary.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+            print(f"::notice title=macOS bundle verified::{summary}", flush=True)
     except Exception:
         evidence.report["status"] = "failed"
         evidence.report["error"] = traceback.format_exc()

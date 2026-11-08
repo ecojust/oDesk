@@ -1,0 +1,164 @@
+name: Verify existing macOS release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release or draft tag to verify without rebuilding
+        required: true
+        default: v-0.4.1
+        type: string
+      target:
+        description: Native architecture to verify
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - aarch64-apple-darwin
+          - x86_64-apple-darwin
+
+# GitHub exposes draft releases only to callers with repository push access.
+# This workflow uses that permission solely to read/download drafts: no API
+# writes, asset uploads, signing, rebuilding, or publication are performed.
+permissions:
+  contents: write
+
+concurrency:
+  group: macos-release-check-${{ github.ref }}-${{ inputs.release_tag }}-${{ inputs.target }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Verify ${{ matrix.target }}
+    runs-on: ${{ matrix.target == 'aarch64-apple-darwin' && 'macos-latest' || 'macos-15-intel' }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJSON(inputs.target == 'all' && '["aarch64-apple-darwin","x86_64-apple-darwin"]' || format('["{0}"]', inputs.target)) }}
+    defaults:
+      run:
+        shell: bash
+    env:
+      BUILD_TARGET: ${{ matrix.target }}
+      ASSET_ARCH: ${{ matrix.target == 'aarch64-apple-darwin' && 'aarch64' || 'x64' }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+      PYTHONUTF8: '1'
+
+    steps:
+      - name: Check out verification source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Test bundle verification helpers
+        run: python -m unittest discover -s tests -p 'test_macos_bundle.py' -v
+
+      - name: Download existing DMG and verify GitHub asset digest
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          import re
+          import subprocess
+
+          def require(condition, message):
+              if not condition:
+                  raise RuntimeError(message)
+
+          def run(*arguments):
+              result = subprocess.run(arguments, capture_output=True, text=True, timeout=300)
+              # gh download errors can contain temporary signed blob URLs.
+              # Do not echo captured output on failure or put it in receipts.
+              require(result.returncode == 0, f"{arguments[0]} failed with exit code {result.returncode}")
+              return result.stdout
+
+          def api(path):
+              return json.loads(run('gh', 'api', path))
+
+          target = os.environ['BUILD_TARGET']
+          architectures = {'aarch64-apple-darwin': 'aarch64', 'x86_64-apple-darwin': 'x64'}
+          require(target in architectures, 'Unsupported verification target')
+          require(os.environ['ASSET_ARCH'] == architectures[target], 'Asset architecture mismatch')
+          output = Path('artifacts/macos-verification') / target
+          output.mkdir(parents=True, exist_ok=True)
+          receipt = {
+              'status': 'pending',
+              'release_tag': os.environ['RELEASE_TAG'],
+              'verification_source_sha': run('git', 'rev-parse', 'HEAD').strip(),
+              'target': target,
+              'run_id': os.environ['GITHUB_RUN_ID'],
+              'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+              'rebuilt': False,
+              'resigned': False,
+          }
+          try:
+              config = json.loads(Path('src-tauri/tauri.conf.json').read_text())
+              version = config['version']
+              require(bool(re.fullmatch(r'\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?', version)), 'Unexpected package version')
+              require(os.environ['RELEASE_TAG'] == f'v-{version}', 'Release tag must match checked-out package version')
+              repository = os.environ['GH_REPO']
+              # The tag lookup endpoint does not expose drafts; list releases instead.
+              pages = json.loads(run('gh', 'api', '--paginate', '--slurp', f'repos/{repository}/releases?per_page=100'))
+              releases = [release for page in pages for release in page if release['tag_name'] == os.environ['RELEASE_TAG']]
+              require(len(releases) == 1, 'Expected exactly one matching release or draft')
+              release = releases[0]
+              receipt.update({
+                  'version': version,
+                  'release_id': release['id'],
+                  'release_is_draft': release['draft'],
+                  'release_target_commitish': release['target_commitish'],
+              })
+              name = f'oDesk_{version}_darwin_{architectures[target]}.dmg'
+              assets = [asset for asset in release['assets'] if asset['name'] == name]
+              require(len(assets) == 1, f'Missing or ambiguous release asset: {name}')
+              asset = assets[0]
+              fields = ('id', 'name', 'size', 'state', 'digest', 'created_at', 'updated_at')
+              receipt['asset'] = {key: asset.get(key) for key in fields}
+              require(asset['state'] == 'uploaded' and asset['size'] > 0, 'Asset upload is incomplete')
+              expected_digest = asset.get('digest', '')
+              require(bool(re.fullmatch(r'sha256:[0-9a-f]{64}', expected_digest or '')), 'GitHub asset SHA-256 is missing')
+              destination = Path('src-tauri/target') / target / 'release/bundle/dmg'
+              destination.mkdir(parents=True, exist_ok=True)
+              require(not list(destination.iterdir()), 'Download directory must be empty')
+              run('gh', 'release', 'download', os.environ['RELEASE_TAG'], '--repo', repository,
+                  '--pattern', name, '--dir', str(destination))
+              image = destination / name
+              require(image.is_file() and image.stat().st_size == asset['size'], 'Downloaded asset size mismatch')
+              with image.open('rb') as stream:
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              require(f'sha256:{digest}' == expected_digest, 'Downloaded asset SHA-256 mismatch')
+              current = api(f'repos/{repository}/releases/assets/{asset["id"]}')
+              require(all(current.get(key) == asset.get(key) for key in fields), 'Release asset changed during verification download')
+              receipt.update({'status': 'verified', 'downloaded_sha256': digest, 'downloaded_size': image.stat().st_size})
+              print(f'Verified unchanged release asset: {name} ({image.stat().st_size} bytes), SHA-256 {digest}')
+          except Exception as error:
+              receipt.update({'status': 'failed', 'error_type': type(error).__name__})
+              raise
+          finally:
+              (output / 'download-receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
+          PY
+
+      - name: Verify unchanged DMG, signatures and native startup
+        run: python scripts/verify-macos-bundle.py --target "$BUILD_TARGET"
+
+      - name: Upload download receipt and native verification evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: existing-release-verification-${{ matrix.target }}
+          path: artifacts/macos-verification/${{ matrix.target }}/
+          if-no-files-found: warn
+          retention-days: 30

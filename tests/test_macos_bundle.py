@@ -1,9 +1,11 @@
 """Platform-independent regression tests for macOS release acceptance checks."""
+from contextlib import contextmanager
 import importlib.util
 import json
 import os
 from pathlib import Path
 import plistlib
+import shutil
 import subprocess
 import tempfile
 import unittest
@@ -204,6 +206,91 @@ class MacBundleTests(unittest.TestCase):
         with patch.object(verify.os, "killpg", side_effect=ProcessLookupError):
             verify.stop_process_group(process)
         process.wait.assert_called_once_with(timeout=5)
+
+    def orchestration_fixture(self):
+        """Use real temporary paths/copies; mock only macOS tools and processes."""
+        source = self.app()
+        evidence = FakeEvidence(self.directory)
+        original_run = evidence.run
+        paths = {}
+
+        def run(*arguments, **kwargs):
+            if arguments[:2] == ("hdiutil", "attach"):
+                mount = Path(arguments[arguments.index("-mountpoint") + 1])
+                paths["mount"] = mount
+                shutil.copytree(source, mount / source.name)
+            elif arguments[0] == "ditto":
+                shutil.copytree(arguments[1], arguments[2])
+                paths["installed"] = Path(arguments[2])
+            return original_run(*arguments, **kwargs)
+
+        evidence.run = run
+        phases = []
+
+        @contextmanager
+        def isolate(profile, identifier):
+            self.assertTrue(profile.is_dir())
+            self.assertFalse(any(profile.iterdir()))
+            self.assertNotEqual(profile, paths["mount"])
+            self.assertNotIn(paths["mount"], profile.parents)
+            self.assertEqual(identifier, self.config["identifier"])
+            phases.append(profile)
+            yield {"TEST_PROFILE": str(profile)}
+
+        return evidence, paths, phases, isolate
+
+    def test_dmg_and_install_orchestration_uses_separate_writable_profiles(self):
+        evidence, paths, profiles, isolate = self.orchestration_fixture()
+        launched = []
+
+        def launch(app, executable, directory, environment, evidence, phase):
+            self.assertEqual(directory.name, f"profile-{phase}")
+            self.assertEqual(environment["TEST_PROFILE"], str(directory))
+            self.assertTrue(executable.is_file())
+            launched.append((phase, app))
+
+        with patch.object(verify, "isolated_state", side_effect=isolate), \
+                patch.object(verify, "check_sidecar") as sidecar, \
+                patch.object(verify, "launch_app", side_effect=launch):
+            verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence)
+        self.assertEqual([profile.name for profile in profiles], ["profile-mounted", "profile-installed"])
+        self.assertEqual([phase for phase, app in launched], ["mounted", "installed"])
+        self.assertEqual(launched[0][1], paths["mount"] / "oDesk.app")
+        self.assertEqual(launched[1][1], paths["installed"])
+        self.assertEqual(sidecar.call_count, 2)
+        self.assertEqual(evidence.calls[-1], ("hdiutil", "detach", str(paths["mount"])))
+        self.assertFalse(paths["mount"].parent.exists(), "temporary installation must be removed")
+
+    def test_dmg_is_detached_and_temp_files_removed_after_startup_failure(self):
+        evidence, paths, profiles, isolate = self.orchestration_fixture()
+        with patch.object(verify, "isolated_state", side_effect=isolate), \
+                patch.object(verify, "check_sidecar", side_effect=RuntimeError("server startup failed")), \
+                patch.object(verify, "launch_app") as launch:
+            with self.assertRaisesRegex(RuntimeError, "server startup failed"):
+                verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence)
+        launch.assert_not_called()
+        self.assertEqual(evidence.calls[-1], ("hdiutil", "detach", str(paths["mount"])))
+        self.assertFalse(paths["mount"].parent.exists())
+
+    def test_success_annotation_only_contains_release_and_validation_evidence(self):
+        report = {
+            "target": "aarch64-apple-darwin", "host_macos": "15.7", "version": "0.4.1",
+            "dmg": {"sha256": "a" * 64, "name": "oDesk.dmg"},
+            "checks": [{"command": ["private-path"], "output": "do-not-publish-this-log"}],
+        }
+        for phase in ("mounted", "installed"):
+            report["checks"].extend([
+                {"complete_bundle_signature": True, "app": "private-path"},
+                {"phase": phase, "app_startup_seconds": 5, "normal_exit_code": 0},
+                {"phase": phase, "opencode_version": "1.18.30", "opencode_health": {"healthy": True, "version": "1.18.30"}, "model_requests": 0},
+            ])
+        summary = verify.success_summary(report)
+        self.assertEqual(summary["complete_bundle_signatures"], 2)
+        self.assertEqual(len(summary["gui"]), 2)
+        self.assertEqual(len(summary["opencode"]), 2)
+        self.assertNotIn("private-path", json.dumps(summary))
+        self.assertNotIn("do-not-publish", json.dumps(summary))
+        self.assertFalse(summary["gatekeeper_approval_verified"])
 
     def test_evidence_does_not_claim_notarization_or_gatekeeper_approval(self):
         evidence = verify.Evidence(self.directory)
