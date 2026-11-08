@@ -74,8 +74,24 @@ Selecting a template re-renders the article preview with its actual styles. The 
 
 ## Package Notes
 
-- **Mac M-series chips**: Download may show "damaged" alert due to missing code signing. Run `sudo xattr -cr /Applications/oDesk.app` in terminal to remove the quarantine attribute and run normally
-- **Mac Intel chips**: Works normally, but compatibility warnings appear when running on M-series chips; Intel support on M-series will be phased out
+- **Apple Silicon (including M5)**: Choose `darwin_aarch64.dmg`; Intel Macs should use `darwin_x64.dmg`.
+- **First launch on macOS**: Current releases are not Developer ID signed or notarized by Apple. Gatekeeper may block a downloaded app with a “damaged” message; this does not necessarily mean the download is corrupt.
+
+After downloading from this repository's Releases, drag `oDesk.app` into Applications, then remove only this app's download quarantine attribute and try opening it:
+
+```bash
+sudo xattr -dr com.apple.quarantine "/Applications/oDesk.app"
+open "/Applications/oDesk.app"
+```
+
+If it still fails, include the full alert and these diagnostic outputs in an issue:
+
+```bash
+codesign --verify --deep --strict --verbose=2 "/Applications/oDesk.app"
+spctl --assess --type execute --verbose=4 "/Applications/oDesk.app"
+```
+
+Removing quarantine does not sign or notarize the app. A distribution fix requires Developer ID signing and Apple notarization. First launch on physical M5 hardware running macOS 26.5 has not yet been verified.
 
 ## 📄 Usage
 

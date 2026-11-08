@@ -74,8 +74,24 @@
 
 ## 安装包注意事项
 
-- **Mac M系列芯片**：下载后可能会提示"已损坏"，原因是应用未签名。可在终端执行 `sudo xattr -cr /Applications/oDesk.app` 移除隔离标记，使软件正常运行
-- **Mac Intel芯片**：可正常使用，但在 M 系列芯片上运行时会提示兼容问题，后续将逐步停止支持
+- **Mac M 系列（包括 M5）**：选择 `darwin_aarch64.dmg`；Intel Mac 选择 `darwin_x64.dmg`。
+- **macOS 首次打开**：当前发行包尚未完成 Apple Developer ID 签名和公证，下载后可能被 Gatekeeper 拦截并提示“已损坏”。这不一定表示下载文件损坏。
+
+从本仓库 Releases 下载后，先把 `oDesk.app` 拖到“应用程序”，再在终端仅移除该应用的下载隔离属性并尝试打开：
+
+```bash
+sudo xattr -dr com.apple.quarantine "/Applications/oDesk.app"
+open "/Applications/oDesk.app"
+```
+
+如果仍无法打开，请在 Issue 中附上完整提示和以下诊断输出：
+
+```bash
+codesign --verify --deep --strict --verbose=2 "/Applications/oDesk.app"
+spctl --assess --type execute --verbose=4 "/Applications/oDesk.app"
+```
+
+移除隔离属性不等于完成签名或公证。正式解决首次下载拦截需要为发行包配置 Developer ID 签名和 Apple 公证；目前尚未完成 M5 / macOS 26.5 的真机首次启动验证。
 
 ## 📄 使用说明
 
