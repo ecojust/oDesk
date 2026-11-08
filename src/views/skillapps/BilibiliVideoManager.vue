@@ -533,14 +533,16 @@ onMounted(async () => {
 <style lang="less" scoped>
 .bilibili-video-manager {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
-  padding-top: 40px;
   box-sizing: border-box;
   background: var(--desk-bg);
 
   .workspace-shell {
-    height: calc(100% - 40px);
+    width: 100%;
+    flex: 1;
     min-height: 0;
     display: grid;
     grid-template-columns: minmax(320px, 1.5fr) minmax(320px, 1fr);

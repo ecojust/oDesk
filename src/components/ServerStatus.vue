@@ -159,10 +159,12 @@ const handleSkillsDialogClose = () => {
 
 <style lang="less" scoped>
 .server-status {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 100;
+  position: relative;
+  align-self: flex-end;
+  flex-shrink: 0;
+  max-width: 100%;
+  margin-bottom: 12px;
+  box-sizing: border-box;
 
   .connection-indicator {
     background: var(--desk-surface);
@@ -173,7 +175,7 @@ const handleSkillsDialogClose = () => {
     font-size: 12px;
     line-height: 20px;
 
-    .indicator-content { display: flex; align-items: center; gap: 6px; }
+    .indicator-content { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
     .indicator-icon { font-size: 12px; }
     .port-text { color: var(--desk-muted); font-size: 11px; font-family: monospace; }
     .skills-manage-btn, .reconnect-btn {

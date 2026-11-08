@@ -1,0 +1,12 @@
+{
+  "version": "1.19.5",
+  "repository": "anomalyco/opencode",
+  "assets": {
+    "opencode-darwin-arm64.zip": "c1c9e62521192192ef4c3ed1355ada2144055bddb61682217e997b03c55203c1",
+    "opencode-darwin-x64.zip": "b0212efa6db347187225a17fa3a31c6b261bf4c9f1589a290b0ca902d720d250",
+    "opencode-linux-arm64.tar.gz": "fae5be262d693b7c5e562856cc473e59e741772936db0c0600ac0d5ed5bd088b",
+    "opencode-linux-x64.tar.gz": "588310a336fa3b9df36b3f0225b26f679d453efaad0cf3d66c3651ef3ec1647a",
+    "opencode-windows-arm64.zip": "5d49139bd917511ff35a3c06065c9f47918346668f05ea020e778286f302fbb7",
+    "opencode-windows-x64-baseline.zip": "e4dac5cd38a182a24e7b3e18853f01d08cdb137e50b3bd1397c1a89e54d28c63"
+  }
+}

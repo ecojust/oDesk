@@ -359,19 +359,23 @@ onMounted(async () => {
 <style lang="less" scoped>
 .travel-plan {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 
   // server-status 样式已在 reset.less 中定义
 
   .main-container {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     gap: 16px;
     box-sizing: border-box;
-    height: 100%;
     position: relative;
-    padding-top: 50px;
 
     .layout-container {
       display: flex;

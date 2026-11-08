@@ -1,0 +1,171 @@
+:root {
+    --comic-bg: #fffe91;
+    --comic-border: 2px solid #000;
+    --comic-shadow: 3px 3px 0 rgba(0,0,0,0.3);
+    --accent-yellow: #ff6b6b;
+    --accent-blue: #95e1d3;
+    --accent-dark: #1a1a1a;
+    --text-main: #1a1a1a;
+}
+
+#wenyan {
+    font-size: 16px;
+    color: var(--text-main);
+    background-color: var(--comic-bg);
+    padding: 16px;
+    line-height: 1.7;
+    font-family: "Comic Sans MS", "Chalkboard SE", cursive;
+    transform: rotate(-0.5deg);
+}
+
+#wenyan h1 {
+    margin: 1.5em 0 1.2em;
+    padding: 15px 20px;
+    font-weight: bold;
+    text-align: center;
+    background-color: #95e1d3;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 #ff6b6b;
+    transform: rotate(1deg);
+    text-transform: none;
+    letter-spacing: 1px;
+    font-size: 1.5em;
+}
+
+#wenyan h2 {
+    font-weight: bold;
+    font-size: 1.2em;
+    margin: 1.5em 0 1em;
+    padding: 8px 12px;
+    border-left: none;
+    border-bottom: 3px solid #ff6b6b;
+    background-color: rgba(255,255,255,0.5);
+    display: block;
+    transform: rotate(-0.5deg);
+}
+
+#wenyan h3 {
+    font-weight: bold;
+    margin: 1.2em 0 0.8em;
+    text-decoration: none;
+    color: #ff6b6b;
+    font-size: 1.1em;
+}
+
+#wenyan p {
+    margin: 1em 0;
+    word-spacing: 1px;
+}
+
+#wenyan p strong {
+    background: #ff6b6b;
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 50%;
+    border: 2px solid #000;
+}
+
+#wenyan ul,
+#wenyan ol {
+    padding-left: 1.5em;
+}
+#wenyan li {
+    margin: 10px 0;
+}
+
+#wenyan img {
+    display: block;
+    max-width: 100%;
+    margin: 20px auto;
+    border: 3px solid #000;
+    box-shadow: 4px 4px 0 #95e1d3;
+    background: #fff;
+    padding: 0;
+    transform: rotate(-1deg);
+}
+
+#wenyan blockquote {
+    margin: 20px 10px;
+    padding: 15px;
+    background-color: #fff;
+    border: 3px solid #000;
+    border-radius: 20px;
+    position: relative;
+    color: #1a1a1a;
+    box-shadow: 4px 4px 0 #ff6b6b;
+    transform: rotate(0.5deg);
+}
+#wenyan blockquote::before {
+    content: "💬";
+    position: absolute;
+    top: -15px;
+    right: 10px;
+    font-size: 1.5em;
+}
+
+#wenyan pre {
+    margin: 20px 0;
+    background-color: #95e1d3;
+    border: 3px solid #000;
+    border-radius: 0;
+    box-shadow: 4px 4px 0 #ff6b6b;
+    overflow: hidden;
+}
+#wenyan pre::before {
+    content: "📝 📝 📝";
+    display: block;
+    height: 35px;
+    background-color: #fff;
+    color: #ff6b6b;
+    font-size: 14px;
+    line-height: 35px;
+    padding-left: 15px;
+    letter-spacing: 5px;
+    border-bottom: 3px solid #000;
+}
+
+#wenyan pre code {
+    color: #1a1a1a;
+    padding: 15px;
+    line-height: 1.6;
+    display: block;
+    font-weight: bold;
+}
+
+#wenyan p code {
+    background: #fff;
+    border: 2px solid #000;
+    padding: 2px 6px;
+    margin: 0 3px;
+    border-radius: 5px;
+    font-size: 0.9em;
+}
+
+#wenyan table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+    border: 3px solid #000;
+}
+#wenyan table th {
+    background: #ff6b6b;
+    color: #fff;
+    padding: 10px;
+    border: 2px solid #000;
+}
+#wenyan table td {
+    border: 2px solid #000;
+    padding: 8px;
+    text-align: center;
+}
+#wenyan table tr:nth-child(even) {
+    background-color: #fff;
+}
+
+#wenyan hr {
+    border: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #ff6b6b, #95e1d3, #ff6b6b);
+    margin: 40px 0;
+    border-radius: 2px;
+}

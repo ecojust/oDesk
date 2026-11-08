@@ -507,38 +507,47 @@ pub async fn get_opencode_version(app: tauri::AppHandle) -> Result<String, Strin
         .shell()
         .sidecar("opencode")
         .map_err(|e| format!("sidecar 加载失败：{e}"))?
-        .args(["--version"]);
+        .args(["--version"])
+        .set_raw_out(true);
 
-    let (mut rx, _child) = cmd.spawn().map_err(|e| format!("执行失败：{e}"))?;
+    let (mut rx, child) = cmd.spawn().map_err(|e| format!("执行失败：{e}"))?;
 
-    let mut version = String::new();
     use tokio::time::{timeout, Duration};
-    let result = timeout(Duration::from_secs(5), async {
+    let result = timeout(Duration::from_secs(15), async {
+        let mut stdout = Vec::new();
         loop {
             match rx.recv().await {
                 Some(CommandEvent::Stdout(bytes)) => {
-                    version.push_str(&String::from_utf8_lossy(&bytes));
+                    stdout.extend_from_slice(&bytes);
                 }
-                Some(CommandEvent::Stderr(bytes)) => {
-                    version.push_str(&String::from_utf8_lossy(&bytes));
+                Some(CommandEvent::Terminated(status)) => {
+                    if status.code != Some(0) {
+                        return Err("读取 OpenCode 版本失败：进程异常退出".to_string());
+                    }
+                    let output = String::from_utf8(stdout)
+                        .map_err(|_| "OpenCode 版本输出无效".to_string())?;
+                    let version = output.trim();
+                    if version.is_empty() || version.chars().any(char::is_whitespace) {
+                        return Err("OpenCode 版本输出无效".to_string());
+                    }
+                    return Ok(version.to_string());
                 }
-                Some(CommandEvent::Terminated(_)) | None => break,
+                Some(CommandEvent::Error(error)) => {
+                    return Err(format!("读取 OpenCode 版本失败：{error}"));
+                }
+                None => return Err("读取 OpenCode 版本失败：进程未正常结束".to_string()),
                 _ => {}
             }
         }
     })
     .await;
 
+    if !matches!(&result, Ok(Ok(_))) {
+        let _ = child.kill();
+    }
     match result {
-        Ok(_) => {
-            let v = version.trim().to_string();
-            if v.is_empty() {
-                Err("无法获取 opencode 版本".to_string())
-            } else {
-                Ok(v)
-            }
-        }
-        Err(_) => Err("获取 opencode 版本超时".to_string()),
+        Ok(version) => version,
+        Err(_) => Err("获取 OpenCode 版本超时".to_string()),
     }
 }
 

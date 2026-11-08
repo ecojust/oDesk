@@ -527,14 +527,16 @@ defineExpose({
 <style lang="less" scoped>
 .netease-playlist-video-generate {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
   background: var(--desk-bg);
-  padding-top: 40px;
 
   .workspace-shell {
-    height: calc(100% - 40px);
+    width: 100%;
+    flex: 1;
     min-height: 0;
     display: grid;
     grid-template-columns: minmax(420px, 520px) minmax(420px, 1fr);

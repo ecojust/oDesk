@@ -1,272 +1,159 @@
-import { execSync, spawnSync } from "child_process";
+import { spawnSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
-  copyFileSync,
-  existsSync,
-  readFileSync,
-  mkdirSync,
-  readdirSync,
-  rmSync,
-  statSync,
-  chmodSync,
-} from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+  copyFileSync, readFileSync, mkdirSync, mkdtempSync, readdirSync,
+  rmSync, statSync, chmodSync,
+} from "node:fs";
+import { join, dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const projectRoot = join(__dirname, "..");
-const binariesDir = join(projectRoot, "src-tauri", "binaries");
-
-const PLATFORM_MAP = {
-  "darwin,arm64": ["darwin", "arm64", "zip"],
-  "darwin,x64": ["darwin", "x64", "zip"],
-  "win32,x64": ["windows", "x64-baseline", "zip"],
-  "win32,arm64": ["windows", "arm64", "zip"],
-  "linux,x64": ["linux", "x64", "tar.gz"],
-  "linux,arm64": ["linux", "arm64", "tar.gz"],
+const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
+const TARGETS = {
+  "aarch64-apple-darwin": ["darwin", "arm64", "opencode-darwin-arm64.zip"],
+  "x86_64-apple-darwin": ["darwin", "x64", "opencode-darwin-x64.zip"],
+  "x86_64-pc-windows-msvc": ["win32", "x64", "opencode-windows-x64-baseline.zip"],
+  "aarch64-pc-windows-msvc": ["win32", "arm64", "opencode-windows-arm64.zip"],
+  "x86_64-unknown-linux-gnu": ["linux", "x64", "opencode-linux-x64.tar.gz"],
+  "aarch64-unknown-linux-gnu": ["linux", "arm64", "opencode-linux-arm64.tar.gz"],
 };
 
-const GITHUB_RELEASE =
-  "https://github.com/anomalyco/opencode/releases/download";
-
-async function main() {
-  const target = process.env.TARGET || guessTarget();
-  console.log(
-    `[sidecar] target=${target}, platform=${process.platform}, arch=${process.arch}`,
-  );
-  if (!target) {
-    console.error(
-      "[sidecar] unsupported platform:",
-      process.platform,
-      process.arch,
-    );
-    process.exit(1);
-  }
-
-  const ext = process.platform === "win32" ? ".exe" : "";
-  const sidecarName = `opencode-${target}${ext}`;
-  const dest = join(binariesDir, sidecarName);
-  console.log(`[sidecar] destination: ${dest}`);
-
-  if (existsSync(dest)) {
-    if (isValidExecutable(dest, target)) {
-      console.log(`[sidecar] already exists, skipping: ${sidecarName}`);
-      return;
-    }
-    console.log(
-      `[sidecar] existing file is invalid, replacing: ${sidecarName}`,
-    );
-  }
-
-  mkdirSync(binariesDir, { recursive: true });
-
-  const local = findLocalBinary(target);
-  if (local) {
-    console.log(`[sidecar] found locally at: ${local}, copying...`);
-    copyFileSync(local, dest);
-    console.log(`[sidecar] copied from local: ${local}`);
-    return;
-  }
-  console.log("[sidecar] not found locally, will download from GitHub");
-
-  const info = PLATFORM_MAP[`${process.platform},${process.arch}`];
-  if (!info) {
-    console.error(
-      `[sidecar] no download info for ${process.platform} ${process.arch}`,
-    );
-    process.exit(1);
-  }
-
-  const [osName, archName, extName] = info;
-  const version = "1.18.30";
-  console.log(`[sidecar] opencode version: v${version}`);
-  await downloadAndExtract(osName, archName, extName, version, dest);
-  console.log(`[sidecar] downloaded and installed opencode v${version}`);
+export function guessTarget(platform = process.platform, arch = process.arch) {
+  return Object.keys(TARGETS).find((target) =>
+    TARGETS[target][0] === platform && TARGETS[target][1] === arch);
 }
 
-function guessTarget() {
-  const map = {
-    "darwin,arm64": "aarch64-apple-darwin",
-    "darwin,x64": "x86_64-apple-darwin",
-    "win32,x64": "x86_64-pc-windows-msvc",
-    "win32,arm64": "aarch64-pc-windows-msvc",
-    "linux,x64": "x86_64-unknown-linux-gnu",
-    "linux,arm64": "aarch64-unknown-linux-gnu",
+export function releaseAsset(manifest, target) {
+  const info = TARGETS[target];
+  if (!info) throw new Error(`Unsupported sidecar target: ${target}`);
+  if (!/^\d+\.\d+\.\d+$/.test(manifest.version) || manifest.repository !== "anomalyco/opencode") {
+    throw new Error("Invalid pinned OpenCode release");
+  }
+  const [platform, arch, name] = info;
+  const sha256 = manifest.assets?.[name];
+  if (!/^[a-f0-9]{64}$/.test(sha256 || "")) throw new Error(`Missing SHA-256 for ${name}`);
+  return {
+    name, sha256, platform, arch,
+    url: `https://github.com/${manifest.repository}/releases/download/v${manifest.version}/${name}`,
   };
-  return map[`${process.platform},${process.arch}`] || null;
 }
 
-function findLocalBinary(target) {
-  const lookupCmd =
-    process.platform === "win32" ? "where opencode.exe" : "which opencode";
-  try {
-    const out = execSync(lookupCmd, { encoding: "utf8" }).trim();
-    for (const line of out.split(/\r?\n/)) {
-      const candidate = line.trim();
-      if (!candidate || !existsSync(candidate)) continue;
-      if (isValidExecutable(candidate, target)) return candidate;
-      console.log(`[sidecar] skipping non-native executable: ${candidate}`);
-    }
-  } catch {
-    /* not found */
-  }
-  return null;
+export function verifyChecksum(path, expected) {
+  const actual = createHash("sha256").update(readFileSync(path)).digest("hex");
+  if (actual !== expected) throw new Error(`Archive SHA-256 mismatch: expected ${expected}, got ${actual}`);
 }
 
-async function downloadAndExtract(osName, archName, extName, version, dest) {
-  const archiveName = `opencode-${osName}-${archName}.${extName}`;
-  const url = `${GITHUB_RELEASE}/v${version}/${archiveName}`;
-  const tmpDir = join(binariesDir, ".tmp-dl");
-  const extractDir = join(tmpDir, "extract");
-  rmSync(tmpDir, { recursive: true, force: true });
-  mkdirSync(extractDir, { recursive: true });
-  const archivePath = join(tmpDir, archiveName);
+export function verifyVersion(path, expected, run = spawnSync) {
+  const result = run(path, ["--version"], { encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024 });
+  if (result.error) throw new Error(`OpenCode version check failed: ${result.error.message}`);
+  if (result.status !== 0) throw new Error(`OpenCode version check exited with ${result.status}`);
+  const actual = result.stdout?.trim();
+  if (actual !== expected) throw new Error(`OpenCode version mismatch: expected ${expected}, got ${actual || "empty output"}`);
+  return actual;
+}
 
-  console.log(`[sidecar] downloading ${url} ...`);
+function checkedRun(command, args, options = {}) {
+  const result = spawnSync(command, args, { stdio: "inherit", ...options });
+  if (result.error || result.status !== 0) throw new Error(`${command} failed: ${result.error?.message || result.status}`);
+}
 
-  let downloadResult;
+function downloadArchive(url, path) {
   if (process.platform === "win32") {
-    downloadResult = spawnSync(
-      "powershell",
-      [
-        "-NoProfile",
-        "-Command",
-        `Invoke-WebRequest -Uri '${url}' -OutFile '${archivePath}'`,
-      ],
-      { stdio: "inherit" },
-    );
+    checkedRun("powershell", ["-NoProfile", "-Command",
+      "$ErrorActionPreference = 'Stop'; Invoke-WebRequest -Uri $env:ODESK_SIDECAR_URL -OutFile $env:ODESK_SIDECAR_ARCHIVE"],
+    { env: { ...process.env, ODESK_SIDECAR_URL: url, ODESK_SIDECAR_ARCHIVE: path } });
   } else {
-    downloadResult = spawnSync("curl", ["-#L", "-o", archivePath, url], {
-      stdio: "inherit",
-    });
-    if (downloadResult.status !== 0) {
-      console.log("[sidecar] curl failed, trying wget...");
-      downloadResult = spawnSync("wget", ["-q", "-O", archivePath, url], {
-        stdio: "inherit",
-      });
-    }
+    checkedRun("curl", ["--fail", "--location", "--retry", "3", "--silent", "--show-error", "--output", path, url]);
   }
-
-  if (downloadResult.status !== 0) throw new Error(`download failed: ${url}`);
-  if (!existsSync(archivePath)) throw new Error(`download failed: ${url}`);
-  if (!isValidArchive(archivePath, extName)) {
-    throw new Error(`downloaded archive is invalid: ${url}`);
-  }
-  const size = statSync(archivePath).size;
-  console.log(`[sidecar] download complete (${size} bytes), extracting...`);
-
-  if (extName === "zip") {
-    if (process.platform === "win32") {
-      spawnSync(
-        "powershell",
-        [
-          "-NoProfile",
-          "-Command",
-          `Expand-Archive -Path '${archivePath}' -DestinationPath '${extractDir}' -Force`,
-        ],
-        { stdio: "inherit" },
-      );
-    } else {
-      spawnSync("unzip", ["-q", "-o", archivePath, "-d", extractDir], {
-        stdio: "inherit",
-      });
-    }
-  } else {
-    spawnSync("tar", ["-xzf", archivePath, "-C", extractDir], {
-      stdio: "inherit",
-    });
-  }
-
-  const found = findBinary(extractDir, dest);
-  if (!found) throw new Error("opencode binary not found in archive");
-  console.log(`[sidecar] extracted: ${found}`);
-
-  copyFileSync(found, dest);
-  if (process.platform !== "win32") {
-    try {
-      chmodSync(dest, 0o755);
-    } catch {}
-  }
-
-  rmSync(tmpDir, { recursive: true, force: true });
-  console.log(`[sidecar] installed to: ${dest}`);
 }
 
-function findBinary(dir, dest) {
-  const target = dest.endsWith(".exe")
-    ? dest.slice(0, -4).split("opencode-").pop()
-    : dest.split("opencode-").pop();
-  for (const name of readdirSync(dir)) {
-    const full = join(dir, name);
-    if (statSync(full).isDirectory()) {
-      const found = findBinary(full, dest);
-      if (found) return found;
-    } else if (
-      statSync(full).isFile() &&
-      name.startsWith("opencode") &&
-      isValidExecutable(full, target)
-    ) {
-      return full;
+function extractArchive(path, directory) {
+  if (path.endsWith(".zip")) {
+    if (process.platform === "win32") {
+      checkedRun("powershell", ["-NoProfile", "-Command",
+        "$ErrorActionPreference = 'Stop'; Expand-Archive -LiteralPath $env:ODESK_SIDECAR_ARCHIVE -DestinationPath $env:ODESK_SIDECAR_EXTRACT -Force"],
+      { env: { ...process.env, ODESK_SIDECAR_ARCHIVE: path, ODESK_SIDECAR_EXTRACT: directory } });
+    } else {
+      checkedRun("unzip", ["-q", path, "-d", directory]);
     }
+  } else {
+    checkedRun("tar", ["-xzf", path, "-C", directory]);
+  }
+}
+
+function findBinary(directory, name) {
+  for (const entry of readdirSync(directory)) {
+    const path = join(directory, entry);
+    if (statSync(path).isDirectory()) {
+      const found = findBinary(path, name);
+      if (found) return found;
+    } else if (entry === name && statSync(path).isFile()) return path;
   }
   return null;
 }
 
-function isValidArchive(path, extName) {
+export function isValidExecutable(path, target) {
   const buf = readFileSync(path);
-  if (extName === "zip") {
-    return (
-      buf.length >= 4 &&
-      buf[0] === 0x50 &&
-      buf[1] === 0x4b &&
-      buf[2] === 0x03 &&
-      buf[3] === 0x04
-    );
-  }
-  return buf.length >= 2 && buf[0] === 0x1f && buf[1] === 0x8b;
-}
-
-function isValidExecutable(path, target) {
-  const buf = readFileSync(path);
-  if (target.includes("windows")) {
-    if (buf.length < 0x40 || buf[0] !== 0x4d || buf[1] !== 0x5a) {
-      return false;
-    }
+  const info = TARGETS[target];
+  if (!info || buf.length < 20) return false;
+  const [platform, arch] = info;
+  if (platform === "win32") {
+    if (buf.length < 0x40 || buf.subarray(0, 2).toString() !== "MZ") return false;
     const peOffset = buf.readUInt32LE(0x3c);
-    return (
-      peOffset + 4 <= buf.length &&
-      buf[peOffset] === 0x50 &&
-      buf[peOffset + 1] === 0x45 &&
-      buf[peOffset + 2] === 0x00 &&
-      buf[peOffset + 3] === 0x00
-    );
+    return peOffset + 6 <= buf.length && buf.readUInt32LE(peOffset) === 0x4550 &&
+      buf.readUInt16LE(peOffset + 4) === (arch === "x64" ? 0x8664 : 0xaa64);
   }
-  if (target.includes("linux")) {
-    return (
-      buf.length >= 4 &&
-      buf[0] === 0x7f &&
-      buf[1] === 0x45 &&
-      buf[2] === 0x4c &&
-      buf[3] === 0x46
-    );
+  if (platform === "linux") {
+    return buf.subarray(0, 4).toString("hex") === "7f454c46" && buf[4] === 2 && buf[5] === 1 &&
+      buf.readUInt16LE(18) === (arch === "x64" ? 62 : 183);
   }
-  if (target.includes("apple-darwin")) {
-    if (buf.length < 4) return false;
-    const magic = buf.subarray(0, 4).toString("hex");
-    return [
-      "feedface",
-      "cefaedfe",
-      "feedfacf",
-      "cffaedfe",
-      "cafebabe",
-      "bebafeca",
-      "cafebabf",
-      "bfbafeca",
-    ].includes(magic);
-  }
-  return false;
+  // Official macOS CLI archives contain a thin, little-endian Mach-O 64 binary.
+  return buf.readUInt32LE(0) === 0xfeedfacf &&
+    buf.readUInt32LE(4) === (arch === "x64" ? 0x01000007 : 0x0100000c);
 }
 
-main().catch((err) => {
-  console.error(`[sidecar] error: ${err.message}`);
-  process.exit(1);
-});
+export async function installSidecar({
+  root = projectRoot,
+  target = process.env.TARGET || guessTarget(),
+  manifest = JSON.parse(readFileSync(join(root, "opencode-version.json"), "utf8")),
+  download = downloadArchive,
+  extract = extractArchive,
+  run = spawnSync,
+} = {}) {
+  const asset = releaseAsset(manifest, target);
+  const binariesDir = join(root, "src-tauri", "binaries");
+  const name = asset.platform === "win32" ? "opencode.exe" : "opencode";
+  const dest = join(binariesDir, `opencode-${target}${asset.platform === "win32" ? ".exe" : ""}`);
+  mkdirSync(binariesDir, { recursive: true });
+  const temporary = mkdtempSync(join(binariesDir, ".tmp-opencode-"));
+  try {
+    const archive = join(temporary, asset.name);
+    const extracted = join(temporary, "extract");
+    mkdirSync(extracted);
+    console.log(`[sidecar] downloading official OpenCode v${manifest.version} for ${target}`);
+    // Always use the pinned official archive, never a stale destination or an executable from PATH.
+    await download(asset.url, archive);
+    verifyChecksum(archive, asset.sha256);
+    await extract(archive, extracted);
+    const binary = findBinary(extracted, name);
+    if (!binary || !isValidExecutable(binary, target)) throw new Error(`Invalid OpenCode binary for ${target}`);
+    if (asset.platform !== "win32") chmodSync(binary, 0o755);
+    if (target === guessTarget()) {
+      verifyVersion(binary, manifest.version, run);
+    } else {
+      console.log("[sidecar] cross target: archive checksum and architecture verified; runtime version check requires its native host");
+    }
+    copyFileSync(binary, dest);
+    if (asset.platform !== "win32") chmodSync(dest, 0o755);
+    console.log(`[sidecar] installed verified OpenCode v${manifest.version}: ${dest}`);
+    return dest;
+  } finally {
+    rmSync(temporary, { recursive: true, force: true });
+  }
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  installSidecar().catch((error) => {
+    console.error(`[sidecar] error: ${error.message}`);
+    process.exitCode = 1;
+  });
+}

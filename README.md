@@ -43,6 +43,7 @@
     - **音频剪辑 (Audio Cut)**：选择MP3文件进行音频裁剪，支持波形可视化、淡入淡出等剪辑处理
     - **数据搜索 (Data Search)**：搜索并结构化任意数据，支持表格排序和列内容遮罩
 - **工作区管理**：创建和管理开发工作区，支持 opencode 服务执行
+- **内置 OpenCode**：当前内置 [1.19.5](https://github.com/anomalyco/opencode/releases/tag/v1.19.5)，可在「模型设置」和「关于」查看实际版本；读取失败时可重试。
 - **技能扩展**：支持通过技能包扩展应用功能，可导入导出技能配置
 - **实时连接**：工作区状态实时监控，支持会话管理和文件操作
 
@@ -211,6 +212,9 @@ cd oDesk
 # 安装依赖
 npm install
 
+# 下载已固定版本的内置 OpenCode
+npm run sidecar
+
 # 启动应用
 npm run 4dev
 ```
@@ -220,9 +224,11 @@ npm run 4dev
 建议使用 Node.js 22 LTS 或更高版本。安装依赖后运行：
 
 ```bash
-npm test       # 微信模板渲染回归测试
+npm test       # 微信模板渲染与内置 OpenCode 打包回归测试
 npm run build  # Vue/TypeScript 检查与前端生产构建
 ```
+
+内置 OpenCode 的版本和官方下载文件 SHA-256 统一记录在 `opencode-version.json`。`npm run sidecar` 根据目标架构下载并校验固定版本，不使用系统 PATH 中的 OpenCode；原生构建还会执行 `--version` 核对实际版本。
 
 微信文章预览优先读取工作区的 `draft.md`，兼容只有 `draft.html` 的旧工作区。内置模板使用 Wenyan 渲染器，自定义模板读取工作区 `.opencode/skill/wechat-publisher/scripts/` 中的实际 CSS。切换模板会重新排版，点击发布会先将当前排版结果写入 `draft.html`；读取模板或保存文件失败时不会继续发布。
 

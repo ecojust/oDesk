@@ -43,6 +43,7 @@ Selecting a template re-renders the article preview with its actual styles. The 
   - **Audio Cutter**: Cut MP3 audio files with waveform visualization, fade-in/out, and other editing features
   - **Data Search**: Search and structure data with sortable tables and column masking
 - **Workspace Management**: Create and manage development workspaces with opencode service execution
+- **Bundled OpenCode**: Includes [1.19.5](https://github.com/anomalyco/opencode/releases/tag/v1.19.5). Model Settings and About display the actual bundled version, with a retry option if it cannot be read.
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
 
@@ -211,9 +212,14 @@ cd oDesk
 # Install dependencies
 npm install
 
+# Download the pinned bundled OpenCode
+npm run sidecar
+
 # Start the app
 npm run 4dev
 ```
+
+The bundled OpenCode version and official archive SHA-256 hashes are pinned in `opencode-version.json`. `npm run sidecar` downloads and verifies the archive for the target architecture without using OpenCode from the system PATH. Native builds also check its actual `--version` output.
 
 ## 🤝 Contributing
 

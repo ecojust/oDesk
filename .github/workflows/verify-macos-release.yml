@@ -6,7 +6,7 @@ on:
       release_tag:
         description: Existing release or draft tag to verify without rebuilding
         required: true
-        default: v-0.4.1
+        default: v-0.4.2
         type: string
       target:
         description: Native architecture to verify

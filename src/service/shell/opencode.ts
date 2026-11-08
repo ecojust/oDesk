@@ -7,6 +7,8 @@ import { resolveModelSettings } from "@/service/modelSettings";
 
 export const opencodePort = ref(4096);
 export const opencodeVersion = ref("");
+export const opencodeVersionStatus = ref<"idle" | "loading" | "ready" | "error">("idle");
+let opencodeVersionRequest: Promise<void> | null = null;
 
 export type SendMessageOptions = {
   onThinking?: (text: string, part: any) => void;
@@ -555,13 +557,27 @@ export default class Opencode {
     }
   }
 
-  static async fetch_opencode_version() {
-    try {
-      const version: string = await invoke("get_opencode_version");
-      opencodeVersion.value = version;
-    } catch (e) {
-      console.log("Failed to get opencode version: ", e);
-    }
+  static fetch_opencode_version(): Promise<void> {
+    if (opencodeVersionRequest) return opencodeVersionRequest;
+
+    opencodeVersionStatus.value = "loading";
+    opencodeVersionRequest = Promise.resolve()
+      .then(() => invoke<string>("get_opencode_version"))
+      .then((output) => {
+        const version = output.trim();
+        if (!version) throw new Error("Empty OpenCode version");
+        opencodeVersion.value = version;
+        opencodeVersionStatus.value = "ready";
+      })
+      .catch((e) => {
+        opencodeVersion.value = "";
+        opencodeVersionStatus.value = "error";
+        console.error("Failed to get bundled OpenCode version:", e);
+      })
+      .finally(() => {
+        opencodeVersionRequest = null;
+      });
+    return opencodeVersionRequest;
   }
 
   static async kill_existing_opencode_processes() {

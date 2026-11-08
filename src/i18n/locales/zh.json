@@ -60,6 +60,12 @@
       "runtimeMissing": "未安装",
       "runtimeVersionUnknown": "版本未知"
     },
+    "opencode": {
+      "title": "内置 OpenCode",
+      "description": "随 oDesk 安装，供 AI 应用使用",
+      "loading": "正在读取版本…",
+      "failed": "版本读取失败"
+    },
     "modelSettings": {
       "title": "模型设置",
       "model": "模型",

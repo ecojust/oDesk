@@ -43,6 +43,7 @@ class MacBundleTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory()
         self.addCleanup(self.temporary.cleanup)
         self.directory = Path(self.temporary.name)
+        self.opencode_version = "1.19.5"
         self.config = {
             "identifier": "com.juzisang.oDesk", "productName": "oDesk", "version": "0.4.1",
             "bundle": {"macOS": {"minimumSystemVersion": "13.0"}},
@@ -67,6 +68,16 @@ class MacBundleTests(unittest.TestCase):
         }
         (app / "Contents/Info.plist").write_bytes(plistlib.dumps(info))
         return app
+
+    def test_loads_exact_stable_opencode_version_from_manifest(self):
+        manifest = self.directory / "opencode-version.json"
+        manifest.write_text(json.dumps({"version": self.opencode_version}))
+        self.assertEqual(verify.load_opencode_version(self.directory), self.opencode_version)
+        for value in (None, 1195, "latest", "v1.19.5", "1.19.5-beta.1", "1.19.5\n"):
+            with self.subTest(value=value):
+                manifest.write_text(json.dumps({"version": value}))
+                with self.assertRaisesRegex(RuntimeError, "Invalid pinned"):
+                    verify.load_opencode_version(self.directory)
 
     def test_macho_deployment_parses_both_command_formats(self):
         self.assertEqual(verify.deployment_version(load_commands("13.0")), "13.0")
@@ -171,19 +182,18 @@ class MacBundleTests(unittest.TestCase):
         self.assertIn(("osascript", "-e", f"tell application {json.dumps(str(app))} to quit"), evidence.calls)
         self.assertEqual(evidence.report["checks"][-1]["normal_exit_code"], 0)
 
-    def test_sidecar_version_success_does_not_hide_server_startup_failure(self):
+    def test_old_sidecar_is_rejected_before_server_launch(self):
         evidence = FakeEvidence(self.directory)
         evidence.run = lambda *args, **kwargs: "1.18.30\n"
-        process = MagicMock(returncode=-9)
-        process.poll.return_value = -9
-        with patch.object(verify.subprocess, "Popen", return_value=process):
-            with self.assertRaisesRegex(RuntimeError, "exited before healthy"):
-                verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "installed")
+        with patch.object(verify.subprocess, "Popen") as launch:
+            with self.assertRaisesRegex(RuntimeError, "expected 1.19.5, got 1.18.30"):
+                verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "installed", self.opencode_version)
+        launch.assert_not_called()
         self.assertFalse(evidence.report["checks"])
 
-    def test_sidecar_probe_only_requests_health_and_cleans_up(self):
+    def test_health_from_different_version_fails_and_cleans_up(self):
         evidence = FakeEvidence(self.directory)
-        evidence.run = lambda *args, **kwargs: "1.18.30\n"
+        evidence.run = lambda *args, **kwargs: "1.19.5\n"
         process = MagicMock()
         process.poll.return_value = None
         response = MagicMock(status=200)
@@ -192,8 +202,38 @@ class MacBundleTests(unittest.TestCase):
         connection.getresponse.return_value = response
         with patch.object(verify.subprocess, "Popen", return_value=process), \
                 patch.object(verify.http.client, "HTTPConnection", return_value=connection), \
+                patch.object(verify.time, "monotonic", side_effect=[0, 0, 31]), \
+                patch.object(verify.time, "sleep"), \
                 patch.object(verify, "stop_process_group") as stop:
-            verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "mounted")
+            with self.assertRaisesRegex(RuntimeError, "health endpoint did not become ready"):
+                verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "mounted", self.opencode_version)
+        connection.close.assert_called_once()
+        stop.assert_called_once_with(process)
+        self.assertFalse(evidence.report["checks"])
+
+    def test_sidecar_version_success_does_not_hide_server_startup_failure(self):
+        evidence = FakeEvidence(self.directory)
+        evidence.run = lambda *args, **kwargs: "1.19.5\n"
+        process = MagicMock(returncode=-9)
+        process.poll.return_value = -9
+        with patch.object(verify.subprocess, "Popen", return_value=process):
+            with self.assertRaisesRegex(RuntimeError, "exited before healthy"):
+                verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "installed", self.opencode_version)
+        self.assertFalse(evidence.report["checks"])
+
+    def test_sidecar_probe_only_requests_health_and_cleans_up(self):
+        evidence = FakeEvidence(self.directory)
+        evidence.run = lambda *args, **kwargs: "1.19.5\n"
+        process = MagicMock()
+        process.poll.return_value = None
+        response = MagicMock(status=200)
+        response.read.return_value = b'{"healthy":true,"version":"1.19.5"}'
+        connection = MagicMock()
+        connection.getresponse.return_value = response
+        with patch.object(verify.subprocess, "Popen", return_value=process), \
+                patch.object(verify.http.client, "HTTPConnection", return_value=connection), \
+                patch.object(verify, "stop_process_group") as stop:
+            verify.check_sidecar(self.directory / "opencode", self.directory, {}, evidence, "mounted", self.opencode_version)
         connection.request.assert_called_once_with("GET", "/global/health")
         connection.close.assert_called_once()
         stop.assert_called_once_with(process)
@@ -252,12 +292,13 @@ class MacBundleTests(unittest.TestCase):
         with patch.object(verify, "isolated_state", side_effect=isolate), \
                 patch.object(verify, "check_sidecar") as sidecar, \
                 patch.object(verify, "launch_app", side_effect=launch):
-            verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence)
+            verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence, self.opencode_version)
         self.assertEqual([profile.name for profile in profiles], ["profile-mounted", "profile-installed"])
         self.assertEqual([phase for phase, app in launched], ["mounted", "installed"])
         self.assertEqual(launched[0][1], paths["mount"] / "oDesk.app")
         self.assertEqual(launched[1][1], paths["installed"])
         self.assertEqual(sidecar.call_count, 2)
+        self.assertTrue(all(call.args[-1] == self.opencode_version for call in sidecar.call_args_list))
         self.assertEqual(evidence.calls[-1], ("hdiutil", "detach", str(paths["mount"])))
         self.assertFalse(paths["mount"].parent.exists(), "temporary installation must be removed")
 
@@ -267,7 +308,7 @@ class MacBundleTests(unittest.TestCase):
                 patch.object(verify, "check_sidecar", side_effect=RuntimeError("server startup failed")), \
                 patch.object(verify, "launch_app") as launch:
             with self.assertRaisesRegex(RuntimeError, "server startup failed"):
-                verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence)
+                verify.verify_image(self.directory / "release.dmg", self.config, "arm64", evidence, self.opencode_version)
         launch.assert_not_called()
         self.assertEqual(evidence.calls[-1], ("hdiutil", "detach", str(paths["mount"])))
         self.assertFalse(paths["mount"].parent.exists())
@@ -275,6 +316,7 @@ class MacBundleTests(unittest.TestCase):
     def test_success_annotation_only_contains_release_and_validation_evidence(self):
         report = {
             "target": "aarch64-apple-darwin", "host_macos": "15.7", "version": "0.4.1",
+            "expected_opencode_version": self.opencode_version,
             "dmg": {"sha256": "a" * 64, "name": "oDesk.dmg"},
             "checks": [{"command": ["private-path"], "output": "do-not-publish-this-log"}],
         }
@@ -282,9 +324,10 @@ class MacBundleTests(unittest.TestCase):
             report["checks"].extend([
                 {"complete_bundle_signature": True, "app": "private-path"},
                 {"phase": phase, "app_startup_seconds": 5, "normal_exit_code": 0},
-                {"phase": phase, "opencode_version": "1.18.30", "opencode_health": {"healthy": True, "version": "1.18.30"}, "model_requests": 0},
+                {"phase": phase, "opencode_version": "1.19.5", "opencode_health": {"healthy": True, "version": "1.19.5"}, "model_requests": 0},
             ])
         summary = verify.success_summary(report)
+        self.assertEqual(summary["expected_opencode_version"], self.opencode_version)
         self.assertEqual(summary["complete_bundle_signatures"], 2)
         self.assertEqual(len(summary["gui"]), 2)
         self.assertEqual(len(summary["opencode"]), 2)

@@ -275,7 +275,10 @@ onMounted(async () => {
 <style lang="less" scoped>
 .schedule-manager {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
   // background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   // padding: 16px;
@@ -284,14 +287,15 @@ onMounted(async () => {
   // server-status 样式已在 reset.less 中定义
 
   .main-container {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
     display: flex;
     flex-direction: column;
     // grid-template-columns: 1fr;
     gap: 16px;
     box-sizing: border-box;
-    height: 100%;
     position: relative;
-    padding-top: 50px;
 
     .skills-header {
       background: var(--desk-surface);

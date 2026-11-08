@@ -475,22 +475,25 @@ onMounted(async () => {
 <style lang="less" scoped>
 .Audio-Book-Creator {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   background: var(--desk-bg);
   box-sizing: border-box;
   overflow: hidden;
   padding-right: 0 !important;
 
   .main-container {
+    width: 100%;
+    min-height: 0;
+    flex: 1;
     display: flex;
     gap: 16px;
-    padding: 16px;
-    height: calc(100% - 0px);
+    padding: 0 16px 16px;
     box-sizing: border-box;
-    padding-top: 50px;
     max-width: 1200px;
     margin: 0 auto;
-    width: 100%;
   }
 
   .config-panel {

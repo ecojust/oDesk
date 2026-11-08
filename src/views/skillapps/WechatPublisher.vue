@@ -822,7 +822,10 @@ onMounted(async () => {
 <style lang="less" scoped>
 .wechat-publisher {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 
   // skills-dialog 和 skill-info-content 样式已在 reset.less 中定义
@@ -1035,15 +1038,14 @@ onMounted(async () => {
   }
   // 内容区域样式
   .content-section {
+    width: 100%;
     flex: 1;
     display: flex;
     max-width: 1440px;
     margin: 0 auto;
-    height: 100%;
     min-height: 0;
     gap: 24px;
     box-sizing: border-box;
-    padding-top: 40px;
 
     // 左侧编辑面板
     .editor-panel {

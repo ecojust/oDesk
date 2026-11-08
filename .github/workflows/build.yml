@@ -71,7 +71,7 @@ jobs:
       - name: Install frontend dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Test article rendering
+      - name: Test frontend and sidecar packaging
         run: yarn test
 
       - name: Test macOS bundle verification helpers

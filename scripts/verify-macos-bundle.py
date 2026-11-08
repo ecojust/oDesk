@@ -38,6 +38,13 @@ def version(value):
     return parts + (0,) * (3 - len(parts))
 
 
+def load_opencode_version(project):
+    manifest = json.loads((project / "opencode-version.json").read_text())
+    expected = manifest.get("version")
+    require(isinstance(expected, str) and bool(re.fullmatch(r"\d+\.\d+\.\d+", expected)), "Invalid pinned OpenCode version")
+    return expected
+
+
 def deployment_version(commands):
     versions = []
     for command in commands.split("Load command"):
@@ -207,9 +214,10 @@ def launch_app(app, executable, directory, environment, evidence, phase):
             print(log.read_text(errors="replace")[-8000:], flush=True)
 
 
-def check_sidecar(sidecar, directory, environment, evidence, phase):
+def check_sidecar(sidecar, directory, environment, evidence, phase, expected_version):
     reported_version = evidence.run(sidecar, "--version", timeout=30, env=environment, cwd=directory).strip()
     require(bool(re.fullmatch(r"\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?", reported_version)), f"Unexpected opencode version: {reported_version!r}")
+    require(reported_version == expected_version, f"Wrong bundled OpenCode version: expected {expected_version}, got {reported_version}")
     with socket.socket() as reserve:
         reserve.bind(("127.0.0.1", 0))
         port = reserve.getsockname()[1]
@@ -245,7 +253,7 @@ def check_sidecar(sidecar, directory, environment, evidence, phase):
             print(log.read_text(errors="replace")[-8000:], flush=True)
 
 
-def verify_image(image, config, architecture, evidence):
+def verify_image(image, config, architecture, evidence, expected_opencode_version):
     evidence.run("hdiutil", "verify", image)
     with tempfile.TemporaryDirectory(prefix="odesk-macos-check-") as temporary:
         directory = Path(temporary)
@@ -265,7 +273,7 @@ def verify_image(image, config, architecture, evidence):
                 profile = directory / f"profile-{phase}"
                 profile.mkdir()
                 with isolated_state(profile, config["identifier"]) as environment:
-                    check_sidecar(sidecar, profile, environment, evidence, phase)
+                    check_sidecar(sidecar, profile, environment, evidence, phase, expected_opencode_version)
                     launch_app(app, executable, profile, environment, evidence, phase)
         finally:
             # hdiutil may have mounted successfully before a timeout/error.
@@ -286,6 +294,7 @@ def success_summary(report):
         "target": report["target"],
         "host_macos": report["host_macos"],
         "version": report["version"],
+        "expected_opencode_version": report["expected_opencode_version"],
         "dmg_sha256": report["dmg"]["sha256"],
         "complete_bundle_signatures": sum(check.get("complete_bundle_signature") is True for check in report["checks"]),
         "gui": [
@@ -311,6 +320,8 @@ def main():
     evidence = Evidence(project / "artifacts/macos-verification" / args.target)
     try:
         config = json.loads((project / "src-tauri/tauri.conf.json").read_text())
+        expected_opencode_version = load_opencode_version(project)
+        evidence.report["expected_opencode_version"] = expected_opencode_version
         evidence.report.update({"target": args.target, "version": config["version"], "host_architecture": platform.machine(), "host_macos": platform.mac_ver()[0]})
         require(platform.machine() == TARGETS[args.target], "Run on the matching native architecture, not via Rosetta")
         require(version(platform.mac_ver()[0]) >= version(config["bundle"]["macOS"]["minimumSystemVersion"]), "Runner macOS is below the advertised minimum")
@@ -319,7 +330,7 @@ def main():
         with images[0].open("rb") as stream:
             digest = hashlib.file_digest(stream, "sha256").hexdigest()
         evidence.report["dmg"] = {"name": images[0].name, "size": images[0].stat().st_size, "sha256": digest}
-        verify_image(images[0], config, TARGETS[args.target], evidence)
+        verify_image(images[0], config, TARGETS[args.target], evidence, expected_opencode_version)
         evidence.report["status"] = "passed"
         print("DMG signatures and native startup passed. Apple notarization and Gatekeeper approval were NOT verified.", flush=True)
         if os.environ.get("GITHUB_ACTIONS"):

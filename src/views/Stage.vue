@@ -77,6 +77,7 @@
       :show-close="true"
       :title="t('stage.modelSettings.title')"
     >
+      <OpenCodeVersion />
       <el-form
         class="model-settings-form"
         :model="modelSettings"
@@ -170,9 +171,7 @@
           {{ $t("stage.about.buildNumber") }}: {{ build_info.buildNumber }}
         </p>
 
-        <p class="opencode-version" v-if="opencodeVersion">
-          opencode: {{ opencodeVersion }}
-        </p>
+        <OpenCodeVersion />
 
         <div class="runtime-section">
           <h3 class="runtime-title">
@@ -275,6 +274,7 @@ import ShaderWallpaper from "./wallpaperSettings/ShaderWallpaper.vue";
 import ThreeDWallpaper from "./wallpaperSettings/ThreeDWallpaper.vue";
 import HTMLWallpaper from "./wallpaperSettings/HTMLWallpaper.vue";
 import LanguageSwitcher from "../components/LanguageSwitcher.vue";
+import OpenCodeVersion from "../components/OpenCodeVersion.vue";
 
 import SKILL from "./skillapps/index.vue";
 import {
@@ -286,7 +286,7 @@ import {
   Unlock,
 } from "@element-plus/icons-vue";
 import { ElMessage } from "element-plus";
-import Opencode, { opencodeVersion } from "@/service/shell/opencode";
+import Opencode from "@/service/shell/opencode";
 import RequestService from "@/utils/request";
 import { checkRuntimeDependencies } from "@/utils/util";
 import System from "@/service/shell/system";
@@ -361,6 +361,7 @@ const showAboutDialog = () => {
 };
 
 const showModelSettingsDialog = async () => {
+  Opencode.fetch_opencode_version();
   try {
     const [settings, options] = await Promise.all([
       loadModelSettingsWithAuth(),

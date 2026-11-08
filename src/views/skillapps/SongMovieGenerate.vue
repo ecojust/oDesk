@@ -584,21 +584,25 @@ onBeforeUnmount(async () => {});
 <style lang="less" scoped>
 .Song-Movie-Generate {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
   padding: 0;
   background: var(--desk-bg);
 
   // 内容区域样式
   .content-section {
+    width: 100%;
+    min-height: 0;
     flex: 1;
     display: flex;
     gap: 16px;
     max-width: 1400px;
     margin: 0px auto 16px;
-    height: calc(100% - 0px);
     box-sizing: border-box;
-    padding: 60px 16px 16px;
+    padding: 0 16px 16px;
   }
 
   // 通用面板样式

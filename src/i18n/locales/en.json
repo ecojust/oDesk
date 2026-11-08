@@ -60,6 +60,12 @@
       "runtimeMissing": "Missing",
       "runtimeVersionUnknown": "Unknown version"
     },
+    "opencode": {
+      "title": "Bundled OpenCode",
+      "description": "Included with oDesk to run AI apps",
+      "loading": "Reading version…",
+      "failed": "Could not read version"
+    },
     "modelSettings": {
       "title": "Model Settings",
       "model": "Model",

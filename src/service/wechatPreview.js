@@ -48,8 +48,36 @@ export const findSelectedTheme = (themes, config) =>
       !theme.buildIn === !!config.wenyanCustomCss,
   );
 
-const publicationCss = (css) => {
+// Existing workspaces retain their installed skill CSS across app updates.
+// Only migrate the exact shipped postit theme, preserving user customizations.
+const LEGACY_POSTIT_CSS_SHA256 = "ceec4a1ba71841b77a52c9158bf7910c061552da51822e8686b013a971f2ca47";
+
+const publicationCss = async (css, theme) => {
   const ast = parse(css);
+  if (theme.key === "postit") {
+    if (!globalThis.crypto?.subtle) {
+      throw new Error("当前环境不支持模板兼容校验，无法渲染便利贴模板");
+    }
+    const digest = await globalThis.crypto.subtle.digest(
+      "SHA-256", new TextEncoder().encode(generate(ast)),
+    );
+    const fingerprint = Array.from(new Uint8Array(digest), (byte) =>
+      byte.toString(16).padStart(2, "0"),
+    ).join("");
+    if (fingerprint === LEGACY_POSTIT_CSS_SHA256) {
+      walk(ast, {
+        visit: "Rule",
+        enter(node) {
+          if (generate(node.prelude) !== "#wenyan blockquote::before") return;
+          node.block.children.forEach((declaration) => {
+            if (declaration.type === "Declaration" && declaration.property === "right") {
+              declaration.property = "left";
+            }
+          });
+        },
+      });
+    }
+  }
   // Keyframe percentages are not DOM selectors. Wenyan's inline-style
   // renderer cannot apply animations; keep the theme's static appearance.
   walk(ast, {
@@ -88,7 +116,7 @@ export async function renderWechatArticle({ markdown = "", html = "", theme, the
     article.innerHTML = (source.querySelector("#wenyan") || source).innerHTML;
   }
 
-  const resolvedCss = theme.buildIn ? undefined : publicationCss(themeCss);
+  const resolvedCss = theme.buildIn ? undefined : await publicationCss(themeCss, theme);
   const rootColor = await getRootColor(theme, resolvedCss, document);
   const rendered = await core.applyStylesWithTheme(article, {
     themeId: theme.buildIn ? theme.key : "default",

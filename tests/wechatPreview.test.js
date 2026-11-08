@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { JSDOM } from "jsdom";
 import themes from "../src/views/skillapps/WechatPublisherTemplate.js";
 import {
@@ -87,6 +88,50 @@ test("dark templates keep light inherited paragraph text after WeChat postproces
   assert.equal(style("li").color, "rgb(255, 255, 255)");
   assert.equal(style("h1").color, "rgb(255, 0, 128)");
   assert.match(style("#wenyan").fontFamily, /Courier New/);
+});
+
+const legacyPostitCss = readFileSync(new URL("./fixtures/postit-legacy.css", import.meta.url), "utf8");
+
+test("existing postit workspaces place the message icon at the upper left in preview and publication HTML", async () => {
+  const html = await renderWechatArticle({
+    markdown: "> 便利贴引用内容",
+    theme: { key: "postit" },
+    themeCss: legacyPostitCss,
+  });
+  const document = parse(html);
+  const quote = document.querySelector("blockquote");
+  const icon = quote.querySelector("section");
+  assert.equal(quote.style.position, "relative");
+  assert.equal(icon.textContent, "💬");
+  assert.equal(icon.style.position, "absolute");
+  assert.equal(icon.style.top, "-15px");
+  assert.equal(icon.style.left, "10px");
+  assert.equal(icon.style.right, "");
+  assert.equal(parse(createPreviewDocument(html)).querySelector("#wenyan").outerHTML, html);
+});
+
+test("postit correction preserves customized styles and never changes other themes", async () => {
+  for (const [key, css] of [
+    ["postit", legacyPostitCss.replace("right: 10px", "right: 24px")],
+    ["postit", legacyPostitCss.replace("--comic-bg: #fffe91", "--comic-bg: #ffffee")],
+    ["another-theme", legacyPostitCss],
+  ]) {
+    const html = await renderWechatArticle({ markdown: "> 引用", theme: { key }, themeCss: css });
+    const icon = parse(html).querySelector("blockquote > section");
+    assert.equal(icon.style.left, "");
+    assert.equal(icon.style.right, css.includes("right: 24px") ? "24px" : "10px");
+  }
+});
+
+test("updated postit CSS keeps the left icon without duplicating its decoration", async () => {
+  const html = await renderWechatArticle({
+    markdown: "> 引用",
+    theme: { key: "postit" },
+    themeCss: legacyPostitCss.replace("right: 10px", "left: 10px"),
+  });
+  const quote = parse(html).querySelector("blockquote");
+  assert.equal(quote.querySelectorAll("section").length, 1);
+  assert.equal(quote.querySelector("section").style.left, "10px");
 });
 
 test("HTML-only drafts can be restyled without retaining stale inline styles", async () => {

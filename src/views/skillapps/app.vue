@@ -65,18 +65,21 @@ onBeforeUnmount(async () => {});
 <style lang="less" scoped>
 .app-skill {
   position: relative;
+  display: flex;
+  flex-direction: column;
   height: 100%;
+  min-height: 0;
   box-sizing: border-box;
 
   // 内容区域样式
   .content-section {
+    width: 100%;
+    min-height: 0;
     flex: 1;
     display: flex;
     max-width: 1200px;
     margin: 0px auto 16px;
-    height: calc(100% - 0px);
     box-sizing: border-box;
-    padding-top: 50px;
   }
 }
 </style>
