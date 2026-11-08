@@ -127,10 +127,66 @@ class MacBundleTests(unittest.TestCase):
             with verify.isolated_state(profile, self.config["identifier"], user) as environment:
                 self.assertEqual(environment.get("HOME"), real_home)
                 self.assertTrue((user / "Library/Application Support/oDesk").is_symlink())
-                self.assertTrue((user / ".local/share/opencode").is_symlink())
+                self.assertTrue((user / ".local/share/opencode/auth.json").is_symlink())
+                self.assertTrue((user / ".local/state/opencode/model.json").is_symlink())
+                self.assertFalse((user / ".local/share/opencode").is_symlink())
                 raise ValueError("app failure")
         self.assertFalse((user / "Library/Application Support/oDesk").is_symlink())
-        self.assertFalse((user / ".local/share/opencode").is_symlink())
+        self.assertFalse((user / ".local/share/opencode/auth.json").exists())
+        self.assertFalse((user / ".local/state/opencode/model.json").exists())
+
+    @unittest.skipIf(os.name == "nt", "macOS/Unix symlink semantics")
+    def test_existing_opencode_directories_are_preserved_and_cli_paths_are_isolated(self):
+        user = self.directory / "user"
+        profile = self.directory / "profile"
+        profile.mkdir()
+        existing = []
+        for relative in (".config/opencode", ".local/share/opencode", ".local/state/opencode", ".cache/opencode"):
+            path = user / relative
+            path.mkdir(parents=True)
+            sentinel = path / "existing-user-data"
+            sentinel.write_text("do not touch")
+            existing.append((path, path.stat().st_ino, sentinel))
+        inherited = {"XDG_CONFIG_HOME": str(user / ".config"), "OPENCODE_CONFIG": str(user / "private-config.json")}
+        with patch.dict(os.environ, inherited):
+            with verify.isolated_state(profile, self.config["identifier"], user) as environment:
+                for setting in ("CONFIG", "DATA", "CACHE", "STATE"):
+                    isolated = Path(environment[f"XDG_{setting}_HOME"])
+                    self.assertTrue(isolated.is_dir())
+                    self.assertIn(profile, isolated.parents)
+                self.assertEqual(environment["OPENCODE_TEST_HOME"], str(profile / "opencode-home"))
+                self.assertNotIn("OPENCODE_CONFIG", environment)
+                self.assertEqual(environment["OPENCODE_DISABLE_PROJECT_CONFIG"], "1")
+                self.assertEqual((user / ".local/share/opencode/auth.json").read_text(), "{}\n")
+                self.assertEqual((user / ".local/state/opencode/model.json").read_text(), "{}\n")
+                for path, inode, sentinel in existing:
+                    self.assertFalse(path.is_symlink())
+                    self.assertEqual(path.stat().st_ino, inode)
+                    self.assertEqual(sentinel.read_text(), "do not touch")
+        for path, inode, sentinel in existing:
+            self.assertEqual(path.stat().st_ino, inode)
+            self.assertEqual(list(path.iterdir()), [sentinel])
+
+    @unittest.skipIf(os.name == "nt", "macOS/Unix symlink semantics")
+    def test_existing_fixed_auth_and_model_files_are_never_read_or_replaced(self):
+        for relative in (".local/share/opencode/auth.json", ".local/state/opencode/model.json"):
+            for kind in ("file", "broken-link"):
+                with self.subTest(path=relative, kind=kind):
+                    user = self.directory / (Path(relative).name + kind)
+                    path = user / relative
+                    path.parent.mkdir(parents=True)
+                    if kind == "file":
+                        path.write_text("private data")
+                    else:
+                        path.symlink_to(self.directory / "absent")
+                    with self.assertRaisesRegex(RuntimeError, "Refusing existing"):
+                        with verify.isolated_state(self.directory / "unused", self.config["identifier"], user):
+                            self.fail("must refuse before launching")
+                    if kind == "file":
+                        self.assertEqual(path.read_text(), "private data")
+                    else:
+                        self.assertTrue(path.is_symlink())
+                    self.assertFalse((user / "Library").exists(), "refusal must precede any profile mutation")
 
     @unittest.skipIf(os.name == "nt", "macOS/Unix symlink semantics")
     def test_existing_user_files_and_broken_symlinks_are_never_replaced(self):

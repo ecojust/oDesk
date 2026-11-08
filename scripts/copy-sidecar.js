@@ -5,6 +5,7 @@ import {
   rmSync, statSync, chmodSync,
 } from "node:fs";
 import { join, dirname, resolve } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const projectRoot = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -43,12 +44,32 @@ export function verifyChecksum(path, expected) {
 }
 
 export function verifyVersion(path, expected, run = spawnSync) {
-  const result = run(path, ["--version"], { encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024 });
-  if (result.error) throw new Error(`OpenCode version check failed: ${result.error.message}`);
-  if (result.status !== 0) throw new Error(`OpenCode version check exited with ${result.status}`);
-  const actual = result.stdout?.trim();
-  if (actual !== expected) throw new Error(`OpenCode version mismatch: expected ${expected}, got ${actual || "empty output"}`);
-  return actual;
+  // CLI initialization can create profiles even for --version. Keep these
+  // build-time writes separate from the user's data without changing HOME.
+  const profile = mkdtempSync(join(tmpdir(), "odesk-opencode-version-"));
+  try {
+    const env = { ...process.env };
+    for (const setting of ["CONFIG", "DATA", "CACHE", "STATE"]) {
+      const directory = join(profile, `xdg-${setting.toLowerCase()}`);
+      mkdirSync(directory);
+      env[`XDG_${setting}_HOME`] = directory;
+    }
+    env.OPENCODE_CONFIG_DIR = join(profile, "opencode-config");
+    mkdirSync(env.OPENCODE_CONFIG_DIR);
+    env.OPENCODE_CONFIG_CONTENT = "{}";
+    env.OPENCODE_DISABLE_AUTOUPDATE = "1";
+    const result = run(resolve(path), ["--version"], {
+      encoding: "utf8", timeout: 30000, maxBuffer: 1024 * 1024,
+      env, cwd: profile,
+    });
+    if (result.error) throw new Error(`OpenCode version check failed: ${result.error.message}`);
+    if (result.status !== 0) throw new Error(`OpenCode version check exited with ${result.status}`);
+    const actual = result.stdout?.trim();
+    if (actual !== expected) throw new Error(`OpenCode version mismatch: expected ${expected}, got ${actual || "empty output"}`);
+    return actual;
+  } finally {
+    rmSync(profile, { recursive: true, force: true });
+  }
 }
 
 function checkedRun(command, args, options = {}) {

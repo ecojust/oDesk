@@ -1,8 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync } from "node:fs";
-import { join } from "node:path";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, rmSync, existsSync } from "node:fs";
+import { join, dirname, isAbsolute } from "node:path";
 import { tmpdir } from "node:os";
 import { guessTarget, releaseAsset, verifyChecksum, verifyVersion, isValidExecutable, installSidecar } from "../scripts/copy-sidecar.js";
 
@@ -84,6 +84,39 @@ test("version check rejects old versions, error exits, timeouts and ambiguous ou
     { ...result, stdout: "", stderr: pinned.version },
   ]) {
     assert.throws(() => verifyVersion("fixture", pinned.version, () => value), /version/);
+  }
+});
+
+test("version checks isolate CLI state without changing the user's home and always clean up", () => {
+  const inheritedEnvironment = { ...process.env };
+  for (const fails of [false, true]) {
+    let profile;
+    const run = (binary, args, options) => {
+      assert.equal(isAbsolute(binary), true);
+      assert.deepEqual(args, ["--version"]);
+      assert.equal(options.env.HOME, inheritedEnvironment.HOME);
+      assert.equal(options.env.USERPROFILE, inheritedEnvironment.USERPROFILE);
+      assert.equal(options.env.CODEX_HOME, inheritedEnvironment.CODEX_HOME);
+      profile = options.cwd;
+      for (const name of ["XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "XDG_STATE_HOME", "OPENCODE_CONFIG_DIR"]) {
+        const directory = options.env[name];
+        assert.equal(dirname(directory), profile);
+        assert.equal(existsSync(directory), true);
+        writeFileSync(join(directory, "cli-initialization-state"), "temporary");
+      }
+      assert.equal(options.env.OPENCODE_CONFIG_CONTENT, "{}");
+      assert.equal(options.env.OPENCODE_DISABLE_AUTOUPDATE, "1");
+      if (fails) throw new Error("simulated spawn failure");
+      return { status: 0, stdout: pinned.version };
+    };
+    if (fails) {
+      assert.throws(() => verifyVersion("fixture", pinned.version, run), /simulated spawn failure/);
+    } else {
+      assert.equal(verifyVersion("fixture", pinned.version, run), pinned.version);
+    }
+    assert.ok(profile);
+    assert.equal(existsSync(profile), false);
+    assert.deepEqual({ ...process.env }, inheritedEnvironment);
   }
 });
 

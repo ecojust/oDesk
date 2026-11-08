@@ -121,7 +121,7 @@ def verify_app(app, config, architecture, evidence):
 
 @contextmanager
 def isolated_state(directory, identifier, user_directory=None):
-    """Keep HOME intact; never use or overwrite an existing app/profile directory."""
+    """Keep HOME intact; isolate CLI paths and refuse existing oDesk state."""
     user_directory = user_directory or Path.home()
     library = user_directory / "Library"
     paths = [
@@ -130,13 +130,17 @@ def isolated_state(directory, identifier, user_directory=None):
         library / "Caches" / identifier,
         library / "WebKit" / identifier,
         library / "Saved Application State" / f"{identifier}.savedState",
-        user_directory / ".config/opencode",
-        user_directory / ".local/share/opencode",
-        user_directory / ".local/state/opencode",
-        user_directory / ".cache/opencode",
     ]
     preferences = library / "Preferences" / f"{identifier}.plist"
-    for path in [*paths, preferences]:
+    # OpenCode honors the XDG paths below, so its default directories may
+    # already exist (even `opencode --version` creates them). oDesk's auth/model
+    # commands use these two fixed paths instead: protect those exact files
+    # without replacing their parent directories or touching other user data.
+    fixed_files = [
+        user_directory / ".local/share/opencode/auth.json",
+        user_directory / ".local/state/opencode/model.json",
+    ]
+    for path in [*paths, preferences, *fixed_files]:
         require(not path.exists() and not path.is_symlink(), f"Refusing existing user data: {path}")
     created = []
     try:
@@ -151,13 +155,24 @@ def isolated_state(directory, identifier, user_directory=None):
         preferences.parent.mkdir(parents=True, exist_ok=True)
         preferences.symlink_to(preference_file)
         created.append((preferences, preference_file))
+        for index, path in enumerate(fixed_files):
+            isolated_file = directory / f"opencode-{index}.json"
+            isolated_file.write_text("{}\n")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.symlink_to(isolated_file)
+            created.append((path, isolated_file))
         environment = dict(os.environ)
         for setting in ("CONFIG", "DATA", "CACHE", "STATE"):
             path = directory / f"xdg-{setting.lower()}"
             path.mkdir()
             environment[f"XDG_{setting}_HOME"] = str(path)
+        opencode_home = directory / "opencode-home"
+        opencode_home.mkdir()
+        environment["OPENCODE_TEST_HOME"] = str(opencode_home)
+        environment.pop("OPENCODE_CONFIG", None)
         environment["OPENCODE_CONFIG_DIR"] = str(directory / "opencode-config")
         environment["OPENCODE_CONFIG_CONTENT"] = "{}"
+        environment["OPENCODE_DISABLE_PROJECT_CONFIG"] = "1"
         environment["OPENCODE_DISABLE_AUTOUPDATE"] = "1"
         environment["OPENCODE_SERVER_PASSWORD"] = ""
         yield environment
