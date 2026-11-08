@@ -74,8 +74,9 @@ Selecting a template re-renders the article preview with its actual styles. The 
 
 ## Package Notes
 
-- **Apple Silicon (including M5)**: Choose `darwin_aarch64.dmg`; Intel Macs should use `darwin_x64.dmg`.
-- **First launch on macOS**: Current releases are not Developer ID signed or notarized by Apple. Gatekeeper may block a downloaded app with a “damaged” message; this does not necessarily mean the download is corrupt.
+- **Apple Silicon (including M5)**: Choose `darwin_aarch64.dmg`; Intel Macs should use `darwin_x64.dmg`. macOS 13 or later is required, matching the bundled opencode runtime.
+- **macOS signing**: Starting with v0.4.1, the complete `.app` and bundled opencode receive ad-hoc signatures, following the approach used by [pureTV](https://github.com/ecojust/pureTV/blob/master/.github/workflows/desktop.yml). CI verifies the resource seal, mounted DMG, installed app startup, and local opencode service.
+- **First download**: Ad-hoc signing is not Developer ID signing or Apple notarization. Gatekeeper may still block the download; if it reports a damaged app or unidentified developer, first check that you downloaded the correct architecture.
 
 After downloading from this repository's Releases, drag `oDesk.app` into Applications, then remove only this app's download quarantine attribute and try opening it:
 
@@ -91,7 +92,7 @@ codesign --verify --deep --strict --verbose=2 "/Applications/oDesk.app"
 spctl --assess --type execute --verbose=4 "/Applications/oDesk.app"
 ```
 
-Removing quarantine does not sign or notarize the app. A distribution fix requires Developer ID signing and Apple notarization. First launch on physical M5 hardware running macOS 26.5 has not yet been verified.
+Removing quarantine does not sign or notarize the app. Complete ad-hoc signing seals application resources; Gatekeeper trust for first downloads still requires Developer ID signing and Apple notarization. First launch on physical M5 hardware running macOS 26.5 has not yet been verified.
 
 ## 📄 Usage
 

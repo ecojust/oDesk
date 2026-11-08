@@ -23,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - platform: "macos-15" # Apple Silicon (M1 and later).
+          - platform: "macos-latest" # Apple Silicon (M1 and later).
             rust_target: "aarch64-apple-darwin"
             args: "--target aarch64-apple-darwin"
           - platform: "macos-15-intel" # Intel based Macs.
@@ -39,6 +39,11 @@ jobs:
       # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set up Python for bundle verification
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
 
       # Rust setup
       - name: Rust setup
@@ -69,6 +74,9 @@ jobs:
       - name: Test article rendering
         run: yarn test
 
+      - name: Test macOS bundle verification helpers
+        run: python -m unittest discover -s tests -p 'test_macos_bundle.py' -v
+
       # Download sidecar binary (opencode)
       - name: Download sidecar binary
         run: yarn sidecar
@@ -93,6 +101,19 @@ jobs:
           tauriScript: yarn tauri
           assetNamePattern: "[name]_[version]_[platform]_[arch][ext]"
           args: ${{ matrix.args }}
+
+      - name: Verify macOS DMG, complete signatures and installed startup
+        if: runner.os == 'macOS'
+        run: python scripts/verify-macos-bundle.py --target "${{ matrix.rust_target }}"
+
+      - name: Upload macOS verification evidence
+        if: always() && runner.os == 'macOS'
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-verification-${{ matrix.rust_target }}
+          path: artifacts/macos-verification/${{ matrix.rust_target }}/
+          if-no-files-found: warn
+          retention-days: 30
 
       # Verify bundle contains the sidecar binary
       - name: Verify bundle contents

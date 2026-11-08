@@ -74,8 +74,9 @@
 
 ## 安装包注意事项
 
-- **Mac M 系列（包括 M5）**：选择 `darwin_aarch64.dmg`；Intel Mac 选择 `darwin_x64.dmg`。
-- **macOS 首次打开**：当前发行包尚未完成 Apple Developer ID 签名和公证，下载后可能被 Gatekeeper 拦截并提示“已损坏”。这不一定表示下载文件损坏。
+- **Mac M 系列（包括 M5）**：选择 `darwin_aarch64.dmg`；Intel Mac 选择 `darwin_x64.dmg`。最低要求 macOS 13，与内置 opencode 的系统要求一致。
+- **macOS 签名**：从 v0.4.1 起，参考 [pureTV 的打包流程](https://github.com/ecojust/pureTV/blob/master/.github/workflows/desktop.yml)，对完整 `.app` 和内置 opencode 执行 ad-hoc 签名。CI 会验证完整资源封印、DMG 挂载、安装副本启动和 opencode 本地服务。
+- **首次下载**：ad-hoc 签名不等于 Apple Developer ID 签名或公证，Gatekeeper 仍可能拦截。若出现“已损坏”或无法验证开发者的提示，请先确认使用正确架构的安装包。
 
 从本仓库 Releases 下载后，先把 `oDesk.app` 拖到“应用程序”，再在终端仅移除该应用的下载隔离属性并尝试打开：
 
@@ -91,7 +92,7 @@ codesign --verify --deep --strict --verbose=2 "/Applications/oDesk.app"
 spctl --assess --type execute --verbose=4 "/Applications/oDesk.app"
 ```
 
-移除隔离属性不等于完成签名或公证。正式解决首次下载拦截需要为发行包配置 Developer ID 签名和 Apple 公证；目前尚未完成 M5 / macOS 26.5 的真机首次启动验证。
+移除隔离属性不等于完成签名或公证。完整 ad-hoc 签名解决应用资源未封印的问题；要获得 Gatekeeper 对首次下载的信任，仍需 Developer ID 签名和 Apple 公证；目前尚未完成 M5 / macOS 26.5 的真机首次启动验证。
 
 ## 📄 使用说明
 
