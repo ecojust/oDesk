@@ -42,10 +42,23 @@ if (savedLanguage) {
 
 <style scoped>
 .language-switcher {
-  padding: 10px 0;
+  padding: 3px;
+  border: 1px solid var(--desk-border);
+  border-radius: 10px;
   display: flex;
   justify-content: center;
-  background: transparent;
+  background: var(--desk-surface);
   /* border-bottom: 1px solid #e4e7ed; */
+}
+
+.language-switcher :deep(.el-button) {
+  border: none;
+  border-radius: 7px;
+  height: 28px;
+  padding: 0 10px;
+}
+.language-switcher :deep(.el-button--primary) {
+  background: var(--el-color-primary-light-9);
+  color: var(--desk-accent);
 }
 </style>

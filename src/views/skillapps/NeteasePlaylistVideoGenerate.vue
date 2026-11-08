@@ -530,7 +530,7 @@ defineExpose({
   height: 100%;
   min-height: 0;
   box-sizing: border-box;
-  background: #f5f7fa;
+  background: var(--desk-bg);
   padding-top: 40px;
 
   .workspace-shell {
@@ -544,10 +544,10 @@ defineExpose({
   .playlist-panel,
   .video-panel {
     min-height: 0;
-    background: #ffffff;
-    border: 1px solid #ebeef5;
+    background: var(--desk-surface);
+    border: 1px solid var(--desk-border);
     border-radius: 8px;
-    box-shadow: 0 2px 12px rgba(31, 35, 41, 0.08);
+    box-shadow: var(--desk-shadow);
   }
 
   .playlist-panel {
@@ -567,10 +567,10 @@ defineExpose({
   .panel-title {
     font-size: 18px;
     font-weight: 600;
-    color: #303133;
+    color: var(--desk-text);
     margin-bottom: 16px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--desk-border);
   }
 
   .playlist-input {

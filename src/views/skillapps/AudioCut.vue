@@ -967,22 +967,22 @@ onBeforeUnmount(() => {
   .config-panel {
     width: 280px;
     flex-shrink: 0;
-    background: #fafbfc;
+    background: var(--desk-surface);
     border-radius: 16px;
     padding: 20px;
     box-sizing: border-box;
     overflow-y: auto;
-    border: 1px solid #e8e8e8;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    border: 1px solid var(--desk-border);
+    box-shadow: var(--desk-shadow);
 
     .panel-title {
       font-size: 15px;
       font-weight: 600;
       margin-bottom: 20px;
-      color: #1a1a1a;
+      color: var(--desk-text);
       text-align: left;
       padding-bottom: 12px;
-      border-bottom: 1px solid #e8e8e8;
+      border-bottom: 1px solid var(--desk-border);
       display: flex;
       align-items: center;
       gap: 8px;

@@ -587,7 +587,7 @@ onBeforeUnmount(async () => {});
   height: 100%;
   box-sizing: border-box;
   padding: 0;
-  background: #f5f7fa;
+  background: var(--desk-bg);
 
   // 内容区域样式
   .content-section {
@@ -604,13 +604,14 @@ onBeforeUnmount(async () => {});
   // 通用面板样式
   .config-panel,
   .preview-panel {
-    background: white;
+    background: var(--desk-surface);
     border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    box-shadow: var(--desk-shadow);
     padding: 24px;
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
+    border: 1px solid var(--desk-border);
   }
 
   .config-panel {
@@ -626,10 +627,10 @@ onBeforeUnmount(async () => {});
   .panel-title {
     font-size: 18px;
     font-weight: 600;
-    color: #303133;
+    color: var(--desk-text);
     margin-bottom: 24px;
     padding-bottom: 12px;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--desk-border);
   }
 
   .form-item {
@@ -642,7 +643,7 @@ onBeforeUnmount(async () => {});
   .form-label {
     font-size: 14px;
     font-weight: 500;
-    color: #606266;
+    color: var(--desk-muted);
   }
 
   .input-with-button {
@@ -671,7 +672,7 @@ onBeforeUnmount(async () => {});
       display: flex;
       align-items: center;
       justify-content: center;
-      background: #409eff;
+      background: var(--desk-accent);
       color: white;
       border: none;
       border-radius: 8px;
@@ -812,12 +813,12 @@ onBeforeUnmount(async () => {});
   }
 
   .primary-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: var(--desk-accent);
     color: white;
 
     &:hover {
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+      box-shadow: none;
     }
   }
 

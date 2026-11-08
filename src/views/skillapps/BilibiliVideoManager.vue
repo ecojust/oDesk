@@ -537,18 +537,7 @@ onMounted(async () => {
   min-height: 0;
   padding-top: 40px;
   box-sizing: border-box;
-  background:
-    radial-gradient(
-      circle at top left,
-      rgba(255, 112, 138, 0.12),
-      transparent 28%
-    ),
-    radial-gradient(
-      circle at bottom right,
-      rgba(75, 177, 255, 0.12),
-      transparent 26%
-    ),
-    #f5f7fb;
+  background: var(--desk-bg);
 
   .workspace-shell {
     height: calc(100% - 40px);
@@ -562,10 +551,10 @@ onMounted(async () => {
   .downloads-panel {
     min-height: 0;
     display: grid;
-    background: rgba(255, 255, 255, 0.92);
-    border: 1px solid rgba(20, 24, 33, 0.08);
+    background: var(--desk-surface);
+    border: 1px solid var(--desk-border);
     border-radius: 8px;
-    box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+    box-shadow: var(--desk-shadow);
     backdrop-filter: blur(10px);
   }
 
@@ -592,13 +581,13 @@ onMounted(async () => {
     font-size: 18px;
     line-height: 1.2;
     font-weight: 700;
-    color: #1f2937;
+    color: var(--desk-text);
   }
 
   .panel-subtitle {
     margin-top: 6px;
     font-size: 13px;
-    color: #6b7280;
+    color: var(--desk-muted);
     line-height: 1.5;
   }
 

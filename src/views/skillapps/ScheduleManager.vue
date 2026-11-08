@@ -294,15 +294,13 @@ onMounted(async () => {
     padding-top: 50px;
 
     .skills-header {
-      background: rgba(255, 255, 255, 0.95);
+      background: var(--desk-surface);
       backdrop-filter: blur(10px);
       border-radius: 16px;
       padding: 12px 16px;
       margin-bottom: 16px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-      // border: 1px solid rgba(255, 255, 255, 0.3);
-      // border: 1px solid blue;
-      // border: 1px solid red;
+      box-shadow: var(--desk-shadow);
+      border: 1px solid var(--desk-border);
 
       .skills-tags {
         display: flex;
@@ -368,7 +366,7 @@ onMounted(async () => {
           position: absolute;
           top: 0;
           right: 0;
-          background: linear-gradient(135deg, #667eea, #764ba2);
+          background: var(--desk-accent);
           color: white;
           border: none;
           padding: 10px 18px;
@@ -381,13 +379,13 @@ onMounted(async () => {
           align-items: center;
           justify-content: center;
           gap: 6px;
-          box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+          box-shadow: none;
           border: 1px solid rgba(255, 255, 255, 0.3);
           white-space: nowrap;
 
           &:hover:not(:disabled) {
             transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+            box-shadow: none;
           }
 
           &:active:not(:disabled) {
@@ -413,10 +411,10 @@ onMounted(async () => {
       }
 
       .layout-panel {
-        background: white;
+        background: var(--desk-surface);
         border-radius: 16px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: var(--desk-shadow);
+        border: 1px solid var(--desk-border);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -427,8 +425,8 @@ onMounted(async () => {
           width: 40%;
           .panel-header {
             padding: 16px;
-            border-bottom: 1px solid #e9ecef;
-            background: #f8f9fa;
+            border-bottom: 1px solid var(--desk-border);
+            background: var(--desk-surface);
 
             h3 {
               margin: 0 0 4px 0;
@@ -877,7 +875,7 @@ onMounted(async () => {
 
                 .progress-fill {
                   height: 100%;
-                  background: linear-gradient(90deg, #667eea, #764ba2);
+                  background: var(--desk-accent);
                   width: 0%;
                   transition: width 0.5s ease;
                   animation: shimmer 2s infinite;

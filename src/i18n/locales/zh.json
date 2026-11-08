@@ -80,7 +80,8 @@
     "systemLogs": "系统日志",
     "selectDate": "选择日期",
     "refresh": "刷新",
-    "loadLogsFailed": "读取日志失败: "
+    "loadLogsFailed": "读取日志失败: ",
+    "workspace": "你的智能桌面工作台"
   },
   "wallpaper": {
     "static": {
@@ -108,7 +109,11 @@
       "wechatPublisher": {
         "title": "微信发布器",
         "description": "生成文章并发布",
-        "category": "社交媒体"
+        "category": "社交媒体",
+        "coverPreview": "封面预览",
+        "noCover": "暂无封面",
+        "articleTitle": "文章标题",
+        "enterArticleTitle": "请输入文章标题..."
       },
       "travelPlan": {
         "title": "旅行计划",
@@ -164,15 +169,6 @@
         "title": "数据搜索",
         "description": "搜索并结构化任意数据，Agent以JSON格式返回结果",
         "category": "数据工具"
-      },
-      "wechatPublisher": {
-        "title": "微信发布器",
-        "description": "生成文章并发布",
-        "category": "社交媒体",
-        "coverPreview": "封面预览",
-        "noCover": "暂无封面",
-        "articleTitle": "文章标题",
-        "enterArticleTitle": "请输入文章标题..."
       }
     },
     "launch": "启动",

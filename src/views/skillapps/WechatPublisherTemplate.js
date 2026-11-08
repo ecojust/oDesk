@@ -65,7 +65,7 @@ const styleList = [
     key: "arcade",
     file: "style-arcade",
     description: "街机游戏风",
-    preview: "/wechatTemplate/image.png",
+    preview: "/preview/themes/arcade.png",
   },
   {
     key: "artdeco",

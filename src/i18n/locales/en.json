@@ -80,7 +80,8 @@
     "systemLogs": "System Logs",
     "selectDate": "Select Date",
     "refresh": "Refresh",
-    "loadLogsFailed": "Load logs failed: "
+    "loadLogsFailed": "Load logs failed: ",
+    "workspace": "Your creative workspace"
   },
   "wallpaper": {
     "static": {
@@ -108,7 +109,11 @@
       "wechatPublisher": {
         "title": "Wechat Publisher",
         "description": "Generate article and publish",
-        "category": "Social Media"
+        "category": "Social Media",
+        "coverPreview": "Cover Preview",
+        "noCover": "No cover",
+        "articleTitle": "Article Title",
+        "enterArticleTitle": "Enter article title..."
       },
       "travelPlan": {
         "title": "Travel Plan",
@@ -159,15 +164,6 @@
         "title": "Data Search",
         "description": "Search and structure any data with agent-generated JSON",
         "category": "Data Tools"
-      },
-      "wechatPublisher": {
-        "title": "Wechat Publisher",
-        "description": "Generate article and publish",
-        "category": "Social Media",
-        "coverPreview": "Cover Preview",
-        "noCover": "No cover",
-        "articleTitle": "Article Title",
-        "enterArticleTitle": "Enter article title..."
       }
     },
     "launch": "Launch",

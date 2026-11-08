@@ -382,10 +382,10 @@ onMounted(async () => {
       height: calc(100% - 140px);
 
       .layout-panel {
-        background: white;
+        background: var(--desk-surface);
         border-radius: 16px;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.3);
+        box-shadow: var(--desk-shadow);
+        border: 1px solid var(--desk-border);
         display: flex;
         flex-direction: column;
         overflow: hidden;
@@ -396,8 +396,8 @@ onMounted(async () => {
           width: 40%;
           .panel-header {
             padding: 16px;
-            border-bottom: 1px solid #e9ecef;
-            background: #f8f9fa;
+            border-bottom: 1px solid var(--desk-border);
+            background: var(--desk-surface);
 
             .header-content {
               .title-section {
@@ -438,15 +438,15 @@ onMounted(async () => {
                 height: 48px;
                 font-size: 16px;
                 font-weight: 700;
-                background: linear-gradient(135deg, #667eea, #764ba2);
+                background: var(--desk-accent);
                 border: none;
                 border-radius: 12px;
-                box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+                box-shadow: none;
                 transition: all 0.3s ease;
 
                 &:hover {
                   transform: translateY(-2px);
-                  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.5);
+                  box-shadow: none;
                 }
 
                 &:active {
@@ -749,7 +749,7 @@ onMounted(async () => {
 
                 .progress-fill {
                   height: 100%;
-                  background: linear-gradient(90deg, #667eea, #764ba2);
+                  background: var(--desk-accent);
                   width: 0%;
                   transition: width 0.5s ease;
                   animation: shimmer 2s infinite;

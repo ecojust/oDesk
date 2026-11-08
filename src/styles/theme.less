@@ -1,0 +1,45 @@
+:root {
+  --desk-bg: #f4f6fa;
+  --desk-surface: #fff;
+  --desk-border: #e4e8f0;
+  --desk-text: #202738;
+  --desk-muted: #748096;
+  --desk-accent: #5264d9;
+  --desk-shadow: 0 4px 20px rgba(32, 39, 56, .04);
+  --el-color-primary: #5264d9;
+  --el-color-primary-light-3: #8693e4;
+  --el-color-primary-light-5: #a9b2ec;
+  --el-color-primary-light-7: #cbd1f4;
+  --el-color-primary-light-8: #dce0f7;
+  --el-color-primary-light-9: #eef0fb;
+  --el-color-primary-dark-2: #4250ae;
+  --el-color-success: #15966a;
+  --el-text-color-primary: #202738;
+  --el-text-color-regular: #505d73;
+  --el-text-color-secondary: #748096;
+  --el-border-color: #e4e8f0;
+  --el-border-color-light: #edf0f5;
+  --el-border-radius-base: 8px;
+  --el-bg-color-page: #f4f6fa;
+  --el-font-family: inherit;
+}
+
+.el-dialog {
+  --el-dialog-border-radius: 16px;
+  --el-dialog-padding-primary: 24px;
+  max-width: calc(100vw - 32px);
+  box-shadow: 0 24px 80px rgba(32, 39, 56, .16);
+}
+.el-message-box { max-width: calc(100vw - 32px); border-radius: 14px; }
+.el-button { font-weight: 500; }
+.el-input__wrapper, .el-select__wrapper { min-height: 36px; }
+.el-overlay { background-color: rgba(24, 32, 53, .35); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,31 +1,19 @@
 <template>
-  <div id="app">
-    <div class="app-container">
-      <router-view />
-    </div>
-  </div>
+  <main class="app-container">
+    <router-view />
+  </main>
 </template>
 
-<script setup lang="ts">
-// 路由应用的主入口
-</script>
-
 <style lang="less">
+@import "./styles/theme.less";
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
   font-weight: 400;
-
-  background: linear-gradient(
-    135deg,
-    #1e3c72 0%,
-    #2a5298 25%,
-    #667eea 75%,
-    #764ba2 100%
-  );
-  background-attachment: fixed;
-
+  color: var(--desk-text);
+  background: var(--desk-bg);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -33,47 +21,14 @@
   -webkit-text-size-adjust: 100%;
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+* { box-sizing: border-box; }
+body { margin: 0; }
+#app, .app-container { width: 100%; height: 100vh; height: 100dvh; }
+button, input, textarea, select { font: inherit; }
+button { touch-action: manipulation; }
+button:focus-visible, [role="button"]:focus-visible, a:focus-visible {
+  outline: 3px solid var(--desk-accent);
+  outline-offset: 3px;
 }
-
-#app {
-  width: 100vw;
-  height: 100vh;
-  background: inherit;
-  position: relative;
-}
-
-.app-container {
-  width: 100%;
-  height: 100%;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background: linear-gradient(
-      135deg,
-      #0f1419 0%,
-      #1a2332 25%,
-      #2d3748 75%,
-      #4a5568 100%
-    );
-    background-attachment: fixed;
-  }
-
-  .about-content .app-name {
-    color: #e4e7ed;
-  }
-
-  .about-content .version {
-    color: #a0aec0;
-  }
-
-  .about-content .build-time {
-    color: #718096;
-  }
-}
+::selection { background: #dfe4ff; color: #202738; }
 </style>

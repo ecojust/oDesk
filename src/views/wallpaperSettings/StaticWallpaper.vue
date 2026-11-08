@@ -329,200 +329,152 @@ onUnmounted(() => {
 
 <style lang="less" scoped>
 .static-wallpaper {
+  min-height: 100%;
+  background: var(--desk-bg, #f4f6fa);
+  color: var(--desk-text, #202738);
+
   .wallpaper-settings {
     display: flex;
     align-items: center;
-    gap: 30px;
-    padding: 15px 20px;
-    background: #f8f9fa;
-    border-bottom: 1px solid #e9ecef;
     flex-wrap: wrap;
+    gap: 16px 32px;
+    padding: 18px 28px;
+    background: var(--desk-surface, #fff);
+    border-bottom: 1px solid var(--desk-border, #e4e8f0);
 
     .setting-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      flex-wrap: wrap;
+      gap: 12px;
 
-      .setting-label {
-        font-size: 14px;
-        color: #333;
-        font-weight: 500;
-      }
+      .setting-label { font-size: 14px; font-weight: 500; }
     }
   }
 
-  // 云端循环模式样式
   .cloud-wallpaper {
     display: flex;
     justify-content: center;
-    padding: 40px 20px;
+    padding: 32px 24px;
 
     .cloud-card {
-      background: white;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-      max-width: 500px;
       width: 100%;
+      max-width: 680px;
+      overflow: hidden;
+      background: var(--desk-surface, #fff);
+      border: 1px solid var(--desk-border, #e4e8f0);
+      border-radius: 16px;
+      box-shadow: 0 6px 24px rgba(32, 39, 56, 0.05);
+    }
 
-      .cloud-preview {
-        width: 100%;
-        height: 300px;
-        background: #f0f2f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+    .cloud-preview {
+      width: 100%;
+      aspect-ratio: 16 / 10;
+      display: grid;
+      place-items: center;
+      background: #eaf0f7;
 
-        img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
+      img { width: 100%; height: 100%; object-fit: cover; }
+      .cloud-placeholder { text-align: center; padding: 24px; color: var(--desk-muted, #748096); }
+    }
 
-        .cloud-placeholder {
-          text-align: center;
-          color: #999;
-
-          p {
-            font-size: 16px;
-          }
-        }
-      }
-
-      .cloud-actions {
-        padding: 20px;
-        display: flex;
-        gap: 15px;
-        justify-content: center;
-      }
+    .cloud-actions {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 20px;
+      .el-button + .el-button { margin-left: 0; }
     }
   }
 
   .wallpaper-list {
-    max-width: 1400px;
+    max-width: 1440px;
     margin: 0 auto;
-    padding: 20px;
+    padding: 28px;
 
-    .loading,
-    .error,
-    .empty {
+    .loading, .error, .empty {
+      padding: 64px 24px;
+      border: 1px dashed var(--desk-border, #e4e8f0);
+      border-radius: 16px;
+      background: var(--desk-surface, #fff);
       text-align: center;
-      padding: 40px;
-      font-size: 18px;
+      font-size: 14px;
+      color: var(--desk-muted, #748096);
     }
 
-    .error {
-      color: #dc3545;
-    }
+    .error { color: #c64e54; }
 
-    .empty {
-      color: #666;
-
-      .empty-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-
-        p {
-          margin: 0;
-          font-size: 18px;
-          color: #666;
-        }
-      }
+    .empty-content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
       gap: 20px;
     }
 
     .wallpaper-item {
-      background: white;
-      border-radius: 8px;
-      overflow: hidden;
-      cursor: pointer;
-      transition:
-        transform 0.3s,
-        box-shadow 0.3s;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
       position: relative;
-      border: 2px solid transparent;
+      overflow: hidden;
+      border: 1px solid var(--desk-border, #e4e8f0);
+      border-radius: 14px;
+      background: var(--desk-surface, #fff);
+      cursor: pointer;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
 
       &:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+        border-color: #c5cdef;
+        box-shadow: 0 6px 20px rgba(32, 39, 56, 0.07);
       }
 
-      &.temp-item {
-        border-color: #409eff;
-      }
+      &.temp-item { border-color: var(--desk-accent, #5264d9); }
+      &.downloading { pointer-events: none; opacity: 0.8; }
 
-      &.downloading {
-        pointer-events: none;
-        opacity: 0.8;
-      }
-
-      img {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        display: block;
-      }
+      img { display: block; width: 100%; aspect-ratio: 16 / 10; object-fit: cover; }
 
       .info {
-        padding: 15px;
-
-        h3 {
-          margin: 0 0 8px 0;
-          font-size: 16px;
-          color: #333;
-          font-weight: 600;
-        }
-
-        p {
-          margin: 0;
-          font-size: 14px;
-          color: #666;
-        }
+        padding: 16px;
+        h3 { margin: 0; font-size: 14px; font-weight: 600; }
+        p { margin: 6px 0 0; font-size: 12px; color: var(--desk-muted, #748096); }
       }
 
       .download-overlay {
         position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: rgba(0, 0, 0, 0.7);
+        inset: 0;
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
+        background: rgba(24, 33, 50, 0.75);
         color: white;
-
-        p {
-          margin-top: 10px;
-          font-size: 14px;
-        }
+        p { margin-top: 12px; font-size: 14px; }
       }
 
       .delete-overlay {
         position: absolute;
-        top: 10px;
-        right: 10px;
+        top: 12px;
+        right: 12px;
         opacity: 0;
-        transition: opacity 0.3s;
-
-        &:hover {
-          opacity: 1;
-        }
+        transition: opacity 180ms ease;
       }
 
-      &:hover .delete-overlay {
-        opacity: 1;
-      }
+      &:hover .delete-overlay, &:focus-within .delete-overlay { opacity: 1; }
     }
+  }
+
+  @media (max-width: 760px) {
+    .wallpaper-settings { padding: 16px; }
+    .wallpaper-list { padding: 16px; .grid { gap: 16px; } }
+    .cloud-wallpaper { padding: 24px 16px; }
+  }
+
+  @media (hover: none) {
+    .wallpaper-list .wallpaper-item .delete-overlay { opacity: 1; }
   }
 }
 
@@ -535,9 +487,5 @@ onUnmounted(() => {
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>

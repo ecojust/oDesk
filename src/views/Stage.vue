@@ -1,5 +1,21 @@
 <template>
   <div class="stage">
+    <header class="workspace-header">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true"><el-icon><Monitor /></el-icon></span>
+        <div><strong>oDesk</strong><span>{{ t('stage.workspace') }}</span></div>
+      </div>
+      <div class="top-right-controls">
+        <LanguageSwitcher />
+        <span class="controls-divider" aria-hidden="true"></span>
+        <button class="control-button" :title="t('stage.modelSettings.title')" :aria-label="t('stage.modelSettings.title')" @click="showModelSettingsDialog">
+          <el-icon><Setting /></el-icon>
+        </button>
+        <button class="control-button" :title="t('stage.about.button')" :aria-label="t('stage.about.button')" @click="showAboutDialog">
+          <el-icon><InfoFilled /></el-icon>
+        </button>
+      </div>
+    </header>
     <div class="stage-header">
       <el-tabs v-model="activeTab" class="stage-tabs">
         <el-tab-pane name="skillapps">
@@ -45,42 +61,12 @@
           </template>
         </el-tab-pane>
       </el-tabs>
-      <!-- <div class="test-buttons">
-        <el-button type="primary" size="small" @click="testCreateWorkspace"
-          >{{ $t("stage.testButtons.createWorkspace") }}</el-button
-        >
-        <el-button type="success" size="small" @click="testExecuteOpenServe"
-          >{{ $t("stage.testButtons.executeServe") }}</el-button
-        >
-
-        <el-button type="warning" size="small" @click="testKillOpenServe"
-          >{{ $t("stage.testButtons.killServe") }}</el-button
-        >
-      </div> -->
     </div>
 
     <div class="stage-content">
       <keep-alive>
         <component :is="activeComponent" />
       </keep-alive>
-    </div>
-
-    <div class="top-right-controls">
-      <LanguageSwitcher />
-      <el-icon
-        class="control-button"
-        :title="t('stage.modelSettings.title')"
-        @click="showModelSettingsDialog"
-      >
-        <Setting />
-      </el-icon>
-      <el-icon
-        class="about-button"
-        :title="t('stage.about.button')"
-        @click="showAboutDialog"
-      >
-        <InfoFilled />
-      </el-icon>
     </div>
 
     <!-- 模型设置对话框 -->
@@ -530,103 +516,85 @@ const testKillOpenServe = async () => {
   flex-direction: column;
   width: 100%;
   height: 100vh;
-  background: #f5f5f5;
-  padding: 20px;
-  box-sizing: border-box;
+  height: 100dvh;
+  background: var(--desk-bg);
+  color: var(--desk-text);
+  padding: 0 32px 24px;
+  overflow: hidden;
 
-  .test-buttons {
-    display: flex;
-    gap: 10px;
-    padding: 10px 20px;
-    border-bottom: 1px solid #e4e7ed;
-  }
-
-  .stage-header {
-    flex-shrink: 0;
-    background: white;
-    border-radius: 8px 8px 0 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-
-    :deep(.stage-tabs) {
-      .el-tabs__header {
-        margin: 0;
-      }
-
-      .el-tabs__nav-wrap::after {
-        height: 1px;
-      }
-
-      .el-tabs__item {
-        font-size: 16px;
-        padding: 0 20px;
-        height: 50px;
-        line-height: 50px;
-
-        &.is-active {
-          color: #007bff;
-          font-weight: 600;
-        }
-      }
-
-      .el-tabs__active-bar {
-        background-color: #007bff;
-      }
-
-      .custom-tabs-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        .platform-icons {
-          display: flex;
-          gap: 4px;
-
-          .el-icon {
-            font-size: 16px;
-          }
-
-          .windows-icon {
-            color: #d45800;
-            font-weight: 900;
-          }
-
-          .mac-icon {
-            color: #d45800;
-            font-weight: 900;
-          }
-        }
-      }
-    }
-  }
-
-  .stage-content {
-    flex: 1;
-    overflow-y: auto;
-    background: white;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-
-  .top-right-controls {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    z-index: 10;
+  .workspace-header {
+    min-height: 86px;
     display: flex;
     align-items: center;
-    gap: 4px;
-    .control-button,
-    .about-button {
-      color: rgba(0, 0, 0, 0.6);
-      transition: all 0.3s ease;
-      margin: 0 8px 0 4px;
+    justify-content: space-between;
+    gap: 16px;
+    flex-shrink: 0;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      border-radius: 13px;
+      background: var(--desk-accent);
+      color: white;
+      font-size: 23px;
+    }
+    strong { display: block; font-size: 22px; line-height: 1.2; letter-spacing: -.7px; }
+    div > span { font-size: 12px; color: var(--desk-muted); }
+  }
+  .stage-header {
+    flex-shrink: 0;
+    border-bottom: 1px solid var(--desk-border);
+    :deep(.stage-tabs) {
+      .el-tabs__header { margin: 0; }
+      .el-tabs__content { display: none; }
+      .el-tabs__nav-wrap::after { display: none; }
+      .el-tabs__item {
+        font-size: 14px;
+        padding: 0 22px;
+        height: 54px;
+        color: var(--desk-muted);
+        &.is-active { color: var(--desk-accent); font-weight: 600; }
+      }
+      .el-tabs__active-bar { height: 3px; border-radius: 3px; background: var(--desk-accent); }
+      .custom-tabs-label { display: flex; align-items: center; gap: 10px; }
+      .platform-icons { display: flex; gap: 4px; font-size: 12px; opacity: .65; }
+    }
+  }
+  .stage-content { flex: 1; min-height: 0; overflow: auto; }
+  .top-right-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    .controls-divider { width: 1px; height: 22px; background: var(--desk-border); margin: 0 8px; }
+    .control-button {
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      background: var(--desk-surface);
+      border: 1px solid var(--desk-border);
+      border-radius: 10px;
+      color: var(--desk-muted);
+      font-size: 18px;
       cursor: pointer;
+      transition: color .15s, border-color .15s;
+      &:hover { color: var(--desk-accent); border-color: var(--desk-accent); }
     }
-    .control-button:hover,
-    .about-button:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-    }
+  }
+  @media (max-width: 700px) {
+    padding: 0 16px 16px;
+    .workspace-header { min-height: 76px; }
+    .brand { gap: 8px; }
+    .brand div > span { display: none; }
+    .top-right-controls { gap: 4px; .controls-divider { margin: 0 2px; } }
+    .stage-header :deep(.stage-tabs .el-tabs__item) { padding: 0 14px; font-size: 13px; }
+    .platform-icons { display: none !important; }
   }
 
   .model-settings-form {

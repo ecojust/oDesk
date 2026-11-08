@@ -211,8 +211,9 @@ onMounted(async () => {
 
 <style lang="less" scoped>
 .text-2-image {
-  height: 100vh;
-  background: #f8f9fa;
+  position: relative;
+  height: 100%;
+  background: var(--desk-bg);
   box-sizing: border-box;
   overflow: hidden;
   padding-right: 0 !important;
@@ -232,19 +233,20 @@ onMounted(async () => {
   .config-panel {
     width: 300px;
     flex-shrink: 0;
-    background: white;
+    background: var(--desk-surface);
     border-radius: 12px;
     padding: 20px;
     box-sizing: border-box;
+    border: 1px solid var(--desk-border);
 
     .panel-title {
       font-size: 18px;
       font-weight: 700;
       margin-bottom: 24px;
-      color: #303133;
+      color: var(--desk-text);
       text-align: left;
       padding-bottom: 12px;
-      border-bottom: 2px solid #f0f2f5;
+      border-bottom: 1px solid var(--desk-border);
     }
 
     .generate-images {
@@ -300,11 +302,12 @@ onMounted(async () => {
     flex: 1;
     display: flex;
     flex-direction: column;
-    background: white;
+    background: var(--desk-surface);
     border-radius: 12px;
     padding: 20px;
     box-sizing: border-box;
     min-height: 0;
+    border: 1px solid var(--desk-border);
 
     .content-input {
       flex: 1;

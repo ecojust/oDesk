@@ -191,6 +191,17 @@ npm install
 npm run 4dev
 ```
 
+## 开发验证
+
+建议使用 Node.js 22 LTS 或更高版本。安装依赖后运行：
+
+```bash
+npm test       # 微信模板渲染回归测试
+npm run build  # Vue/TypeScript 检查与前端生产构建
+```
+
+微信文章预览优先读取工作区的 `draft.md`，兼容只有 `draft.html` 的旧工作区。内置模板使用 Wenyan 渲染器，自定义模板读取工作区 `.opencode/skill/wechat-publisher/scripts/` 中的实际 CSS。切换模板会重新排版，点击发布会先将当前排版结果写入 `draft.html`；读取模板或保存文件失败时不会继续发布。
+
 ## 🤝 贡献指南
 
 欢迎提交 Issue 和 Pull Request！

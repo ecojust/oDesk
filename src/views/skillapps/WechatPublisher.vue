@@ -41,6 +41,7 @@
       title="发布配置"
       width="620px"
       top="5vh"
+      @closed="cancelConfigChanges"
     >
       <div class="config-body">
         <div class="config-group">
@@ -106,19 +107,26 @@
           >
             <div
               v-for="theme in visibleThemes"
-              :key="theme.name"
+              :key="themeIdentity(theme)"
               class="theme-card"
-              :class="{ active: config.wenyanTheme === theme.key }"
+              :class="{ active: isSelectedTheme(theme) }"
+              role="button"
+              tabindex="0"
+              :aria-pressed="isSelectedTheme(theme)"
               @click="selectTheme(theme)"
+              @keydown.enter="selectTheme(theme)"
+              @keydown.space.prevent="selectTheme(theme)"
             >
               <div class="theme-card-preview">
                 <img
+                  v-if="theme.preview && !failedThemeImages[themeIdentity(theme)]"
                   :src="theme.preview"
                   :alt="theme.description"
-                  @error="handleImageError"
+                  @error="failedThemeImages[themeIdentity(theme)] = true"
                 />
+                <div v-else class="theme-placeholder">{{ theme.icon || "🎨" }}</div>
                 <div
-                  v-if="config.wenyanTheme === theme.key"
+                  v-if="isSelectedTheme(theme)"
                   class="theme-card-check"
                 >
                   ✓
@@ -259,6 +267,7 @@
         <div class="panel-header">
           <div class="preview-title">
             <h3>{{ t("skillapps.articlePreview") }}</h3>
+            <span v-if="selectedTheme" class="preview-theme-name">{{ selectedTheme.description }}</span>
             <span v-if="htmlPreview" class="word-count">
               {{ t("skillapps.articleWordCount", { count: articleTextCount }) }}
             </span>
@@ -267,7 +276,7 @@
             class="publish-btn"
             :class="{ loading: isPublishing }"
             @click="handlePublish"
-            :disabled="!htmlPreview || isPublishing"
+            :disabled="!htmlPreview || isPublishing || isRendering || !!previewError"
           >
             <i class="icon" :class="{ loading: isPublishing }">🚀</i>
             <span v-if="isPublishing" class="loading-text">{{
@@ -283,8 +292,22 @@
             <h3>{{ t("skillapps.publishingArticle") }}</h3>
             <p>{{ t("skillapps.pushingToWechat") }}</p>
           </div>
+          <div class="empty-preview" v-else-if="isRendering" role="status">
+            <el-icon class="is-loading"><Loading /></el-icon>
+            <p>正在应用排版模板…</p>
+          </div>
+          <div class="empty-preview" v-else-if="previewError" role="alert">
+            <h3>预览生成失败</h3>
+            <p>{{ previewError }}</p>
+            <el-button @click="refreshPreview">重新渲染</el-button>
+          </div>
           <div class="html-content" v-else-if="htmlPreview">
-            <div v-html="htmlPreview"></div>
+            <iframe
+              class="article-preview-frame"
+              title="微信公众号文章预览"
+              sandbox=""
+              :srcdoc="previewDocument"
+            ></iframe>
           </div>
           <div class="empty-preview" v-else>
             <div class="empty-icon">📝</div>
@@ -315,6 +338,12 @@ import { ElMessage } from "element-plus";
 import { useSkillApp } from "@/composables/useSkillApp";
 import ServerStatus from "@/components/ServerStatus.vue";
 import styleList from "./WechatPublisherTemplate";
+import {
+  createPreviewDocument,
+  findSelectedTheme,
+  renderWechatArticle,
+  themeIdentity,
+} from "@/service/wechatPreview";
 import { open, save } from "@tauri-apps/plugin-dialog";
 
 const { t } = useI18n();
@@ -371,6 +400,11 @@ const visibleThemes = ref([]);
 const loadingMoreThemes = ref(false);
 const themePageSize = 15;
 const themeCurrentPage = ref(1);
+const failedThemeImages = ref({});
+const selectedTheme = computed(() => findSelectedTheme(styleList, config.value));
+const isSelectedTheme = (theme) => selectedTheme.value &&
+  themeIdentity(selectedTheme.value) === themeIdentity(theme);
+let configBeforeEdit = null;
 
 const previewThumb = ref("");
 
@@ -477,7 +511,7 @@ const initThemeList = () => {
       style.description
         .toLowerCase()
         .includes(themeSearchQuery.value.toLowerCase()) ||
-      style.name.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
+      style.key.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
   );
   visibleThemes.value = filtered.slice(
     0,
@@ -505,7 +539,7 @@ const loadMoreThemes = () => {
       style.description
         .toLowerCase()
         .includes(themeSearchQuery.value.toLowerCase()) ||
-      style.name.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
+      style.key.toLowerCase().includes(themeSearchQuery.value.toLowerCase()),
   );
 
   const nextPage = themeCurrentPage.value + 1;
@@ -522,17 +556,10 @@ const loadMoreThemes = () => {
   }
 };
 
-const wenyanCustomCss = ref(false);
 // 选择主题
 const selectTheme = (item) => {
   config.value.wenyanTheme = item.key;
   config.value.wenyanCustomCss = !item.buildIn;
-};
-
-// 图片错误处理
-const handleImageError = (e) => {
-  e.target.style.display = "none";
-  e.target.parentElement.innerHTML = '<div class="theme-placeholder">🎨</div>';
 };
 
 // 监听搜索查询变化
@@ -551,14 +578,20 @@ watch(isPolishMode, (val) => {
 initThemeList();
 
 const clearDraft = async () => {
+  draftSource.value = { markdown: "", html: "", baseUrl: "" };
   await Opencode.write_workspace_file_content(APPID, "draft.md", "");
   await Opencode.write_workspace_file_content(APPID, "draft.html", "");
 };
 
 // 打开配置对话框
 const openConfigDialog = () => {
-  readConfig();
+  configBeforeEdit = JSON.parse(JSON.stringify(config.value));
   configDialogVisible.value = true;
+};
+
+const cancelConfigChanges = () => {
+  if (configBeforeEdit) config.value = configBeforeEdit;
+  configBeforeEdit = null;
 };
 
 const handleSearch = async () => {
@@ -617,6 +650,50 @@ const handlePolish = async () => {
 };
 
 const htmlPreview = ref("");
+const draftSource = ref({ markdown: "", html: "", baseUrl: "" });
+const isRendering = ref(false);
+const previewError = ref("");
+const previewDocument = computed(() =>
+  createPreviewDocument(htmlPreview.value, draftSource.value.baseUrl),
+);
+let renderVersion = 0;
+
+const refreshPreview = async () => {
+  const version = ++renderVersion;
+  const source = { ...draftSource.value };
+  const theme = selectedTheme.value;
+  htmlPreview.value = "";
+  previewError.value = "";
+  if (!source.markdown.trim() && !source.html.trim()) {
+    isRendering.value = false;
+    return "";
+  }
+  isRendering.value = true;
+  try {
+    const themeCss = theme && !theme.buildIn
+      ? await Opencode.read_workspace_file_content(
+          APPID, `.opencode/skill/wechat-publisher/scripts/${theme.key}.css`,
+        )
+      : undefined;
+    const html = await renderWechatArticle({ ...source, theme, themeCss });
+    // A slower previous template must never replace a newer selection.
+    if (version !== renderVersion) return "";
+    htmlPreview.value = html;
+    return html;
+  } catch (error) {
+    if (version === renderVersion) {
+      previewError.value = error.message || String(error);
+    }
+    return "";
+  } finally {
+    if (version === renderVersion) isRendering.value = false;
+  }
+};
+
+watch(
+  [draftSource, () => config.value.wenyanTheme, () => config.value.wenyanCustomCss],
+  refreshPreview,
+);
 
 const getVisibleText = (html) => {
   if (!html) return "";
@@ -637,27 +714,42 @@ const articleTextCount = computed(
 );
 
 const searchFiles = async () => {
-  const searchs = await Opencode.scan_worksapce_file(APPID, {
-    path: "",
-    postfix: ["md", "html"],
-  });
-
-  const html = searchs.find((s) => s.title == "draft.html");
-
-  if (html) {
-    htmlPreview.value = await Opencode.read_workspace_file_content(
-      APPID,
-      html.title,
-    );
+  try {
+    const files = await Opencode.scan_worksapce_file(APPID, {
+      path: "", postfix: ["md", "html"],
+    });
+    const markdown = files.find((file) => file.title === "draft.md");
+    const html = files.find((file) => file.title === "draft.html");
+    const [markdownContent, htmlContent] = await Promise.all([
+      markdown ? Opencode.read_workspace_file_content(APPID, markdown.title) : "",
+      html ? Opencode.read_workspace_file_content(APPID, html.title) : "",
+    ]);
+    draftSource.value = {
+      markdown: markdownContent,
+      html: htmlContent,
+      baseUrl: (markdown || html)?.url || "",
+    };
+  } catch (error) {
+    draftSource.value = { markdown: "", html: "", baseUrl: "" };
+    await refreshPreview();
+    previewError.value = error.message || String(error);
   }
 };
 
 const handlePublish = async () => {
-  if (isPublishing.value) return;
+  if (isPublishing.value || isRendering.value || !htmlPreview.value) return;
 
   isPublishing.value = true;
   try {
     console.log("Starting article publishing...");
+    // The publisher reuses draft.html, so persist exactly the current preview
+    // before asking it to publish. A failed write must stop publication.
+    const html = await refreshPreview();
+    if (!html) throw new Error(previewError.value || "文章预览尚未生成");
+    await Opencode.write_workspace_file_content(
+      APPID, "config.json", JSON.stringify(config.value, null, 2),
+    );
+    await Opencode.write_workspace_file_content(APPID, "draft.html", html);
     const answer = await Opencode.send_message("Publish draft.md");
     console.log("AI Response:", answer);
     ElMessage.success(t("skillapps.publishSuccess"));
@@ -676,7 +768,7 @@ const readConfig = async () => {
       "config.json",
     );
 
-    config.value = JSON.parse(res);
+    config.value = { ...wechat_config, ...JSON.parse(res) };
     config.value.wenyanCustomCss = config.value.wenyanCustomCss || false;
     config.value.thumb = config.value.thumb || "thumb.jpg";
     config.value.prompt = config.value.prompt || "";
@@ -688,7 +780,7 @@ const readConfig = async () => {
 
     console.log("config", config);
   } catch (error) {
-    config.value = wechat_config;
+    config.value = JSON.parse(JSON.stringify(wechat_config));
 
     await Opencode.write_workspace_file_content(
       APPID,
@@ -701,7 +793,6 @@ const readConfig = async () => {
 };
 
 const saveConfig = async (showmessage = true) => {
-  console.log("config.value", config.value);
   try {
     await Opencode.write_workspace_file_content(
       APPID,
@@ -709,11 +800,13 @@ const saveConfig = async (showmessage = true) => {
       JSON.stringify(config.value, null, 2),
     );
     showmessage && ElMessage.success(t("skillapps.configSaveSuccess"));
+    if (showmessage) {
+      configBeforeEdit = null;
+      configDialogVisible.value = false;
+    }
   } catch (error) {
     console.error("保存配置失败:", error);
-    // ElMessage.error("配置保存失败: " + error.message);
-  } finally {
-    configDialogVisible.value = false;
+    ElMessage.error("配置保存失败: " + (error.message || String(error)));
   }
 };
 
@@ -777,7 +870,7 @@ onMounted(async () => {
       .search-input {
         flex: 1;
         padding: 12px 20px;
-        border: 2px solid #e0e0e0;
+        border: 1px solid var(--desk-border);
         border-radius: 28px 0 0 28px;
         outline: none;
         font-size: 16px;
@@ -791,7 +884,7 @@ onMounted(async () => {
 
       .search-btn {
         padding: 12px 20px;
-        background: linear-gradient(135deg, #667eea, #5a6fd8);
+        background: var(--desk-accent);
         color: white;
         border: none;
         border-radius: 0 28px 28px 0;
@@ -805,7 +898,7 @@ onMounted(async () => {
         gap: 6px;
 
         &:hover:not(:disabled) {
-          background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+          background: var(--desk-accent);
           transform: translateY(-2px);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
@@ -825,7 +918,7 @@ onMounted(async () => {
       .polish-textarea {
         width: 100%;
         padding: 16px 20px;
-        border: 2px solid #e0e0e0;
+        border: 1px solid var(--desk-border);
         border-radius: 16px;
         outline: none;
         font-size: 15px;
@@ -854,7 +947,7 @@ onMounted(async () => {
         width: 100%;
         margin-top: 16px;
         padding: 14px 24px;
-        background: linear-gradient(135deg, #764ba2, #667eea);
+        background: var(--desk-accent);
         color: white;
         border: none;
         border-radius: 12px;
@@ -865,7 +958,7 @@ onMounted(async () => {
         box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
 
         &:hover:not(:disabled) {
-          background: linear-gradient(135deg, #6a4190, #5a6fd8);
+          background: var(--desk-accent);
           transform: translateY(-2px);
           box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
         }
@@ -944,11 +1037,13 @@ onMounted(async () => {
   .content-section {
     flex: 1;
     display: flex;
-    max-width: 1200px;
-    margin: 0px auto 16px;
-    height: calc(100% - 0px);
+    max-width: 1440px;
+    margin: 0 auto;
+    height: 100%;
+    min-height: 0;
+    gap: 24px;
     box-sizing: border-box;
-    padding-top: 50px;
+    padding-top: 40px;
 
     // 左侧编辑面板
     .editor-panel {
@@ -956,15 +1051,21 @@ onMounted(async () => {
       box-sizing: border-box;
       background: white;
       border-radius: 16px;
-      margin-right: 16px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--desk-border);
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--desk-shadow);
       min-width: 0; // 防止弹性布局问题
 
       .panel-header {
-        background: #f8f9fa;
+        min-height: 66px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        background: white;
         padding: 16px 20px;
-        border-bottom: 2px solid #e9ecef;
+        border-bottom: 1px solid var(--desk-border);
         display: flex;
         align-items: center;
 
@@ -975,13 +1076,13 @@ onMounted(async () => {
 
           h3 {
             margin: 0;
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 600;
             color: #333;
           }
 
           .config-btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--desk-accent);
             border: none;
             color: white;
             border-radius: 8px;
@@ -990,7 +1091,7 @@ onMounted(async () => {
             box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 
             &:hover {
-              background: linear-gradient(135deg, #5a6fd8, #6a4190);
+              background: var(--desk-accent);
               transform: translateY(-1px);
               box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
             }
@@ -1033,22 +1134,22 @@ onMounted(async () => {
         }
 
         .search-btn {
-          background: linear-gradient(135deg, #667eea, #5a6fd8);
+          background: var(--desk-accent);
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #5a6fd8, #4a5fc8);
+            background: var(--desk-accent);
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(102, 126, 234, 0.4);
           }
         }
 
         .polish-btn {
-          background: linear-gradient(135deg, #764ba2, #667eea);
+          background: var(--desk-accent);
           box-shadow: 0 4px 12px rgba(118, 75, 162, 0.3);
 
           &:hover:not(:disabled) {
-            background: linear-gradient(135deg, #6a4190, #5a6fd8);
+            background: var(--desk-accent);
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(118, 75, 162, 0.4);
           }
@@ -1057,7 +1158,8 @@ onMounted(async () => {
 
       .panel-content {
         padding: 20px;
-        height: calc(100% - 64px);
+        flex: 1;
+        min-height: 0;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -1067,13 +1169,13 @@ onMounted(async () => {
           flex: 1;
           display: flex;
           flex-direction: column;
-          height: 100%;
+          min-height: 240px;
 
           .search-textarea {
             flex: 1;
             width: 100%;
             padding: 16px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--desk-border);
             border-radius: 12px;
             outline: none;
             font-size: 14px;
@@ -1099,13 +1201,13 @@ onMounted(async () => {
           flex: 1;
           display: flex;
           flex-direction: column;
-          height: 100%;
+          min-height: 240px;
 
           .polish-textarea {
             flex: 1;
             width: 100%;
             padding: 16px;
-            border: 2px solid #e0e0e0;
+            border: 1px solid var(--desk-border);
             border-radius: 12px;
             outline: none;
             font-size: 14px;
@@ -1133,15 +1235,21 @@ onMounted(async () => {
       flex: 1;
       background: white;
       border-radius: 16px;
-      margin-left: 16px;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--desk-border);
       overflow: hidden;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      box-shadow: var(--desk-shadow);
       min-width: 0; // 防止弹性布局问题
 
       .panel-header {
-        background: #f8f9fa;
+        min-height: 66px;
+        flex-shrink: 0;
+        flex-wrap: wrap;
+        background: white;
         padding: 16px 20px;
-        border-bottom: 2px solid #e9ecef;
+        border-bottom: 1px solid var(--desk-border);
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1150,14 +1258,22 @@ onMounted(async () => {
         .preview-title {
           display: flex;
           align-items: center;
-          gap: 10px;
+          flex-wrap: wrap;
+          gap: 8px;
           min-width: 0;
+        }
+        .preview-theme-name {
+          font-size: 12px;
+          color: var(--desk-accent);
+          background: var(--el-color-primary-light-9);
+          padding: 3px 8px;
+          border-radius: 6px;
         }
 
         h3 {
           margin: 0;
-          font-size: 18px;
-          font-weight: 700;
+          font-size: 16px;
+          font-weight: 600;
           color: #333;
           white-space: nowrap;
         }
@@ -1174,7 +1290,7 @@ onMounted(async () => {
         }
 
         .publish-btn {
-          background: linear-gradient(135deg, #07c160, #06ad56);
+          background: #15966a;
           color: white;
           border: none;
           padding: 8px 16px;
@@ -1206,7 +1322,8 @@ onMounted(async () => {
 
       .panel-content {
         padding: 20px;
-        height: calc(100% - 64px);
+        flex: 1;
+        min-height: 0;
         overflow-y: auto;
         display: block;
 
@@ -1260,73 +1377,24 @@ onMounted(async () => {
         }
 
         .html-content {
-          line-height: 1.7;
-          color: #333;
           width: 100%;
-
-          h1 {
-            font-size: 28px;
-            margin-bottom: 20px;
-            color: #667eea;
-          }
-
-          h2 {
-            font-size: 22px;
-            margin-bottom: 16px;
-            color: #333;
-          }
-
-          p {
-            margin-bottom: 16px;
-            font-size: 15px;
-          }
-
-          strong {
-            color: #333;
-            font-weight: 600;
-          }
-
-          em {
-            color: #666;
-            font-style: italic;
-          }
-
-          ul {
-            margin-bottom: 20px;
-            padding-left: 24px;
-
-            li {
-              margin-bottom: 10px;
-              color: #666;
-              font-size: 15px;
-            }
-          }
-
-          pre {
-            background: #f8f9f9;
-            border: 2px solid #e9ecef;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 20px;
-            overflow-x: auto;
-
-            code {
-              font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-              font-size: 14px;
-              color: #333;
-            }
-          }
-
-          a {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: 500;
-
-            &:hover {
-              text-decoration: underline;
-              color: #5a6fd8;
-            }
-          }
+          height: 100%;
+          min-height: 420px;
+          padding: 0;
+          display: flex;
+          overflow: hidden;
+          border: 1px solid var(--desk-border);
+          border-radius: 10px;
+          background: white;
+        }
+        .article-preview-frame {
+          display: block;
+          flex: 1;
+          width: 100%;
+          height: 100%;
+          min-height: 420px;
+          border: 0;
+          background: white;
         }
       }
     }
@@ -1341,7 +1409,7 @@ onMounted(async () => {
 
     .el-dialog__header {
       padding: 20px 24px 16px;
-      // background: linear-gradient(135deg, #667eea, #764ba2);
+      // background: var(--desk-accent);
       border-bottom: none;
 
       .el-dialog__title {
@@ -1380,7 +1448,7 @@ onMounted(async () => {
       .el-dialog__header {
         padding: 16px 20px;
         border-bottom: 1px solid #e9ecef;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--desk-accent);
         color: white;
 
         .el-dialog__title {
@@ -1492,12 +1560,12 @@ onMounted(async () => {
             }
 
             &.primary {
-              background: linear-gradient(135deg, #667eea, #764ba2);
+              background: var(--desk-accent);
               color: white;
               border: none;
 
               &:hover {
-                background: linear-gradient(135deg, #5a6fd8, #6a41b0);
+                background: var(--desk-accent);
               }
             }
           }
@@ -1565,7 +1633,7 @@ onMounted(async () => {
         font-size: 14px;
         color: #333;
         font-weight: 600;
-        background: linear-gradient(135deg, #667eea, #764ba2);
+        background: var(--desk-accent);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         background-clip: text;
@@ -1664,6 +1732,13 @@ onMounted(async () => {
           overflow: hidden;
           background: #f0f2f5;
 
+          .theme-placeholder {
+            display: grid;
+            place-items: center;
+            height: 100%;
+            font-size: 36px;
+            background: var(--el-color-primary-light-9);
+          }
           img {
             width: 100%;
             height: 100%;
@@ -1681,7 +1756,7 @@ onMounted(async () => {
             right: 6px;
             width: 22px;
             height: 22px;
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: var(--desk-accent);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -1733,8 +1808,16 @@ onMounted(async () => {
     gap: 12px;
   }
 
-  @media (max-width: 768px) {
-    padding: 16px;
+  @media (max-width: 900px) {
+    height: auto;
+    min-height: 100%;
+    .content-section {
+      flex-direction: column;
+      height: auto;
+      gap: 20px;
+      .editor-panel { min-height: 480px; flex: none; }
+      .html-panel { min-height: 650px; flex: none; }
+    }
 
     .main-container {
       .input-section {

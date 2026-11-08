@@ -6,7 +6,12 @@
         <div class="indicator-icon">✅</div>
         <span class="indicator-text">{{ t("serverStatus.connected") }}</span>
         <span class="port-text">:{{ opencodePort }}</span>
-        <button class="skills-manage-btn" @click="openSkillsDialog">💻</button>
+        <button
+          class="skills-manage-btn"
+          :aria-label="t('skillsDialog.workspaceStatus')"
+          :title="t('skillsDialog.workspaceStatus')"
+          @click="openSkillsDialog"
+        >💻</button>
       </div>
     </div>
 
@@ -81,6 +86,7 @@
             <div class="header-actions">
               <button
                 class="reset-skills-btn"
+                :aria-label="t('skillsDialog.resetSkills')"
                 @click="$emit('resetSkills')"
                 :title="t('skillsDialog.resetSkills')"
               >
@@ -154,396 +160,110 @@ const handleSkillsDialogClose = () => {
 <style lang="less" scoped>
 .server-status {
   position: absolute;
-  top: -10px;
-  right: 0;
+  top: 8px;
+  right: 8px;
   z-index: 100;
 
-  // 连接状态指示器样式
   .connection-indicator {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    z-index: 100;
-    background: white;
-    border-radius: 8px;
-    padding: 4px 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 11px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    position: relative;
+    background: var(--desk-surface);
+    border: 1px solid var(--desk-border);
+    border-radius: 999px;
+    padding: 5px 10px;
+    color: var(--desk-text);
+    font-size: 12px;
+    line-height: 20px;
 
-    .indicator-content {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-
-      .indicator-icon {
-        font-size: 12px;
-        animation: pulse 2s infinite;
-      }
-
-      .indicator-text {
-        color: #333;
-      }
-
-      .port-text {
-        color: #888;
-        font-size: 10px;
-        font-family: "SF Mono", Monaco, monospace;
-      }
-
-      .skills-manage-btn {
-        color: white;
-        border: none;
-        padding: 3px 8px;
-        border-radius: 6px;
-        font-size: 10px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(102, 126, 234, 0.4);
-        }
-      }
+    .indicator-content { display: flex; align-items: center; gap: 6px; }
+    .indicator-icon { font-size: 12px; }
+    .port-text { color: var(--desk-muted); font-size: 11px; font-family: monospace; }
+    .skills-manage-btn, .reconnect-btn {
+      border: 0;
+      border-radius: 6px;
+      padding: 2px 7px;
+      background: #edf0ff;
+      color: var(--desk-accent);
+      cursor: pointer;
+      line-height: 18px;
+      font-size: 11px;
+      &:hover { background: #dfe5ff; }
     }
-
     &.warning {
-      background: #fff3e0;
-      border-color: #ffcc02;
-
-      .indicator-text {
-        color: #f57c00;
-      }
-
-      .indicator-icon {
-        &.connecting {
-          animation: none;
-          .loading-spinner {
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #ffcc02;
-            border-top-color: #f57c00;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-          }
-        }
-      }
-
-      .reconnect-btn {
-        background: linear-gradient(135deg, #ff9800, #f57c00);
-        color: white;
-        border: none;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-size: 10px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        margin-left: 4px;
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 2px 8px rgba(255, 152, 0, 0.4);
-        }
-      }
+      background: #fffbf0;
+      border-color: #f0dfb5;
+      color: #936519;
+      .reconnect-btn { background: #f9edce; color: #805512; }
+    }
+    .loading-spinner {
+      display: block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid #eddcb7;
+      border-top-color: #936519;
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
     }
   }
 }
 
-// Skills Dialog 样式
 :deep(.skills-dialog) {
-  margin: auto;
-
-  .el-dialog__body {
-    padding: 24px;
-  }
-}
-
-:deep(.el-dialog) {
+  max-width: calc(100vw - 32px);
+  border: 1px solid var(--desk-border);
   border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-  border: none;
-
-  .el-dialog__header {
-    padding: 20px 24px 16px;
-    background: linear-gradient(135deg, #667eea, #764ba2);
-    border-bottom: none;
-
-    .el-dialog__title {
-      font-size: 18px;
-      font-weight: 700;
-      color: white;
-    }
-
-    .el-dialog__headerbtn {
-      top: 20px;
-      right: 20px;
-
-      .el-dialog__close {
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 20px;
-        transition: all 0.2s ease;
-
-        &:hover {
-          color: white;
-          transform: scale(1.1);
-        }
-      }
-    }
-  }
-
-  .el-dialog__body {
-    padding: 24px;
-    background: #fafbfc;
-  }
+  box-shadow: var(--desk-shadow);
+  .el-dialog__header { padding: 8px 12px 16px; border-bottom: 1px solid var(--desk-border); }
+  .el-dialog__title { color: var(--desk-text); font-size: 18px; font-weight: 600; }
+  .el-dialog__body { padding: 20px 12px 12px; }
 }
 
 .skill-info-content {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-
   .info-details {
-    background: linear-gradient(135deg, #f8f9fa, #ffffff);
+    background: var(--desk-bg);
+    border: 1px solid var(--desk-border);
     border-radius: 10px;
-    padding: 16px 20px;
-    margin-bottom: 20px;
-    border: 1px solid #eaeaea;
-
-    .detail-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-
-      &:not(:last-child) {
-        border-bottom: 1px solid #f0f0f0;
-      }
-
-      label {
-        font-size: 14px;
-        color: #586069;
-        font-weight: 500;
-      }
-
-      span {
-        font-size: 14px;
-        color: #24292e;
-        font-weight: 600;
-      }
-
-      .status-badge {
-        padding: 4px 14px;
-        border-radius: 20px;
-        font-size: 13px;
-        font-weight: 600;
-
-        &.status-connected {
-          background: linear-gradient(135deg, #d4edda, #c3e6cb);
-          color: #155724;
-          border: 1px solid #b8da9e;
-        }
-
-        &.status-disconnected {
-          background: linear-gradient(135deg, #fff3cd, #ffeeba);
-          color: #856404;
-          border: 1px solid #ffeeba;
-        }
-      }
-
-      .session-id {
-        font-family: "SF Mono", Monaco, monospace;
-        font-size: 12px;
-        background: #f6f8fa;
-        padding: 4px 10px;
-        border-radius: 6px;
-        border: 1px solid #e1e4e8;
-        color: #24292e;
-      }
-    }
+    padding: 8px 16px;
+    margin-bottom: 24px;
   }
-
-  .skills-list {
-    .skills-list-header {
-      font-size: 14px;
-      color: #586069;
-      margin-bottom: 12px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-      &::before {
-        content: "";
-        display: inline-block;
-        width: 4px;
-        height: 16px;
-        background: linear-gradient(180deg, #667eea, #764ba2);
-        border-radius: 2px;
-      }
-
-      .header-actions {
-        margin-left: auto;
-        display: flex;
-        gap: 8px;
-      }
-
-      .debug-btn {
-        background: linear-gradient(135deg, #10b981, #059669);
-        border: none;
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
-
-        &:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-        }
-
-        &:active {
-          transform: scale(0.95);
-        }
-      }
-
-      .reset-skills-btn {
-        background: linear-gradient(135deg, #667eea, #764ba2);
-        border: none;
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
-
-        &:hover {
-          transform: translateY(-1px) rotate(180deg);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-        }
-
-        &:active {
-          transform: scale(0.95) rotate(180deg);
-        }
-      }
-    }
-
-    .skill-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 12px;
-
-      .skill-card {
-        background: white;
-        border: 1px solid #e1e4e8;
-        border-radius: 10px;
-        padding: 14px;
-        transition: all 0.25s ease;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: 12px;
-
-        &:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
-          border-color: #667eea;
-        }
-
-        .skill-icon {
-          font-size: 24px;
-          flex-shrink: 0;
-        }
-
-        .skill-content {
-          flex: 1;
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-
-          .skill-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #24292e;
-            line-height: 1.3;
-          }
-
-          .skill-actions {
-            display: flex;
-            justify-content: flex-end;
-
-            .export-btn {
-              background: #f0f6fc;
-              color: #0366d6;
-              border: 1px solid #d1e3f6;
-              padding: 4px 10px;
-              border-radius: 6px;
-              font-size: 12px;
-              font-weight: 600;
-              cursor: pointer;
-              transition: all 0.2s ease;
-              display: inline-flex;
-              align-items: center;
-              gap: 4px;
-
-              &:hover {
-                background: #dbedff;
-                transform: translateY(-1px);
-              }
-
-              .icon {
-                font-size: 12px;
-              }
-            }
-          }
-        }
-      }
-    }
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    &:not(:last-child) { border-bottom: 1px solid var(--desk-border); }
+    label { color: var(--desk-muted); font-size: 13px; }
+    .status-badge { margin-left: auto; border-radius: 999px; padding: 2px 10px; font-size: 12px; }
+    .status-connected { color: #21794d; background: #e6f5ec; }
+    .status-disconnected { color: #936519; background: #fbefcd; }
+    .session-id { margin-left: auto; min-width: 0; overflow-wrap: anywhere; font-family: monospace; color: var(--desk-text); font-size: 12px; }
+  }
+  .skills-list-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; font-weight: 600; color: var(--desk-text); }
+  .debug-btn, .reset-skills-btn {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--desk-border);
+    border-radius: 7px;
+    background: var(--desk-surface);
+    cursor: pointer;
+    &:hover { border-color: var(--desk-accent); }
+  }
+  .skill-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+  .skill-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid var(--desk-border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color .15s;
+    &:hover { border-color: var(--desk-accent); }
+    .skill-icon { font-size: 24px; }
+    .skill-content { flex: 1; min-width: 0; }
+    .skill-name { color: var(--desk-text); font-size: 14px; font-weight: 600; overflow-wrap: anywhere; }
+    .skill-actions { margin-top: 8px; }
+    .export-btn { border: 0; border-radius: 5px; padding: 3px 8px; background: #edf0ff; color: var(--desk-accent); font-size: 12px; cursor: pointer; }
   }
 }
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.1);
-    opacity: 0.8;
-  }
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-}
-
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 </style>
