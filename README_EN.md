@@ -15,16 +15,22 @@
 
 </p>
 
-![Preview](./preview/app_en.png)
+![oDesk v0.4.0 application workspace](./preview/app_en.png)
+
+### WeChat Publisher · Template preview
+
+Selecting a template re-renders the article preview with its actual styles. The screenshot below uses a sample article and the Arcade template in the Chinese UI; no article was published to a live WeChat account.
+
+![WeChat Publisher template preview](./preview/wechat_publisher.png)
 
 ## 🎖︎ Features
 
 ### 1. Skill Apps
 
-- **App Management Interface**: Visual skill app management platform with app card display and quick launch
+- **App Management Interface**: Visual skill app management platform with search, category filters, app cards, and keyboard shortcuts
 - **Built-in Apps**:
   - **Schedule Manager**: Intelligent scheduling tool with customizable employee count and shift settings, exportable to Excel
-  - **Wechat Publisher**: WeChat public account article publishing tool with AI content generation, multiple themes, and one-click publishing
+  - **Wechat Publisher**: WeChat public account article publishing tool with AI content generation, multiple themes, live template previews, and one-click publishing
   - **Travel Plan**: Personalized travel plan generator with multiple visual styles and image types
   - **Movie Finder**: Movie search tool for quickly finding interesting films
   - **Ancien Poetry**: Explore the lives and classic verses of poetry masters, experiencing traditional cultural charm
@@ -35,6 +41,7 @@
   - **NetEase Playlist Video Generator**: Enter a NetEase playlist URL, download songs, and generate a playlist video
   - **Bilibili Video Manager**: Search Bilibili videos, manage download queues, and package collections for easy content organization
   - **Audio Cutter**: Cut MP3 audio files with waveform visualization, fade-in/out, and other editing features
+  - **Data Search**: Search and structure data with sortable tables and column masking
 - **Workspace Management**: Create and manage development workspaces with opencode service execution
 - **Skill Extensions**: Extend app functionality through skill packs, with import/export configuration support
 - **Real-time Connection**: Real-time workspace status monitoring with session management and file operations
