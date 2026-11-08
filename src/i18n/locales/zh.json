@@ -363,7 +363,15 @@
     "coverPreview": "封面预览",
     "noCover": "暂无封面",
     "articleTitle": "文章标题",
-    "enterArticleTitle": "请输入文章标题..."
+    "enterArticleTitle": "请输入文章标题...",
+    "addCover": "点击添加封面",
+    "changeCover": "点击更换封面",
+    "settingCover": "正在设置封面…",
+    "optionalTitle": "选填，留空则自动生成",
+    "imageFiles": "图片",
+    "coverSelected": "封面已更新",
+    "coverSelectionFailed": "选择封面失败，请重试",
+    "coverRefreshFailed": "封面预览更新失败，请重新打开文章"
   },
   "serverStatus": {
     "connected": "已连接",

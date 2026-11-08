@@ -15,11 +15,11 @@
 
 </p>
 
-![oDesk v0.4.0 application workspace](./preview/app_en.png)
+![oDesk application workspace](./preview/app_en.png)
 
 ### WeChat Publisher · Template preview
 
-Selecting a template re-renders the article preview with its actual styles. The screenshot below uses a sample article and the Arcade template in the Chinese UI; no article was published to a live WeChat account.
+Selecting a template re-renders the article preview with its actual styles. In v0.4.2, the cover sits above the title: click the cover to choose an image, and its preview updates after generation. The screenshot below uses a sample article and the Arcade template in the Chinese UI; no article was published to a live WeChat account.
 
 ![WeChat Publisher template preview](./preview/wechat_publisher.png)
 

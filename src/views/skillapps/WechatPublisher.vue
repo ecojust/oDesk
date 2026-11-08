@@ -172,27 +172,33 @@
           </div>
         </div>
         <div class="panel-content">
-          <!-- 紧凑封面+标题栏 -->
           <div class="cover-bar">
-            <div class="cover-thumb" @click="refreshtThumb">
-              <img v-if="previewThumb" :src="previewThumb" alt="cover" />
-              <div v-else class="cover-thumb-placeholder">🖼️</div>
-            </div>
+            <button
+              type="button"
+              class="cover-picker"
+              :class="{ 'has-cover': previewThumb }"
+              :disabled="coverBusy"
+              :aria-busy="isSelectingCover"
+              :aria-label="t(previewThumb ? 'wechatPublisher.changeCover' : 'wechatPublisher.addCover')"
+              @click="selectLocalCover"
+            >
+              <img v-if="previewThumb" :src="previewThumb" :alt="t('wechatPublisher.coverPreview')" />
+              <span v-else class="cover-placeholder" aria-hidden="true">🖼️</span>
+              <span class="cover-picker-hint">
+                {{ t(isSelectingCover ? 'wechatPublisher.settingCover' : previewThumb ? 'wechatPublisher.changeCover' : 'wechatPublisher.addCover') }}
+              </span>
+            </button>
             <div class="cover-meta">
+              <label for="wechat-article-title">{{ t("wechatPublisher.articleTitle") }}</label>
               <el-input
+                id="wechat-article-title"
                 v-model="articleTitle"
-                placeholder="选填，留空则自动生成"
+                :placeholder="t('wechatPublisher.enterArticleTitle')"
+                aria-describedby="wechat-title-hint"
                 @change="saveTitle"
                 clearable
               />
-              <div class="cover-actions">
-                <button class="cover-action-btn" @click.stop="selectLocalCover">
-                  📁 从本地选择
-                </button>
-                <button class="cover-action-btn refresh" @click="refreshtThumb">
-                  🔄 {{ t("skillapps.refresh") }}
-                </button>
-              </div>
+              <span id="wechat-title-hint" class="title-hint">{{ t("wechatPublisher.optionalTitle") }}</span>
             </div>
           </div>
 
@@ -208,7 +214,7 @@
               <button
                 class="search-btn"
                 @click="handleSearch"
-                :disabled="isLoading || !question.trim()"
+                :disabled="coverBusy || !question.trim()"
               >
                 <i class="icon" :class="{ loading: isLoading }">🔍</i>
                 <span v-if="isLoading" class="loading-text">{{
@@ -240,7 +246,7 @@
               <button
                 class="polish-btn"
                 @click="handlePolish"
-                :disabled="isLoading || !question.trim()"
+                :disabled="coverBusy || !question.trim()"
               >
                 <i class="icon" :class="{ loading: isLoading }">✨</i>
                 <span v-if="isLoading" class="loading-text">{{
@@ -276,7 +282,7 @@
             class="publish-btn"
             :class="{ loading: isPublishing }"
             @click="handlePublish"
-            :disabled="!htmlPreview || isPublishing || isRendering || !!previewError"
+            :disabled="!htmlPreview || coverBusy || isRendering || !!previewError"
           >
             <i class="icon" :class="{ loading: isPublishing }">🚀</i>
             <span v-if="isPublishing" class="loading-text">{{
@@ -371,6 +377,8 @@ const {
 const question = ref("");
 const isLoading = ref(false);
 const isPublishing = ref(false);
+const isSelectingCover = ref(false);
+const coverBusy = computed(() => isLoading.value || isPublishing.value || isSelectingCover.value);
 
 // 润色模式相关
 const isPolishMode = ref(false);
@@ -410,77 +418,70 @@ const previewThumb = ref("");
 
 let isSaving = false;
 
-const refreshtThumb = async () => {
-  try {
-    const searchContent = `
-      用pixabay-image-downloader下载一张图片
-    `;
-    const answer = await Opencode.send_message(searchContent);
-    console.log("AI Response:", answer);
-    await scanpngs();
-  } catch (error) {
-    console.error("Error generating schedule:", error);
-  } finally {
-    //
-  }
-};
-
-const refreshCoverPreview = () => {
-  previewThumb.value = previewThumb.value + "?t=" + new Date().getTime();
-  config.value.thumb = "thumb.jpg";
-  saveConfig(false);
-};
-
 const loadThumbPreview = async () => {
-  previewThumb.value = "";
   const files = await Opencode.scan_worksapce_file(APPID, {
     path: "",
     postfix: "jpg",
   });
-  const thumb = files.find((f) => f.title === "thumb.jpg");
-  if (thumb) {
-    previewThumb.value = thumb.url;
-    refreshCoverPreview();
+  const thumb = files.find((file) => file.title === "thumb.jpg");
+  if (!thumb) return false;
+
+  // Keep the previous preview until the replacement has been copied and found.
+  const separator = thumb.url.includes("?") ? "&" : "?";
+  previewThumb.value = `${thumb.url}${separator}t=${Date.now()}`;
+  if (config.value.thumb !== "thumb.jpg") {
+    config.value.thumb = "thumb.jpg";
+    await saveConfig(false);
   }
+  return true;
 };
 
 const scanpngs = async () => {
-  await loadThumbPreview();
-  if (previewThumb.value) return;
+  if (await loadThumbPreview()) return;
 
-  const pngs = await Opencode.scan_worksapce_file(APPID, {
+  const images = await Opencode.scan_worksapce_file(APPID, {
     path: "./pixabay_images/",
     postfix: "jpg",
   });
-  if (pngs.length > 0) {
-    previewThumb.value = pngs[0].url;
-    await Opencode.copy_file_to_workspace(APPID, pngs[0].path, "thumb.jpg");
-    refreshCoverPreview();
+  if (images.length > 0) {
+    await Opencode.copy_file_to_workspace(APPID, images[0].path, "thumb.jpg");
+    await loadThumbPreview();
+  } else {
+    previewThumb.value = "";
   }
+};
 
-  console.log("pngs", pngs);
+const refreshGeneratedCover = async () => {
+  try {
+    // Read files produced by the existing article request; do not ask AI for a new image.
+    await scanpngs();
+  } catch (error) {
+    console.error("Failed to refresh article cover:", error);
+    ElMessage.warning(t("wechatPublisher.coverRefreshFailed"));
+  }
 };
 
 const selectLocalCover = async () => {
+  if (coverBusy.value) return;
+  isSelectingCover.value = true;
   try {
     const path = await open({
       multiple: false,
-      filters: [
-        {
-          name: "图片",
-          extensions: ["png", "jpg", "jpeg", "webp", "gif"],
-        },
-      ],
+      filters: [{
+        name: t("wechatPublisher.imageFiles"),
+        extensions: ["png", "jpg", "jpeg", "webp", "gif"],
+      }],
     });
+    if (!path) return;
 
-    if (path) {
-      await Opencode.copy_file_to_workspace(APPID, path, "thumb.jpg");
-      await loadThumbPreview();
-      ElMessage.success("已选择本地封面");
-    }
+    await Opencode.copy_file_to_workspace(APPID, path, "thumb.jpg");
+    if (!await loadThumbPreview()) throw new Error("Copied cover was not found");
+    ElMessage.success(t("wechatPublisher.coverSelected"));
   } catch (error) {
-    console.error("选择图片失败:", error);
-    ElMessage.error("选择图片失败");
+    console.error("Failed to select article cover:", error);
+    ElMessage.error(t("wechatPublisher.coverSelectionFailed"));
+  } finally {
+    isSelectingCover.value = false;
   }
 };
 
@@ -595,7 +596,7 @@ const cancelConfigChanges = () => {
 };
 
 const handleSearch = async () => {
-  if (!question.value.trim()) return;
+  if (coverBusy.value || !question.value.trim()) return;
 
   isLoading.value = true;
   try {
@@ -609,6 +610,7 @@ const handleSearch = async () => {
     const answer = await Opencode.send_message(searchContent);
     console.log("AI Response:", answer);
     await searchFiles();
+    await refreshGeneratedCover();
   } catch (error) {
     console.error("Error generating schedule:", error);
     ElMessage.error(t("skillapps.searchFailed") + error.message);
@@ -618,7 +620,7 @@ const handleSearch = async () => {
 };
 
 const handlePolish = async () => {
-  if (!question.value.trim()) return;
+  if (coverBusy.value || !question.value.trim()) return;
 
   // 检查字数是否小于60
   const contentLength = question.value.trim().length;
@@ -640,6 +642,7 @@ const handlePolish = async () => {
     const answer = await Opencode.send_message(polishPrompt);
     console.log("AI Response:", answer);
     await searchFiles();
+    await refreshGeneratedCover();
     ElMessage.success(t("skillapps.polishSuccess"));
   } catch (error) {
     console.error("润色失败:", error);
@@ -737,7 +740,7 @@ const searchFiles = async () => {
 };
 
 const handlePublish = async () => {
-  if (isPublishing.value || isRendering.value || !htmlPreview.value) return;
+  if (coverBusy.value || isRendering.value || !htmlPreview.value) return;
 
   isPublishing.value = true;
   try {
@@ -815,7 +818,7 @@ onMounted(async () => {
   await activeWorkspace();
   await readConfig();
   searchFiles();
-  scanpngs();
+  await refreshGeneratedCover();
 });
 </script>
 
@@ -1836,112 +1839,68 @@ onMounted(async () => {
     }
   }
 
-  /* 紧凑封面+标题栏 */
   .cover-bar {
     flex-shrink: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     gap: 12px;
-    padding: 10px 12px;
-    margin-bottom: 12px;
-    border-radius: 10px;
-    background: #f8f9fa;
-    border: 1px solid #eee;
+    margin-bottom: 16px;
 
-    .cover-thumb {
-      flex-shrink: 0;
-      width: 80px;
-      height: 56px;
-      border-radius: 6px;
-      overflow: hidden;
-      cursor: pointer;
-      background: #e8eaed;
+    .cover-picker {
+      position: relative;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      transition: all 0.2s ease;
+      gap: 6px;
+      width: 100%;
+      height: 112px;
+      flex-shrink: 0;
+      padding: 0;
+      overflow: hidden;
+      border: 1px dashed var(--desk-border);
+      border-radius: 10px;
+      background: var(--desk-bg);
+      color: var(--desk-muted);
+      font: inherit;
+      cursor: pointer;
 
-      &:hover {
-        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
-      }
+      &:hover:not(:disabled) { border-color: var(--desk-accent); color: var(--desk-accent); }
+      &:focus-visible { outline: 3px solid #5264d966; outline-offset: 3px; }
+      &:disabled { cursor: wait; opacity: .65; }
+      &.has-cover { border-style: solid; }
 
       img {
+        display: block;
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
       }
 
-      .cover-thumb-placeholder {
-        font-size: 22px;
-        opacity: 0.5;
+      .cover-placeholder { font-size: 24px; }
+      .cover-picker-hint { font-size: 12px; line-height: 1.5; }
+      &.has-cover .cover-picker-hint {
+        position: absolute;
+        right: 8px;
+        bottom: 8px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        background: rgba(32, 39, 56, .75);
+        color: white;
       }
     }
 
     .cover-meta {
-      flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 6px;
 
-      :deep(.el-input__wrapper) {
-        border-radius: 6px;
-        box-shadow: 0 0 0 1px #e0e0e0 inset;
-        transition: all 0.3s ease;
-
-        &:hover {
-          box-shadow: 0 0 0 1px #667eea inset;
-        }
-
-        &.is-focus {
-          box-shadow:
-            0 0 0 1px #667eea inset,
-            0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-      }
-
-      :deep(.el-input__inner) {
-        font-size: 13px;
-        color: #333;
-
-        &::placeholder {
-          color: #999;
-        }
-      }
-
-      .cover-actions {
-        display: flex;
-        gap: 8px;
-
-        .cover-action-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 3px 10px;
-          border: 1px solid #e0e0e0;
-          border-radius: 6px;
-          background: white;
-          color: #666;
-          font-size: 12px;
-          cursor: pointer;
-          transition: all 0.2s ease;
-
-          &:hover {
-            border-color: #667eea;
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.05);
-          }
-
-          &.refresh {
-            &:hover {
-              border-color: #764ba2;
-              color: #764ba2;
-              background: rgba(118, 75, 162, 0.05);
-            }
-          }
-        }
-      }
+      label { color: var(--desk-text); font-size: 13px; font-weight: 500; }
+      .title-hint { color: var(--desk-muted); font-size: 12px; line-height: 1.5; }
+      :deep(.el-input__inner) { font-size: 13px; }
     }
   }
+
 }
 </style>

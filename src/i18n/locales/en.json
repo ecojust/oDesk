@@ -358,7 +358,15 @@
     "coverPreview": "Cover Preview",
     "noCover": "No cover",
     "articleTitle": "Article Title",
-    "enterArticleTitle": "Enter article title..."
+    "enterArticleTitle": "Enter article title...",
+    "addCover": "Click to add a cover",
+    "changeCover": "Click to change cover",
+    "settingCover": "Setting cover…",
+    "optionalTitle": "Optional. Leave blank to generate automatically.",
+    "imageFiles": "Images",
+    "coverSelected": "Cover updated",
+    "coverSelectionFailed": "Could not select the cover. Please try again.",
+    "coverRefreshFailed": "Could not refresh the cover preview. Please reopen the article."
   },
   "serverStatus": {
     "connected": "Connected",
