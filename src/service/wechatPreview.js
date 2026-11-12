@@ -1,5 +1,6 @@
 import createDOMPurify from "dompurify";
 import { generate, parse, walk } from "css-tree";
+import { makeArticleCanvasTransparent } from "./wechatContrast.js";
 
 let corePromise;
 let styleCorePromise;
@@ -122,14 +123,16 @@ export async function renderWechatArticle({ markdown = "", html = "", theme, the
     themeId: theme.buildIn ? theme.key : "default",
     themeCss: resolvedCss,
   });
-  // Wenyan's WeChat postprocessor forces the root to black. Restore the
-  // template's own color so dark themes retain readable inherited body text.
-  if (!rootColor) return rendered;
+  // Recover the original theme foreground before adapting it to the
+  // transparent canvas; Wenyan's WeChat postprocessor forces it to black.
   const result = document.createElement("div");
   result.innerHTML = rendered;
   const root = result.querySelector("#wenyan");
-  root.style.color = rootColor;
-  root.style.caretColor = rootColor;
+  if (rootColor) {
+    root.style.color = rootColor;
+    root.style.caretColor = rootColor;
+  }
+  makeArticleCanvasTransparent(root);
   return root.outerHTML;
 }
 
@@ -142,6 +145,6 @@ export function createPreviewDocument(html, baseUrl = "") {
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src https: http: asset: data:; style-src 'unsafe-inline';">
 ${baseUrl ? `<base href="${escapeAttribute(baseUrl)}">` : ""}
-<style>html{background:#fff;color:#222}body{margin:0;padding:20px;overflow-wrap:break-word}img,svg{max-width:100%}#wenyan{box-sizing:border-box;max-width:100%}</style>
+<style>html{background:transparent;color:#222}body{background:transparent;margin:0;padding:20px;overflow-wrap:break-word}img,svg{max-width:100%}#wenyan{box-sizing:border-box;max-width:100%}</style>
 </head><body>${html}</body></html>`;
 }

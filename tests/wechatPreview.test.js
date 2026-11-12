@@ -44,6 +44,7 @@ test("every built-in template renders real inline styles from draft.md", async (
     });
     const document = parse(result);
     assert.ok(document.querySelector("#wenyan")?.getAttribute("style"));
+    assert.equal(document.querySelector("#wenyan").style.backgroundColor, "transparent");
     assert.ok(document.querySelector("h2")?.getAttribute("style"));
     assert.ok(document.querySelector("blockquote"));
     assert.ok(document.querySelector("pre code"));
@@ -54,25 +55,34 @@ test("every built-in template renders real inline styles from draft.md", async (
   assert.equal(results.size, 8, "switching templates must change the rendered HTML");
 });
 
-test("custom CSS resolves variables and keeps the root background and heading decoration", async () => {
+test("custom CSS resolves variables while making only the article canvas transparent", async () => {
   const result = await renderWechatArticle({
     markdown,
     theme: { key: "forest" },
     themeCss: `:root { --text: #2d5a45; }
-      #wenyan { background-color: #f0f7f4; color: var(--text); padding: 16px; }
+      #wenyan { background-color: #f0f7f4; background-image: linear-gradient(#fff, #ccc); background-blend-mode: multiply; color: var(--text); padding: 16px; }
+      #wenyan h1 { background-color: #d4e8dc; }
       #wenyan h2 { border-left: 5px solid var(--text); }
+      #wenyan blockquote { background: linear-gradient(#d4e8dc, #fff); }
+      #wenyan pre { background-color: #1a3a2a; }
       #wenyan h2::before { content: "◆"; color: var(--text); }
       @keyframes gradient { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }`,
   });
   const document = parse(result);
-  assert.equal(document.querySelector("#wenyan").style.backgroundColor, "rgb(240, 247, 244)");
+  assert.equal(document.querySelector("#wenyan").style.backgroundColor, "transparent");
+  assert.ok(["", "none"].includes(document.querySelector("#wenyan").style.backgroundImage));
+  assert.equal(document.querySelector("#wenyan").style.backgroundBlendMode, "");
   assert.equal(document.querySelector("#wenyan").style.color, "rgb(45, 90, 69)");
   assert.equal(document.defaultView.getComputedStyle(document.querySelector("p")).color, "rgb(45, 90, 69)");
   assert.equal(document.querySelector("h2").style.borderLeftWidth, "5px");
+  assert.equal(document.querySelector("h1").style.backgroundColor, "rgb(212, 232, 220)");
+  assert.match(document.querySelector("blockquote").style.backgroundImage, /linear-gradient/);
+  assert.ok(document.querySelector("pre").style.backgroundColor);
+  assert.notEqual(document.querySelector("pre").style.backgroundColor, "transparent");
   assert.match(document.querySelector("h2").textContent, /◆/);
 });
 
-test("dark templates keep light inherited paragraph text after WeChat postprocessing", async () => {
+test("dark templates adapt inherited text for a transparent canvas", async () => {
   const result = await renderWechatArticle({
     markdown: "# 标题\n\n正常段落\n\n- 列表文字",
     theme: { key: "arcade" },
@@ -83,10 +93,11 @@ test("dark templates keep light inherited paragraph text after WeChat postproces
   });
   const document = parse(result);
   const style = (selector) => document.defaultView.getComputedStyle(document.querySelector(selector));
-  assert.equal(style("#wenyan").backgroundColor, "rgb(10, 10, 26)");
-  assert.equal(style("p").color, "rgb(255, 255, 255)");
-  assert.equal(style("li").color, "rgb(255, 255, 255)");
-  assert.equal(style("h1").color, "rgb(255, 0, 128)");
+  assert.equal(style("#wenyan").backgroundColor, "rgba(0, 0, 0, 0)");
+  assert.notEqual(style("p").color, "rgb(255, 255, 255)");
+  assert.equal(style("p").color, style("#wenyan").color);
+  assert.equal(style("li").color, style("#wenyan").color);
+  assert.notEqual(style("h1").color, style("p").color, "the heading retains its accent hue");
   assert.match(style("#wenyan").fontFamily, /Courier New/);
 });
 
@@ -144,6 +155,7 @@ test("HTML-only drafts can be restyled without retaining stale inline styles", a
   assert.equal(document.querySelector("h2").textContent, "原有正文");
   assert.notEqual(document.querySelector("h2").style.color, "red");
   assert.notEqual(document.querySelector("#wenyan").style.background, "red");
+  assert.equal(document.querySelector("#wenyan").style.backgroundColor, "transparent");
 });
 
 test("built-in and custom purple retain their existing persisted configuration identities", () => {
@@ -175,4 +187,20 @@ test("preview document isolates typography and resolves relative workspace image
   assert.equal(document.querySelector("base").getAttribute("href"), 'http://asset.localhost/workspace/draft.md?x="');
   assert.match(document.querySelector('meta[http-equiv="Content-Security-Policy"]').content, /default-src 'none'/);
   assert.equal(document.querySelector("#wenyan").outerHTML, html);
+  for (const element of [document.documentElement, document.body]) {
+    assert.equal(document.defaultView.getComputedStyle(element).backgroundColor, "rgba(0, 0, 0, 0)");
+  }
+});
+
+test("root shorthand backgrounds and important textures cannot reintroduce a global canvas", async () => {
+  const result = await renderWechatArticle({
+    markdown: "正文",
+    theme: { key: "canvas" },
+    themeCss: `#wenyan { background: linear-gradient(#fe0, #f90) center / cover no-repeat #fff !important; }`,
+  });
+  const root = parse(result).querySelector("#wenyan");
+  assert.equal(root.style.backgroundColor, "transparent");
+  assert.ok(["", "none"].includes(root.style.backgroundImage));
+  assert.equal(root.style.getPropertyPriority("background"), "");
+  assert.equal(root.textContent.trim(), "正文");
 });

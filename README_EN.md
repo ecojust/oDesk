@@ -19,7 +19,7 @@
 
 ### WeChat Publisher · Template preview
 
-Selecting a template re-renders the article preview with its actual styles. In v0.4.2, the cover sits above the title: click the cover to choose an image, and its preview updates after generation. The screenshot below uses a sample article and the Arcade template in the Chinese UI; no article was published to a live WeChat account.
+Selecting a template re-renders the article with a transparent overall background while preserving local backgrounds on headings, quotes, and code blocks. Preview and publication use the same rendered HTML. The cover sits above the title; click it to choose an image. The screenshot below uses a sample article and the Forest template in the Chinese UI; no article was published to a live WeChat account.
 
 ![WeChat Publisher template preview](./preview/wechat_publisher.png)
 

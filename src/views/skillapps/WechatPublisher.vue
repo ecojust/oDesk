@@ -1390,7 +1390,7 @@ onMounted(async () => {
           overflow: hidden;
           border: 1px solid var(--desk-border);
           border-radius: 10px;
-          background: white;
+          background: transparent;
         }
         .article-preview-frame {
           display: block;
@@ -1399,7 +1399,7 @@ onMounted(async () => {
           height: 100%;
           min-height: 420px;
           border: 0;
-          background: white;
+          background: transparent;
         }
       }
     }
